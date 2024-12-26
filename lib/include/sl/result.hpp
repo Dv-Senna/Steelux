@@ -1,15 +1,17 @@
 #pragma once
 
-#include <cstdint>
+#include "sl/utils/enums.hpp"
 
 
 
 namespace sl {
-	enum class Result : std::uint64_t {
-		eSuccess = 0,
-		eFailure,
-		eAllocationFailure,
-		eFileFailure
+	using namespace sl::utils::literals;
+
+	enum class Result : sl::utils::PackedEnumString {
+		eSuccess = "success"_pes,
+		eFailure = "failure"_pes,
+		eAllocationFailure = "allocation"_pes,
+		eFileFailure = "file"_pes
 	};
 
 } // namespace sl
