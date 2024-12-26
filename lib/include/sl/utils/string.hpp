@@ -1,12 +1,112 @@
 #pragma once
 
 #include <cstddef>
+#include <iterator>
 
 
 namespace sl::utils {
+	template <typename T>
+	class StringIterator final {
+		public:
+			using iterator_category = std::random_access_iterator_tag;
+			using value_type = T;
+			using difference_type = std::ptrdiff_t;
+			using pointer = T*;
+			using reference = T&;
+			using const_reference = const T&;
+
+			inline StringIterator(pointer ptr = nullptr) noexcept : m_ptr {ptr} {}
+			inline ~StringIterator() = default;
+
+			inline StringIterator(const StringIterator<T> &iterator) noexcept : m_ptr {iterator.m_ptr} {}
+			inline const StringIterator<T> &operator=(const StringIterator<T> &iterator) noexcept {iterator.m_ptr = m_ptr; return *this;}
+
+			inline const StringIterator<T> &operator=(pointer ptr) noexcept {m_ptr = ptr; return *this;}
+
+			inline operator bool() const noexcept {return m_ptr;}
+
+			inline bool operator==(const StringIterator<T> &iterator) const noexcept {return m_ptr == iterator.m_ptr;}
+			inline auto operator<=>(const StringIterator<T> &iterator) const noexcept {return m_ptr <=> iterator.m_ptr;}
+
+			inline const StringIterator<T> &operator+=(difference_type diff) noexcept {m_ptr += diff; return *this;}
+			inline const StringIterator<T> &operator-=(difference_type diff) noexcept {m_ptr -= diff; return *this;}
+
+			inline const StringIterator<T> &operator++() noexcept {++m_ptr; return *this;}
+			inline StringIterator<T> operator++(int) noexcept {auto tmp {*this}; ++m_ptr; return tmp;}
+			inline const StringIterator<T> &operator--() noexcept {--m_ptr; return *this;}
+			inline StringIterator<T> operator--(int) noexcept {auto tmp {*this}; --m_ptr; return tmp;}
+
+			inline StringIterator<T> operator+(difference_type diff) const noexcept {auto tmp {*this}; return this += diff;}
+			inline StringIterator<T> operator-(difference_type diff) const noexcept {auto tmp {*this}; return this -= diff;}
+
+			inline difference_type operator-(const StringIterator<T> &iterator) const noexcept {return m_ptr - iterator.m_ptr;}
+
+			reference operator*() noexcept {return *m_ptr;}
+			const_reference operator*() const noexcept {return *m_ptr;}
+			pointer operator->() const noexcept {return m_ptr;}
+
+			inline pointer getPtr() const noexcept {return m_ptr;}
+
+
+		protected:
+			pointer m_ptr;
+	};
+
+
+	template <typename T>
+	class ReverseStringIterator final {
+		public:
+			using iterator_category = std::random_access_iterator_tag;
+			using value_type = T;
+			using difference_type = std::ptrdiff_t;
+			using pointer = T*;
+			using reference = T&;
+			using const_reference = const T&;
+
+			inline ReverseStringIterator(pointer ptr = nullptr) noexcept : m_ptr {ptr} {}
+			inline ~ReverseStringIterator() = default;
+
+			inline ReverseStringIterator(const ReverseStringIterator<T> &iterator) noexcept : m_ptr {iterator.m_ptr} {}
+			inline const ReverseStringIterator<T> &operator=(const ReverseStringIterator<T> &iterator) noexcept {iterator.m_ptr = m_ptr; return *this;}
+
+			inline const ReverseStringIterator<T> &operator=(pointer ptr) noexcept {m_ptr = ptr; return *this;}
+
+			inline operator bool() const noexcept {return m_ptr;}
+
+			inline bool operator==(const ReverseStringIterator<T> &iterator) const noexcept {return m_ptr == iterator.m_ptr;}
+			inline auto operator<=>(const ReverseStringIterator<T> &iterator) const noexcept {return iterator.m_ptr <=> m_ptr;}
+
+			inline const ReverseStringIterator<T> &operator+=(difference_type diff) noexcept {m_ptr -= diff; return *this;}
+			inline const ReverseStringIterator<T> &operator-=(difference_type diff) noexcept {m_ptr += diff; return *this;}
+
+			inline const ReverseStringIterator<T> &operator++() noexcept {--m_ptr; return *this;}
+			inline ReverseStringIterator<T> operator++(int) noexcept {auto tmp {*this}; --m_ptr; return tmp;}
+			inline const ReverseStringIterator<T> &operator--() noexcept {++m_ptr; return *this;}
+			inline ReverseStringIterator<T> operator--(int) noexcept {auto tmp {*this}; ++m_ptr; return tmp;}
+
+			inline ReverseStringIterator<T> operator+(difference_type diff) const noexcept {auto tmp {*this}; return this -= diff;}
+			inline ReverseStringIterator<T> operator-(difference_type diff) const noexcept {auto tmp {*this}; return this += diff;}
+
+			inline difference_type operator-(const ReverseStringIterator<T> &iterator) const noexcept {return iterator.m_ptr - m_ptr;}
+
+			reference operator*() noexcept {return *m_ptr;}
+			const_reference operator*() const noexcept {return *m_ptr;}
+			pointer operator->() const noexcept {return m_ptr;}
+
+			inline pointer getPtr() const noexcept {return m_ptr;}
+
+
+		protected:
+			pointer m_ptr;
+	};
+
+
 	class String final {
 		public:
-			using Type = char;
+			using iterator = StringIterator<char>;
+			using const_iterator = StringIterator<const char>;
+			using reverse_iterator = ReverseStringIterator<char>;
+			using const_reverse_iterator = ReverseStringIterator<const char>;
 
 			String() noexcept;
 			String(const char *str) noexcept;
@@ -25,8 +125,23 @@ namespace sl::utils {
 			inline std::size_t getSize() const noexcept {return m_size;}
 			inline std::size_t getCapacity() const noexcept;
 
+			inline bool isEmpty() const noexcept {return m_size == 0;}
+
 			inline char &operator[](std::size_t index) noexcept;
 			inline const char &operator[](std::size_t index) const noexcept;
+
+			inline iterator begin() noexcept;
+			inline iterator end() noexcept;
+			inline const_iterator cbegin() const noexcept;
+			inline const_iterator cend() const noexcept;
+			inline const_iterator begin() const noexcept {return this->cbegin();}
+			inline const_iterator end() const noexcept {return this->cend();}
+			inline reverse_iterator rbegin() noexcept;
+			inline reverse_iterator rend() noexcept;
+			inline const_reverse_iterator crbegin() const noexcept;
+			inline const_reverse_iterator crend() const noexcept;
+			inline const_reverse_iterator rbegin() const noexcept {return this->crbegin();}
+			inline const_reverse_iterator rend() const noexcept {return this->crend();}
 
 
 		private:
