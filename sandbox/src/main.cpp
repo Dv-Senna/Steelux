@@ -26,8 +26,12 @@ class SandboxApp final : public sl::Application {
 
 			sl::utils::String test {"ABCDEFGHIJKLM"};
 			sl::utils::String test2 {std::move(test)};
+			sl::utils::String test3 {test2};
 			std::println("test : {}", (std::size_t)test.getData());
 			std::println("test2 : {}", test2.getData());
+			std::println("test3 : {}", test3.getData());
+			test3[5] = '_';
+			std::println("test3 : {}", test3.getData());
 		}
 
 		~SandboxApp() override {

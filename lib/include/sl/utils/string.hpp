@@ -1,59 +1,32 @@
 #pragma once
 
-#include "sl/utils/enums.hpp"
+#include <cstddef>
 
 
 namespace sl::utils {
-	enum class StringEncoding : sl::utils::PackedEnumString {
-		eUTF8 = "UTF8"_pes,
-		eUTF16 = "UTF16"_pes
-	};
-
-	template <StringEncoding ENCODING> struct Char final {};
-	template <> struct Char<StringEncoding::eUTF8> final {using Type = char;};
-	template <> struct Char<StringEncoding::eUTF16> final {using Type = char16_t;};
-
-	template <StringEncoding ENCODING> using Char_t = typename Char<ENCODING>::Type;
-
-#ifndef SL_USE_UTF16_STRING
-	constexpr StringEncoding DEFAULT_STRING_ENCODING {StringEncoding::eUTF8};
-#else
-	constexpr StringEncoding DEFAULT_STRING_ENCODING {sl::utils::StringEncoding::eeUTF16};
-#endif
-
-	template <StringEncoding ENCODING>
-	class StringIterator final {
+	class String final {
 		public:
-			using Char = sl::utils::Char_t<ENCODING>;
+			using Type = char;
 
-			StringIterator();
-			~StringIterator();
-	};
+			String() noexcept;
+			String(const char *str) noexcept;
+			String(const char *str, std::size_t length) noexcept;
 
-	template <StringEncoding E>
-	class _String final {
-		public:
-			static constexpr StringEncoding ENCODING = E;
-			using Char = sl::utils::Char_t<E>;
+			~String();
 
-			inline _String() noexcept;
-			inline _String(const Char *str) noexcept;
-			inline _String(const Char *str, std::size_t length) noexcept;
+			String(const String &str) noexcept;
+			const String &operator=(const String &str) noexcept;
 
-			inline ~_String();
+			String(String &&str) noexcept;
+			const String &operator=(String &&str) noexcept;
 
-			template <StringEncoding E2>
-			_String(const _String<E2> &str) noexcept;
-			template <StringEncoding E2>
-			const _String<E> &operator=(const _String<E2> &str) noexcept;
-
-			inline _String(_String<E> &&str) noexcept;
-			inline const _String<E> &operator=(_String<E> &&str) noexcept;
-
-			inline Char *getData() noexcept;
-			inline const Char *getData() const noexcept;
+			inline char *getData() noexcept;
+			inline const char *getData() const noexcept;
 			inline std::size_t getSize() const noexcept {return m_size;}
 			inline std::size_t getCapacity() const noexcept;
+
+			inline char &operator[](std::size_t index) noexcept;
+			inline const char &operator[](std::size_t index) const noexcept;
 
 
 		private:
@@ -64,26 +37,20 @@ namespace sl::utils {
 
 			union {
 				struct {
-					Char *start;
+					char *start;
 					std::size_t capacity;
 				} m_heap;
 
 				struct {
-					Char buffer[sizeof(m_heap) / sizeof(Char)];
+					char buffer[sizeof(m_heap) / sizeof(char)];
 				} m_sso;
 			};
 
-			static constexpr std::size_t MAX_SSO_SIZE {sizeof(m_heap) / sizeof(Char) - 1};
+			static constexpr std::size_t MAX_SSO_SIZE {sizeof(m_heap) / sizeof(char) - 1};
 	};
-
-	using UTF8String  = _String<StringEncoding::eUTF8>;
-	using UTF16String = _String<StringEncoding::eUTF16>;
-	using String = _String<DEFAULT_STRING_ENCODING>;
 
 	namespace literals {
 		constexpr sl::utils::String operator ""_s(const char *str, std::size_t length);
-		constexpr sl::utils::UTF8String operator ""_s8(const char *str, std::size_t length);
-		constexpr sl::utils::UTF16String operator ""_s16(const char *str, std::size_t length);
 	} // namespace literals
 
 } // namespace sl::utils
