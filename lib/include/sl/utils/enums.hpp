@@ -25,6 +25,8 @@ namespace sl::utils {
 	namespace literals {
 		constexpr sl::utils::PackedEnumString operator ""_pes(const char *str, std::size_t length) noexcept;
 	} // namespace literals
+
+	using namespace sl::utils::literals;
 } // namespace sl::utils
 
 #include "sl/utils/enums.inl"
