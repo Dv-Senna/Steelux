@@ -5,8 +5,10 @@
 #include <sl/utils/endianness.hpp>
 #include <sl/utils/string.hpp>
 
+#include <ranges>
 #include <memory>
 #include <print>
+#include <vector>
 
 
 
@@ -38,10 +40,6 @@ class SandboxApp final : public sl::Application {
 			}
 
 			std::println("test3 : {}", test3.getData());
-
-			for (auto it {test2.crbegin()}; it != test2.crend(); ++it) {
-				std::println("{}", *it);
-			}
 		}
 
 		~SandboxApp() override {
