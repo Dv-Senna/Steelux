@@ -5,10 +5,9 @@
 #include <sl/utils/endianness.hpp>
 #include <sl/utils/string.hpp>
 
-#include <ranges>
 #include <memory>
 #include <print>
-#include <vector>
+#include <iostream>
 
 
 
@@ -57,32 +56,36 @@ class SandboxApp final : public sl::Application {
 			const sl::utils::String test2 {std::move(test)};
 			sl::utils::String test3 {test2};
 			std::println("test : {}", (std::size_t)test.getData());
-			std::println("test2 : {}", test2.getData());
-			std::println("test3 : {}", test3.getData());
+			std::println("test2 : {}", test2);
+			std::println("test3 : {}", test3);
 			test3[5] = '_';
-			std::println("test3 : {}", test3.getData());
+			std::println("test3 : {}", test3);
 
 			for (auto &c : test3) {
 				++c;
 			}
 
-			std::println("test3 : {}", test3.getData());
+			std::println("test3 : {}", test3);
 			test3.pushBack('Z');
 			test3.insert(test3.begin() + 5, '$');
-			std::println("INSERT test3 : {}", test3.getData());
+			std::println("INSERT test3 : {}", test3);
 
 			test3.popFront();
 			test3.erase(1, 3);
-			std::println("ERASE test3 : {}", test3.getData());
+			std::println("ERASE test3 : {}", test3);
 
 			test3[-1] = '@';
-			std::println("test3 : {}", test3.getData());
+			std::println("test3 : {}", test3);
 
 			test3 += test2;
-			std::println("BACK_CONCAT test3 : {}", test3.getData());
+			std::println("BACK_CONCAT test3 : {}", test3);
 
 			sl::utils::String test4 {test2 + " Hello " + test3 + " World !"};
-			std::println("test4 : {}", test4.getData());
+			std::println("test4 : {}", test4);
+			std::println("inline concat : {}", test2 + " Hello " + test3 + " World !");
+
+			std::cout << "Some test with iostream : " << test2 << std::endl;
+			std::cout << "Second test but with csv" << (test2 + test3) << std::endl;
 		}
 
 		~SandboxApp() override {

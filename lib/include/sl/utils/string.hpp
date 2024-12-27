@@ -30,7 +30,7 @@ namespace sl::utils {
 			template <typename Alloc = std::allocator<char>>
 			String(const char *str, std::ptrdiff_t length, Alloc *allocator = nullptr) noexcept;
 
-			String(ConcatStringView &&concatView) noexcept;
+			String(const ConcatStringView &concatView) noexcept;
 
 			~String();
 
@@ -137,8 +137,6 @@ namespace sl::utils {
 			void pushBack(const String &string) noexcept;
 			void pushBack(const ConcatStringView &view) noexcept;
 
-			inline operator String() const noexcept {return String(*this);}
-
 
 		private:
 			std::vector<const String*> m_strings;
@@ -171,6 +169,38 @@ namespace sl::utils {
 		constexpr sl::utils::String operator ""_s(const char *str, std::size_t length);
 	} // namespace literals
 
+
+	inline std::ostream &operator<<(std::ostream &stream, const sl::utils::String &string) noexcept {
+		if (string.getData() != nullptr)
+			stream << string.getData();
+		return stream;
+	}
+
+	inline std::ostream &operator<<(std::ostream &stream, const sl::utils::ConcatStringView &view) noexcept {
+		stream << sl::utils::String(view);
+		return stream;
+	}
+
 } // namespace sl::utils
+
+
+template <>
+class std::formatter<sl::utils::String> : public std::formatter<std::string> {
+	public:
+		inline auto format(const sl::utils::String &string, std::format_context &ctx) const noexcept {
+			if (string.getData() == nullptr)
+				return std::formatter<std::string>::format("", ctx);
+			return std::formatter<std::string>::format(string.getData(), ctx);
+		}
+};
+
+template <>
+class std::formatter<sl::utils::ConcatStringView> : public std::formatter<sl::utils::String> {
+	public:
+		inline auto format(const sl::utils::ConcatStringView &view, std::format_context &ctx) const noexcept {
+			return std::formatter<sl::utils::String>::format(sl::utils::String(view), ctx);
+		}
+};
+
 
 #include "sl/utils/string.inl"

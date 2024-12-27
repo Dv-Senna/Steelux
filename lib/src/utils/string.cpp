@@ -2,15 +2,17 @@
 
 
 namespace sl::utils {
-	String::String(ConcatStringView &&concatView) noexcept :
+	String::String(const ConcatStringView &concatView) noexcept :
 		m_allocator {concatView.m_strings.front()->copyAllocator()},
 		m_size {}
 	{
 		m_heap.capacity = 0;
-		
+
+		std::ptrdiff_t size {};
 		for (const String *string : concatView.m_strings)
-			m_size += string->getSize();
-		this->reserve(m_size);
+			size += string->getSize();
+		this->reserve(size);
+		m_size = size;
 
 		std::ptrdiff_t currentPosition {0};
 		for (const String *string : concatView.m_strings) {
