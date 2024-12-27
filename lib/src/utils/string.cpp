@@ -2,54 +2,15 @@
 
 
 namespace sl::utils {
-	String::String() noexcept :
-		m_size {0}
-	{
-		
-	}
-
-
-	String::String(const char *str) noexcept :
-		m_size {0}
-	{
-		for (const char *current {str}; *current != (char)'\0'; ++current) ++m_size;
-		if (m_size <= MAX_SSO_SIZE) {
-			std::memcpy(m_sso.buffer, str, m_size + 1);
-			m_size *= -1;
-			return;
-		}
-
-		m_heap.capacity = m_size + 1;
-		m_heap.start = reinterpret_cast<char*> (std::malloc(sizeof(char) * m_heap.capacity));
-		std::memcpy(m_heap.start, str, m_heap.capacity);
-	}
-
-
-	String::String(const char *str, std::ptrdiff_t length) noexcept :
-		m_size {length}
-	{
-		if (m_size <= MAX_SSO_SIZE) {
-			m_size *= -1;
-			std::memcpy(m_sso.buffer, str, length);
-			m_sso.buffer[length] = (char)'\0';
-			return;
-		}
-
-		m_heap.capacity = length + 1;
-		m_heap.start = reinterpret_cast<char*> (std::malloc(sizeof(char) * m_heap.capacity));
-		std::memcpy(m_heap.start, str, length);
-		m_heap.start[length] = (char)'\0';
-	}
-
-
 	String::~String() {
 		if (!this->m_isSSO())
-			std::free(m_heap.start);
+			m_allocator->deallocate(reinterpret_cast<std::byte*> (m_heap.start), m_heap.capacity);
 		m_size = 0;
 	}
 
 
 	String::String(const String &str) noexcept :
+		m_allocator {str.m_allocator->copy()},
 		m_size {str.m_size}
 	{
 		if (this->m_isSSO()) {
@@ -58,12 +19,16 @@ namespace sl::utils {
 		}
 
 		m_heap.capacity = str.getSize() + 1;
-		m_heap.start = reinterpret_cast<char*> (std::malloc(sizeof(char) * m_heap.capacity));
+		m_heap.start = reinterpret_cast<char*> (m_allocator->allocate(m_heap.capacity));
+		std::memcpy(m_heap.start, str.m_heap.start, m_heap.capacity);
 	}
 
 
 	const String &String::operator=(const String &str) noexcept {
 		this->~String();
+
+		m_allocator = str.m_allocator->copy();
+		m_size = str.m_size;
 
 		if (this->m_isSSO()) {
 			std::memcpy(m_sso.buffer, str.m_sso.buffer, str.getSize() + 1);
@@ -71,12 +36,13 @@ namespace sl::utils {
 		}
 
 		m_heap.capacity = str.getSize() + 1;
-		m_heap.start = reinterpret_cast<char*> (std::malloc(sizeof(char) * m_heap.capacity));
+		m_heap.start = reinterpret_cast<char*> (m_allocator->allocate(m_heap.capacity));
 		return *this;
 	}
 
 
 	String::String(String &&str) noexcept :
+		m_allocator {std::move(str.m_allocator)},
 		m_size {str.m_size}
 	{
 		if (this->m_isSSO()) {
@@ -97,7 +63,9 @@ namespace sl::utils {
 	const String &String::operator=(String &&str) noexcept {
 		this->~String();
 
+		m_allocator = std::move(str.m_allocator);
 		m_size = str.m_size;
+
 		if (this->m_isSSO()) {
 			std::memcpy(m_sso.buffer, str.m_sso.buffer, str.getSize() + 1);
 			std::memset(str.m_sso.buffer, 0, sizeof(m_heap));
@@ -121,7 +89,7 @@ namespace sl::utils {
 			return capacity - 1;
 
 		if (this->m_isSSO()) {
-			char *buffer {reinterpret_cast<char*> (std::malloc(sizeof(char) * newSize))};
+			char *buffer {reinterpret_cast<char*> (m_allocator->allocate(newSize))};
 			std::memcpy(buffer, m_sso.buffer, sizeof(char) * newSize);
 			m_heap.capacity = newSize;
 			m_heap.start = buffer;
@@ -129,8 +97,11 @@ namespace sl::utils {
 			return newSize - 1;
 		}
 
+		char *tmp {reinterpret_cast<char*> (m_allocator->allocate(newSize))};
+		std::memcpy(tmp, m_heap.start, sizeof(char) * m_heap.capacity);
+		m_allocator->deallocate(reinterpret_cast<std::byte*> (m_heap.start), m_heap.capacity);
 		m_heap.capacity = newSize;
-		m_heap.start = reinterpret_cast<char*> (std::realloc(m_heap.start, sizeof(char) * m_heap.capacity));
+		m_heap.start = tmp;
 		return newSize - 1;
 	}
 

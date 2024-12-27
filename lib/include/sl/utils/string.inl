@@ -6,6 +6,55 @@
 
 
 namespace sl::utils {
+	template <typename Alloc>
+	String::String(Alloc *allocator) noexcept :
+		m_allocator {allocator == nullptr ? std::make_unique<sl::memory::AllocatorViewFactory<Alloc>> ()
+			: std::make_unique<sl::memory::AllocatorViewFactory<Alloc>> (*allocator)},
+		m_size {0}
+	{
+
+	}
+
+
+	template <typename Alloc>
+	String::String(const char *str, Alloc *allocator) noexcept :
+		m_allocator {allocator == nullptr ? std::make_unique<sl::memory::AllocatorViewFactory<Alloc>> ()
+			: std::make_unique<sl::memory::AllocatorViewFactory<Alloc>> (*allocator)},
+		m_size {0}
+	{
+		for (const char *current {str}; *current != (char)'\0'; ++current) ++m_size;
+		if (m_size <= MAX_SSO_SIZE) {
+			std::memcpy(m_sso.buffer, str, m_size + 1);
+			m_size *= -1;
+			return;
+		}
+
+		m_heap.capacity = m_size + 1;
+		m_heap.start = reinterpret_cast<char*> (m_allocator->allocate(m_heap.capacity));
+		std::memcpy(m_heap.start, str, m_heap.capacity);
+	}
+
+
+	template <typename Alloc>
+	String::String(const char *str, std::ptrdiff_t length, Alloc *allocator) noexcept :
+		m_allocator {allocator == nullptr ? std::make_unique<sl::memory::AllocatorViewFactory<Alloc>> ()
+			: std::make_unique<sl::memory::AllocatorViewFactory<Alloc>> (*allocator)},
+		m_size {length}
+	{
+		if (m_size <= MAX_SSO_SIZE) {
+			m_size *= -1;
+			std::memcpy(m_sso.buffer, str, length);
+			m_sso.buffer[length] = (char)'\0';
+			return;
+		}
+
+		m_heap.capacity = length + 1;
+		m_heap.start = reinterpret_cast<char*> (m_allocator->allocate(m_heap.capacity));
+		std::memcpy(m_heap.start, str, length);
+		m_heap.start[length] = (char)'\0';
+	}
+
+
 	char *String::getData() noexcept {
 		if (m_size == 0)
 			return nullptr;

@@ -1,9 +1,10 @@
 #pragma once
 
 #include <cstddef>
+#include <memory>
 #include <ranges>
-#include <vector>
 
+#include "sl/memory/allocator.hpp"
 #include "sl/utils/iterator.hpp"
 
 
@@ -18,9 +19,12 @@ namespace sl::utils {
 			using reverse_iterator = sl::utils::ReverseContinousIterator<String, char>;
 			using const_reverse_iterator = sl::utils::ReverseContinousIterator<const String, const char>;
 
-			String() noexcept;
-			String(const char *str) noexcept;
-			String(const char *str, std::ptrdiff_t length) noexcept;
+			template <typename Alloc = std::allocator<char>>
+			String(Alloc *allocator = nullptr) noexcept;
+			template <typename Alloc = std::allocator<char>>
+			String(const char *str, Alloc *allocator = nullptr) noexcept;
+			template <typename Alloc = std::allocator<char>>
+			String(const char *str, std::ptrdiff_t length, Alloc *allocator = nullptr) noexcept;
 
 			~String();
 
@@ -85,6 +89,7 @@ namespace sl::utils {
 		private:
 			inline bool m_isSSO() const noexcept;
 
+			std::unique_ptr<sl::memory::AllocatorView> m_allocator;
 			// not counting null-terminating character
 			std::ptrdiff_t m_size;
 
