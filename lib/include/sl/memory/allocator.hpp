@@ -4,6 +4,8 @@
 #include <expected>
 #include <memory>
 
+#include "sl/memory/debugAllocator.hpp"
+
 
 namespace sl::memory {
 	class AllocatorView {
@@ -36,6 +38,15 @@ namespace sl::memory {
 		private:
 			Alloc *m_allocator;
 	};
+
+
+#ifndef NDEBUG
+	template <typename T>
+	using DefaultAllocator = sl::memory::DebugAllocator<T>;
+#else
+	template <typename T>
+	using DefaultAllocator = std::allocator<T>;
+#endif
 
 } // namespace sl::memory
 

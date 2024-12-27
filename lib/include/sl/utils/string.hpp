@@ -23,11 +23,11 @@ namespace sl::utils {
 			using reverse_iterator = sl::utils::ReverseContinousIterator<String, char>;
 			using const_reverse_iterator = sl::utils::ReverseContinousIterator<const String, const char>;
 
-			template <typename Alloc = std::allocator<char>>
+			template <typename Alloc = sl::memory::DefaultAllocator<char>>
 			String(Alloc *allocator = nullptr) noexcept;
-			template <typename Alloc = std::allocator<char>>
+			template <typename Alloc = sl::memory::DefaultAllocator<char>>
 			String(const char *str, Alloc *allocator = nullptr) noexcept;
-			template <typename Alloc = std::allocator<char>>
+			template <typename Alloc = sl::memory::DefaultAllocator<char>>
 			String(const char *str, std::ptrdiff_t length, Alloc *allocator = nullptr) noexcept;
 
 			String(const ConcatStringView &concatView) noexcept;

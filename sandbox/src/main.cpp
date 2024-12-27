@@ -19,28 +19,6 @@ struct SBO {
 
 using namespace sl::utils::literals;
 
-template <typename T>
-class DebugAllocator {
-	public:
-		using value_type = T;
-		DebugAllocator() : m_allocationCount {0} {}
-		~DebugAllocator() {
-			std::println("Debug allocator :\n\tallocation count : {}", m_allocationCount);
-		}
-
-		[[nodiscard]] T *allocate(std::size_t n) {
-			++m_allocationCount;
-			return reinterpret_cast<T*> (std::malloc(sizeof(T) * n));
-		}
-
-		void deallocate(T *ptr, std::size_t n) {
-			std::free(ptr);
-		}
-
-	private:
-		std::size_t m_allocationCount;
-};
-
 
 class SandboxApp final : public sl::Application {
 	public:
@@ -50,9 +28,9 @@ class SandboxApp final : public sl::Application {
 
 			std::println("std::string : {}/{}, sl::utils::String : {}/{}", alignof(std::string), sizeof(std::string), alignof(sl::utils::String), sizeof(sl::utils::String));
 
-			DebugAllocator<char> debugAllocator {};
+			sl::memory::DebugAllocator<char> debugAllocator {};
 
-			sl::utils::String test {"ABCDEFGHIJKLMNOPQRSTUVW", &debugAllocator};
+			sl::utils::String test {"ABCDEFGHIJKLMNOPQRSTUVW"};
 			const sl::utils::String test2 {std::move(test)};
 			sl::utils::String test3 {test2};
 			std::println("test : {}", (std::size_t)test.getData());
