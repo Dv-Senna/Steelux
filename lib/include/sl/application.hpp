@@ -1,9 +1,8 @@
 #pragma once
 
-#include <string>
-
 #include "sl/core.hpp"
 #include "sl/result.hpp"
+#include "sl/utils/string.hpp"
 
 
 
@@ -11,7 +10,7 @@ namespace sl {
 	class SL_CORE Application {
 		public:
 			struct Infos {
-				std::string name;
+				sl::utils::String name;
 			};
 
 			Application() noexcept = default;

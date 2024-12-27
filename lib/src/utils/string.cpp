@@ -2,6 +2,25 @@
 
 
 namespace sl::utils {
+	String::String(ConcatStringView &&concatView) noexcept :
+		m_allocator {concatView.m_strings.front()->copyAllocator()},
+		m_size {}
+	{
+		m_heap.capacity = 0;
+		
+		for (const String *string : concatView.m_strings)
+			m_size += string->getSize();
+		this->reserve(m_size);
+
+		std::ptrdiff_t currentPosition {0};
+		for (const String *string : concatView.m_strings) {
+			std::memcpy(this->begin().getPtr() + currentPosition, string->begin().getPtr(), string->getSize());
+			currentPosition += string->getSize();
+		}
+		this->begin().getPtr()[m_size] = '\0';
+	}
+
+
 	String::~String() {
 		if (!this->m_isSSO())
 			m_allocator->deallocate(reinterpret_cast<std::byte*> (m_heap.start), m_heap.capacity);
@@ -183,6 +202,54 @@ namespace sl::utils {
 		std::memcpy(this->begin().getPtr() + this->getSize(), string.begin().getPtr(), string.getSize() + 1);
 		m_size = totalSize;
 		return *this;
+	}
+
+
+
+
+
+	ConcatStringView::ConcatStringView() noexcept : m_strings {} {
+		m_strings.reserve(4);
+	}
+
+	ConcatStringView::~ConcatStringView() {}
+
+
+	ConcatStringView::ConcatStringView(const ConcatStringView &view) noexcept : m_strings {view.m_strings} {}
+
+
+	const ConcatStringView &ConcatStringView::operator=(const ConcatStringView &view) noexcept {
+		m_strings = view.m_strings;
+		return *this;
+	}
+
+
+	ConcatStringView::ConcatStringView(ConcatStringView &&view) noexcept : m_strings {std::move(view.m_strings)} {}
+
+
+	const ConcatStringView &ConcatStringView::operator=(ConcatStringView &&view) noexcept {
+		m_strings = std::move(view.m_strings);
+		return *this;
+	}
+
+
+	void ConcatStringView::pushFront(const String &string) noexcept {
+		m_strings.insert(m_strings.begin(), &string);
+	}
+
+
+	void ConcatStringView::pushFront(const ConcatStringView &view) noexcept {
+		m_strings.insert(m_strings.begin(), view.m_strings.begin(), view.m_strings.end());
+	}
+
+
+	void ConcatStringView::pushBack(const String &string) noexcept {
+		m_strings.push_back(&string);
+	}
+
+
+	void ConcatStringView::pushBack(const ConcatStringView &view) noexcept {
+		m_strings.insert(m_strings.end(), view.m_strings.begin(), view.m_strings.end());
 	}
 
 } // namespace sl::utils

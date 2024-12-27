@@ -49,6 +49,8 @@ class SandboxApp final : public sl::Application {
 			std::println("c8* : {}/{}, size_t : {}/{}, SBO : {}/{}", alignof(char8_t*), sizeof(char8_t*), alignof(std::size_t), sizeof(std::size_t), alignof(SBO), sizeof(SBO));
 			m_infos.name = "Sandbox";
 
+			std::println("std::string : {}/{}, sl::utils::String : {}/{}", alignof(std::string), sizeof(std::string), alignof(sl::utils::String), sizeof(sl::utils::String));
+
 			DebugAllocator<char> debugAllocator {};
 
 			sl::utils::String test {"ABCDEFGHIJKLMNOPQRSTUVW", &debugAllocator};
@@ -78,6 +80,9 @@ class SandboxApp final : public sl::Application {
 
 			test3 += test2;
 			std::println("BACK_CONCAT test3 : {}", test3.getData());
+
+			sl::utils::String test4 {test2 + " Hello " + test3 + " World !"};
+			std::println("test4 : {}", test4.getData());
 		}
 
 		~SandboxApp() override {

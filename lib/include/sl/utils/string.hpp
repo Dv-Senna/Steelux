@@ -3,16 +3,20 @@
 #include <cstddef>
 #include <memory>
 #include <ranges>
+#include <vector>
 
+#include "sl/core.hpp"
 #include "sl/memory/allocator.hpp"
 #include "sl/utils/iterator.hpp"
 
 
 namespace sl::utils {
+	class ConcatStringView;
+
 	/**
 	 * @brief A class that handles strings in Steelux
 	 */
-	class String final {
+	class SL_CORE String final {
 		public:
 			using iterator = sl::utils::ContinousIterator<String, char>;
 			using const_iterator = sl::utils::ContinousIterator<const String, const char>;
@@ -25,6 +29,8 @@ namespace sl::utils {
 			String(const char *str, Alloc *allocator = nullptr) noexcept;
 			template <typename Alloc = std::allocator<char>>
 			String(const char *str, std::ptrdiff_t length, Alloc *allocator = nullptr) noexcept;
+
+			String(ConcatStringView &&concatView) noexcept;
 
 			~String();
 
@@ -46,6 +52,7 @@ namespace sl::utils {
 			inline const char *getData() const noexcept;
 			inline std::ptrdiff_t getSize() const noexcept;
 			inline std::ptrdiff_t getCapacity() const noexcept;
+			inline std::unique_ptr<sl::memory::AllocatorView> copyAllocator() const noexcept {return m_allocator->copy();}
 
 			inline bool isEmpty() const noexcept {return m_size == 0;}
 
@@ -109,6 +116,55 @@ namespace sl::utils {
 
 
 	static_assert(std::ranges::random_access_range<String>, "String type must fullfill std::ranges::random_access_range concept");
+
+
+
+	class SL_CORE ConcatStringView final {
+		friend class String;
+
+		public:
+			ConcatStringView() noexcept;
+			~ConcatStringView();
+
+			ConcatStringView(const ConcatStringView &view) noexcept;
+			const ConcatStringView &operator=(const ConcatStringView &view) noexcept;
+
+			ConcatStringView(ConcatStringView &&view) noexcept;
+			const ConcatStringView &operator=(ConcatStringView &&view) noexcept;
+
+			void pushFront(const String &string) noexcept;
+			void pushFront(const ConcatStringView &view) noexcept;
+			void pushBack(const String &string) noexcept;
+			void pushBack(const ConcatStringView &view) noexcept;
+
+			inline operator String() const noexcept {return String(*this);}
+
+
+		private:
+			std::vector<const String*> m_strings;
+	};
+
+	inline ConcatStringView operator+(const String &lhs, const String &rhs) noexcept {
+		ConcatStringView view {};
+		view.pushBack(lhs);
+		view.pushBack(rhs);
+		return view;
+	}
+
+	inline ConcatStringView operator+(ConcatStringView lhs, const String &rhs) noexcept {
+		lhs.pushBack(rhs);
+		return lhs;
+	}
+
+	inline ConcatStringView operator+(const String &lhs, ConcatStringView rhs) noexcept {
+		rhs.pushFront(lhs);
+		return rhs;
+	}
+
+	inline ConcatStringView operator+(ConcatStringView lhs, const ConcatStringView &rhs) noexcept {
+		lhs.pushBack(rhs);
+		return lhs;
+	}
 
 
 	namespace literals {
