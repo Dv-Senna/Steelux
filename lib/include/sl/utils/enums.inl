@@ -9,7 +9,7 @@
 
 namespace sl::utils {
 	template <sl::utils::StringEnum Enum>
-	std::string toString(Enum value) {
+	sl::utils::String toString(Enum value) {
 		return toString(static_cast<sl::utils::PackedEnumString> (value));
 	}
 

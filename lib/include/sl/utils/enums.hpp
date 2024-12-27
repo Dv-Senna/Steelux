@@ -1,8 +1,9 @@
 #pragma once
 
 #include <cstdint>
-#include <string>
 #include <type_traits>
+
+#include "sl/utils/string.hpp"
 
 
 namespace sl::utils {
@@ -17,9 +18,9 @@ namespace sl::utils {
 		std::is_same_v<std::underlying_type_t<T>, sl::utils::PackedEnumString>;
 	};
 
-	std::string toString(PackedEnumString value);
+	sl::utils::String toString(PackedEnumString value);
 	template <sl::utils::StringEnum Enum>
-	inline std::string toString(Enum value);
+	inline sl::utils::String toString(Enum value);
 
 
 	namespace literals {

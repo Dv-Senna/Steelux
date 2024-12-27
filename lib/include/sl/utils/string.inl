@@ -12,7 +12,7 @@ namespace sl::utils {
 			: std::make_unique<sl::memory::AllocatorViewFactory<Alloc>> (*allocator)},
 		m_size {0}
 	{
-
+		std::memset(m_sso.buffer, 0, MAX_SSO_SIZE);
 	}
 
 
