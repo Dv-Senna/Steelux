@@ -50,6 +50,9 @@ class SandboxApp final : public sl::Application {
 
 			test3[-1] = '@';
 			std::println("test3 : {}", test3.getData());
+
+			test3 += test2;
+			std::println("BACK_CONCAT test3 : {}", test3.getData());
 		}
 
 		~SandboxApp() override {

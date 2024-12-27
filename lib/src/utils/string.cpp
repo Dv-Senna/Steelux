@@ -122,7 +122,7 @@ namespace sl::utils {
 
 		if (this->m_isSSO()) {
 			char *buffer {reinterpret_cast<char*> (std::malloc(sizeof(char) * newSize))};
-			std::memcpy(m_sso.buffer, buffer, sizeof(char) * newSize);
+			std::memcpy(buffer, m_sso.buffer, sizeof(char) * newSize);
 			m_heap.capacity = newSize;
 			m_heap.start = buffer;
 			m_size *= -1;
@@ -199,6 +199,19 @@ namespace sl::utils {
 			m_size += end - start;
 		else
 			m_size -= end - start;
+	}
+
+
+	String &String::operator+=(const String &string) noexcept {
+		if (string.isEmpty())
+			return *this;
+
+		const std::ptrdiff_t totalSize {this->getSize() + string.getSize()};
+		if (totalSize + 1 > this->getCapacity())
+			this->reserve(totalSize);
+		std::memcpy(this->begin().getPtr() + this->getSize(), string.begin().getPtr(), string.getSize() + 1);
+		m_size = totalSize;
+		return *this;
 	}
 
 } // namespace sl::utils

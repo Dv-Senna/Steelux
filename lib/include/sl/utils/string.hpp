@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <ranges>
+#include <vector>
 
 #include "sl/utils/iterator.hpp"
 
@@ -64,6 +65,8 @@ namespace sl::utils {
 			inline void erase(reverse_iterator start, reverse_iterator end) noexcept {this->erase(start - this->rbegin(), end - this->rbegin());}
 			inline void popFront() noexcept {this->erase(0);}
 			inline void popBack() noexcept {this->erase(m_size - 1);}
+
+			String &operator+=(const String &string) noexcept;
 
 			inline iterator begin() noexcept;
 			inline iterator end() noexcept;
