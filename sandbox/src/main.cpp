@@ -40,6 +40,16 @@ class SandboxApp final : public sl::Application {
 			}
 
 			std::println("test3 : {}", test3.getData());
+			test3.pushBack('Z');
+			test3.insert(test3.begin() + 5, '$');
+			std::println("INSERT test3 : {}", test3.getData());
+
+			test3.popFront();
+			test3.erase(1, 3);
+			std::println("ERASE test3 : {}", test3.getData());
+
+			test3[-1] = '@';
+			std::println("test3 : {}", test3.getData());
 		}
 
 		~SandboxApp() override {

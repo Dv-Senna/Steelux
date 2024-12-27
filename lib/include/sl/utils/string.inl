@@ -24,7 +24,14 @@ namespace sl::utils {
 	}
 
 
-	std::size_t String::getCapacity() const noexcept {
+	std::ptrdiff_t String::getSize() const noexcept {
+		if (this->m_isSSO())
+			return -m_size;
+		return m_size;
+	}
+
+
+	std::ptrdiff_t String::getCapacity() const noexcept {
 		if (this->m_isSSO())
 			return MAX_SSO_SIZE + 1;
 		return m_heap.capacity;
@@ -32,21 +39,27 @@ namespace sl::utils {
 
 
 	bool String::m_isSSO() const noexcept {
-		return m_size <= MAX_SSO_SIZE;
+		return m_size <= 0;
 	}
 
 
-	char &String::operator[](std::size_t index) noexcept {
+	char &String::operator[](std::ptrdiff_t index) noexcept {
+		char *buffer {m_heap.start};
 		if (this->m_isSSO())
-			return m_sso.buffer[index];
-		return m_sso.buffer[index];
+			buffer = m_sso.buffer;
+		if (index >= 0)
+			return buffer[index];
+		return buffer[this->getSize() + index];
 	}
 
 
-	const char &String::operator[](std::size_t index) const noexcept {
+	const char &String::operator[](std::ptrdiff_t index) const noexcept {
+		const char *buffer {m_heap.start};
 		if (this->m_isSSO())
-			return m_sso.buffer[index];
-		return m_sso.buffer[index];
+			buffer = m_sso.buffer;
+		if (index >= 0)
+			return buffer[index];
+		return buffer[this->getSize() + index];
 	}
 
 
@@ -59,8 +72,8 @@ namespace sl::utils {
 
 	String::iterator String::end() noexcept {
 		if (this->m_isSSO())
-			return iterator(this, m_sso.buffer + m_size);
-		return iterator(this, m_heap.start + m_size);
+			return iterator(this, m_sso.buffer + this->getSize());
+		return iterator(this, m_heap.start + this->getSize());
 	}
 
 
@@ -73,15 +86,15 @@ namespace sl::utils {
 
 	String::const_iterator String::cend() const noexcept {
 		if (this->m_isSSO())
-			return const_iterator(this, m_sso.buffer + m_size);
-		return const_iterator(this, m_heap.start + m_size);
+			return const_iterator(this, m_sso.buffer + this->getSize());
+		return const_iterator(this, m_heap.start + this->getSize());
 	}
 
 
 	String::reverse_iterator String::rbegin() noexcept {
 		if (this->m_isSSO())
-			return reverse_iterator(this, m_sso.buffer + m_size - 1);
-		return reverse_iterator(this, m_heap.start + m_size - 1);
+			return reverse_iterator(this, m_sso.buffer + this->getSize() - 1);
+		return reverse_iterator(this, m_heap.start + this->getSize() - 1);
 	}
 
 
@@ -94,8 +107,8 @@ namespace sl::utils {
 
 	String::const_reverse_iterator String::crbegin() const noexcept {
 		if (this->m_isSSO())
-			return const_reverse_iterator(this, m_sso.buffer + m_size - 1);
-		return const_reverse_iterator(this, m_heap.start + m_size - 1);
+			return const_reverse_iterator(this, m_sso.buffer + this->getSize() - 1);
+		return const_reverse_iterator(this, m_heap.start + this->getSize() - 1);
 	}
 
 

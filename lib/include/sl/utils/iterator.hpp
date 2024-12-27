@@ -28,6 +28,10 @@ namespace sl::utils {
 
 			ContinousIterator<Cont, T> &operator+=(difference_type diff) noexcept;
 			ContinousIterator<Cont, T> &operator-=(difference_type diff) noexcept;
+			template <std::integral DIFF>
+			inline ContinousIterator<Cont, T> &operator+=(DIFF diff) noexcept {return *this += static_cast<difference_type> (diff);}
+			template <std::integral DIFF>
+			inline ContinousIterator<Cont, T> &operator-=(DIFF diff) noexcept {return *this -= static_cast<difference_type> (diff);}
 
 			ContinousIterator<Cont, T> &operator++() noexcept;
 			ContinousIterator<Cont, T> operator++(int) noexcept;
@@ -36,6 +40,10 @@ namespace sl::utils {
 
 			ContinousIterator<Cont, T> operator+(difference_type diff) const noexcept;
 			ContinousIterator<Cont, T> operator-(difference_type diff) const noexcept;
+			template <std::integral DIFF>
+			inline ContinousIterator<Cont, T> operator+(DIFF diff) const noexcept {return *this + static_cast<difference_type> (diff);}
+			template <std::integral DIFF>
+			inline ContinousIterator<Cont, T> operator-(DIFF diff) const noexcept {return *this - static_cast<difference_type> (diff);}
 
 			difference_type operator-(const ContinousIterator<Cont, T> &iterator) const noexcept;
 
@@ -45,7 +53,7 @@ namespace sl::utils {
 			reference operator[](difference_type diff) const noexcept;
 
 			Cont *getContainer() const noexcept {return m_container;}
-			pointer getPtr() const noexcept {return m_container;}
+			pointer getPtr() const noexcept {return m_ptr;}
 
 
 		protected:
@@ -83,6 +91,10 @@ namespace sl::utils {
 
 			ReverseContinousIterator<Cont, T> &operator+=(difference_type diff) noexcept;
 			ReverseContinousIterator<Cont, T> &operator-=(difference_type diff) noexcept;
+			template <std::integral DIFF>
+			inline ContinousIterator<Cont, T> &operator+=(DIFF diff) noexcept {return *this += static_cast<difference_type> (diff);}
+			template <std::integral DIFF>
+			inline ContinousIterator<Cont, T> &operator-=(DIFF diff) noexcept {return *this -= static_cast<difference_type> (diff);}
 
 			ReverseContinousIterator<Cont, T> &operator++() noexcept;
 			ReverseContinousIterator<Cont, T> operator++(int) noexcept;
@@ -91,6 +103,10 @@ namespace sl::utils {
 
 			ReverseContinousIterator<Cont, T> operator+(difference_type diff) const noexcept;
 			ReverseContinousIterator<Cont, T> operator-(difference_type diff) const noexcept;
+			template <std::integral DIFF>
+			inline ContinousIterator<Cont, T> operator+(DIFF diff) const noexcept {return *this + static_cast<difference_type> (diff);}
+			template <std::integral DIFF>
+			inline ContinousIterator<Cont, T> operator-(DIFF diff) const noexcept {return *this - static_cast<difference_type> (diff);}
 
 			difference_type operator-(const ReverseContinousIterator<Cont, T> &iterator) const noexcept;
 
@@ -100,7 +116,7 @@ namespace sl::utils {
 			reference operator[](difference_type diff) const noexcept;
 
 			Cont *getContainer() const noexcept {return m_container;}
-			pointer getPtr() const noexcept {return m_container;}
+			pointer getPtr() const noexcept {return m_ptr;}
 
 
 		protected:
@@ -115,8 +131,8 @@ namespace sl::utils {
 
 
 
-	static_assert(std::random_access_iterator<ContinousIterator<void, char>>);
-	static_assert(std::random_access_iterator<ReverseContinousIterator<void, char>>);
+	static_assert(std::random_access_iterator<ContinousIterator<void, char>>, "ContinousIterator must fullfill std::random_access_iterator");
+	static_assert(std::random_access_iterator<ReverseContinousIterator<void, char>>, "ReverseContinousIteartor must fullfill std::random_access_iterator");
 } // namespace sl::utils
 
 #include "sl/utils/iterator.inl"
