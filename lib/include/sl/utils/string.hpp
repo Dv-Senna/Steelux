@@ -204,3 +204,8 @@ class std::formatter<sl::utils::ConcatStringView> : public std::formatter<sl::ut
 
 
 #include "sl/utils/string.inl"
+
+
+namespace sl {
+	using String = sl::utils::String;
+} // namespace sl

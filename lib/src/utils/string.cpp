@@ -166,6 +166,7 @@ namespace sl::utils {
 			--m_size;
 		else
 			++m_size;
+		*this->end().getPtr() = '\0';
 		return it;
 	}
 

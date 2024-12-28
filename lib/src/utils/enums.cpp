@@ -1,10 +1,8 @@
 #include "sl/utils/enums.hpp"
 
-#include <print>
-
 
 namespace sl::utils {
-	sl::utils::String toString(sl::utils::PackedEnumString value) {
+	sl::String toString(sl::utils::PackedEnumString value) noexcept {
 		constexpr std::size_t MAX_STRING_SIZE {10};
 		constexpr std::size_t CHARACTER_SIZE {6};
 		constexpr std::size_t CHARACTER_FILTER {0b00111111};

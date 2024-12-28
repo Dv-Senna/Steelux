@@ -9,9 +9,30 @@
 
 namespace sl::utils {
 	template <sl::utils::StringEnum Enum>
-	sl::utils::String toString(Enum value) {
+	sl::String toString(Enum value) noexcept {
 		return toString(static_cast<sl::utils::PackedEnumString> (value));
 	}
+
+
+	template <sl::utils::FlagEnum Enum>
+	sl::String toString(const FlagField<Enum> &field) noexcept {
+		std::size_t size {0};
+		for (auto value {static_cast<sl::utils::FlagEnumBit> (field)}; value != 0; value >>= 1) ++size;
+		if (size == 0)
+			size = 1;
+		sl::String result {};
+		result.reserve(size);
+
+		for (auto mask {static_cast<sl::utils::FlagEnumBit> (1ULL << (size - 1))}; mask != 0; mask >>= 1)
+			result.pushBack(field & static_cast<Enum> (mask) ? '1' : '0');
+		return result;
+	}
+
+	template <sl::utils::FlagEnum Enum>
+	sl::String toString(Enum flag) noexcept {
+		return toString(FlagField<Enum> (flag));
+	}
+
 
 	namespace literals {
 		constexpr sl::utils::PackedEnumString operator ""_pes(const char *str, std::size_t length) noexcept {
@@ -42,6 +63,12 @@ namespace sl::utils {
 
 			#undef __FAILURE
 		}
+
+
+		constexpr sl::utils::FlagEnumBit operator ""_feb(unsigned long long position) noexcept {
+			return static_cast<FlagEnumBit> (1 << position);
+		}
+
 	} // namespace literals
 
 } // namespace sl::utils
