@@ -181,6 +181,12 @@ namespace sl::utils {
 		return stream;
 	}
 
+
+	template <std::integral T>
+	std::optional<T> stringToNumber(const sl::utils::String &string);
+	template <std::floating_point T>
+	std::optional<T> stringToNumber(const sl::utils::String &string);
+
 } // namespace sl::utils
 
 

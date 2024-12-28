@@ -66,7 +66,6 @@ class SandboxApp final : public sl::Application {
 			std::cout << "Some test with iostream : " << test2 << std::endl;
 			std::cout << "Second test but with csv" << (test2 + test3) << std::endl;
 
-
 			std::println("severity : {}", sl::utils::LogSeverity::eWarn | sl::utils::LogSeverity::eInfo);
 			std::println("severity2 : {}", sl::utils::toString(~sl::utils::LogSeverity::eWarn));
 		}

@@ -2,7 +2,9 @@
 
 #include "sl/utils/string.hpp"
 
+#include <cmath>
 #include <cstring>
+#include <map>
 
 
 namespace sl::utils {
@@ -165,6 +167,71 @@ namespace sl::utils {
 		if (this->m_isSSO())
 			return const_reverse_iterator(this, m_sso.buffer - 1);
 		return const_reverse_iterator(this, m_heap.start - 1);
+	}
+
+
+	template <std::integral T>
+	std::optional<T> stringToNumber(const sl::utils::String &string) {
+		static const std::map<T, sl::utils::String> allowedDigits {
+			{2, "01"},
+			{8, "01234567"},
+			{10, "0123456789"},
+			{16, "0123456789abcdef"}
+		};
+
+		T result {0};
+		if (string.isEmpty())
+			return std::nullopt;
+		bool isPositive {true};
+
+		auto it {string.begin()};
+		if (*it == '-') {
+			if constexpr (std::unsigned_integral<T>)
+				return std::nullopt;
+			else {
+				if (string.getSize() == 1)
+					return std::nullopt;
+				isPositive = false;
+				++it;
+			}
+		}
+
+		T base {10};
+		if (*it == '0') {
+			++it;
+			if (*it == 'b') {
+				base = 2;
+				++it;
+			}
+			else if (*it == 'x') {
+				base = 16;
+				++it;
+			}
+			else if (*it == 'o') {
+				base = 8;
+				++it;
+			}
+		}
+
+		const sl::utils::String &baseDigits {allowedDigits.find(base)->second};
+
+		for (; it != string.end(); ++it) {
+			auto digit {std::ranges::find(baseDigits, *it)};
+			if (digit == baseDigits.end())
+				return std::nullopt;
+			T value {static_cast<T> (digit - baseDigits.begin())};
+			T position {static_cast<T> (string.end() - it - 1)};
+			value *= std::pow(base, position);
+			result += value;
+		}
+
+		return isPositive ? result : -result;
+	}
+
+
+	template <std::floating_point T>
+	std::optional<T> stringToNumber(const sl::utils::String &string) {
+		T result {0};
 	}
 
 
