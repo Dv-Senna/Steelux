@@ -2,6 +2,7 @@
 
 #include "sl/utils/string.hpp"
 
+#include <algorithm>
 #include <cmath>
 #include <cstring>
 #include <map>
@@ -196,6 +197,9 @@ namespace sl::utils {
 			}
 		}
 
+		else if (*it == '+')
+			++it;
+
 		T base {10};
 		if (*it == '0') {
 			++it;
@@ -220,7 +224,7 @@ namespace sl::utils {
 			if (digit == baseDigits.end())
 				return std::nullopt;
 			T value {static_cast<T> (digit - baseDigits.begin())};
-			T position {static_cast<T> (string.end() - it - 1)};
+			const T position {static_cast<T> (string.end() - it - 1)};
 			value *= std::pow(base, position);
 			result += value;
 		}
@@ -231,7 +235,67 @@ namespace sl::utils {
 
 	template <std::floating_point T>
 	std::optional<T> stringToNumber(const sl::utils::String &string) {
+		static const sl::utils::String digits {"0123456789"};
+
 		T result {0};
+		T exponant {0};
+		if (string.isEmpty())
+			return std::nullopt;
+		bool isPositive {true};
+		auto it {string.begin()};
+		if (*it == '-') {
+			if (string.getSize() == 1)
+				return std::nullopt;
+			isPositive = false;
+			++it;
+		}
+
+		if (std::ranges::count(string, '.') > 1)
+			return std::nullopt;
+		if (std::ranges::count(string, 'e') > 1)
+			return std::nullopt;
+		auto dotIt {std::ranges::find(string, '.')};
+		auto sciIt {std::ranges::find(string, 'e')};
+		if (dotIt != string.end() && dotIt > sciIt)
+			return std::nullopt;
+
+		bool exponentIsPositive {true};
+		for (; it != string.end(); ++it) {
+			if (it == dotIt || it == sciIt)
+				continue;
+
+			if (it == sciIt + 1) {
+				if (*it == '-') {
+					exponentIsPositive = false;
+					continue;
+				}
+				if (*it == '+')
+					continue;
+			}
+
+			auto digit {std::ranges::find(digits, *it)};
+			if (digit == digits.end())
+				return std::nullopt;
+			T value {static_cast<T> (digit - digits.begin())};
+
+			if (it > sciIt) {
+				const T position {static_cast<T> (string.end() - it - 1)};
+				value *= std::pow(static_cast<T> (10), position);
+				exponant += value;
+				continue;
+			}
+
+			T position {};
+			if (it > dotIt)
+				position = static_cast<T> (dotIt - it);
+			else
+				position = static_cast<T> (std::min(dotIt, sciIt) - it - 1);
+			value *= std::pow(static_cast<T> (10), position);
+			result += value;
+		}
+
+		result *= std::pow(static_cast<T> (10), exponentIsPositive ? exponant : -exponant);
+		return isPositive ? result : -result;
 	}
 
 
