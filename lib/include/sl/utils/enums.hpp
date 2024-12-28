@@ -128,19 +128,45 @@ struct std::formatter<Enum> : std::formatter<sl::String> {
 };
 
 
+
 template <sl::utils::FlagEnum Enum>
 struct std::formatter<sl::utils::FlagField<Enum>> {
-	std::int32_t bitShown {-1};
+	std::int32_t m_bitShown {-1};
 
 	constexpr auto parse(std::format_parse_context &ctx) {
 		auto it {ctx.begin()};
 		if (it == ctx.end())
 			return it;
+		sl::String text {};
+		text.reserve(ctx.begin() - ctx.end());
+		for (; it != ctx.end() - 1; ++it) text.pushBack(*it);
+		if (text.getSize() == 0)
+			return it;
+
+		auto bitShown {sl::utils::stringToNumber<std::int32_t> (text)};
+		if (!bitShown)
+			throw std::format_error("Invalid format args for sl::utils::FlagField<Enum>. The argument must be an integer");
+		m_bitShown = *bitShown;
 		return it;
 	}
 
 	inline auto format(const sl::utils::FlagField<Enum> &field, std::format_context &ctx) const noexcept {
 		sl::String text {sl::utils::toString(field)};
+		if (m_bitShown < 0)
+			return std::ranges::copy(text, ctx.out()).out;
+
+		if (text.getSize() > m_bitShown) {
+			while (text.getSize() != m_bitShown)
+				text.popFront();
+		}
+
+		else if (text.getSize() < m_bitShown) {
+			sl::String missing {};
+			missing.reserve(m_bitShown - text.getSize());
+			for (auto i {text.getSize()}; i != m_bitShown; ++i)
+				missing.pushBack('0');
+			text = missing + text;
+		}
 		return std::ranges::copy(text, ctx.out()).out;
 	}
 };

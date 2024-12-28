@@ -24,15 +24,15 @@ namespace sl::utils {
 			using const_reverse_iterator = sl::utils::ReverseContinousIterator<const String, const char>;
 
 			template <typename Alloc = sl::memory::DefaultAllocator<char>>
-			String(Alloc *allocator = nullptr) noexcept;
+			constexpr String(Alloc *allocator = nullptr) noexcept;
 			template <typename Alloc = sl::memory::DefaultAllocator<char>>
-			String(const char *str, Alloc *allocator = nullptr) noexcept;
+			constexpr String(const char *str, Alloc *allocator = nullptr) noexcept;
 			template <typename Alloc = sl::memory::DefaultAllocator<char>>
-			String(const char *str, std::ptrdiff_t length, Alloc *allocator = nullptr) noexcept;
+			constexpr String(const char *str, std::ptrdiff_t length, Alloc *allocator = nullptr) noexcept;
 
 			String(const ConcatStringView &concatView) noexcept;
 
-			~String();
+			constexpr ~String();
 
 			String(const String &str) noexcept;
 			const String &operator=(const String &str) noexcept;
@@ -46,55 +46,55 @@ namespace sl::utils {
 			 * @return The amount of space the string has available. May be bigger than `newSize`. Not including the
 			 *         null-terminating character
 			 */
-			std::ptrdiff_t reserve(std::ptrdiff_t newSize) noexcept;
+			constexpr std::ptrdiff_t reserve(std::ptrdiff_t newSize) noexcept;
 
-			inline char *getData() noexcept;
-			inline const char *getData() const noexcept;
-			inline std::ptrdiff_t getSize() const noexcept;
-			inline std::ptrdiff_t getCapacity() const noexcept;
-			inline std::unique_ptr<sl::memory::AllocatorView> copyAllocator() const noexcept {return m_allocator->copy();}
+			constexpr char *getData() noexcept;
+			constexpr const char *getData() const noexcept;
+			constexpr std::ptrdiff_t getSize() const noexcept;
+			constexpr std::ptrdiff_t getCapacity() const noexcept;
+			constexpr std::unique_ptr<sl::memory::AllocatorView> copyAllocator() const noexcept {return m_allocator->copy();}
 
-			inline bool isEmpty() const noexcept {return m_size == 0;}
+			constexpr bool isEmpty() const noexcept {return m_size == 0;}
 
-			inline char &operator[](std::ptrdiff_t index) noexcept;
-			inline const char &operator[](std::ptrdiff_t index) const noexcept;
+			constexpr char &operator[](std::ptrdiff_t index) noexcept;
+			constexpr const char &operator[](std::ptrdiff_t index) const noexcept;
 
-			iterator at(std::ptrdiff_t index) noexcept;
-			const_iterator at(std::ptrdiff_t index) const noexcept;
+			constexpr iterator at(std::ptrdiff_t index) noexcept;
+			constexpr const_iterator at(std::ptrdiff_t index) const noexcept;
 
-			iterator insert(std::ptrdiff_t index, char value) noexcept;
-			inline iterator insert(iterator position, char value) noexcept {return this->insert(position - this->begin(), value);}
-			inline iterator insert(reverse_iterator position, char value) noexcept {return this->insert(position - this->rbegin(), value);}
-			inline iterator pushFront(char value) noexcept {return this->insert(0, value);}
-			inline iterator pushBack(char value) noexcept {return this->insert(this->getSize(), value);}
+			constexpr iterator insert(std::ptrdiff_t index, char value) noexcept;
+			constexpr iterator insert(iterator position, char value) noexcept {return this->insert(position - this->begin(), value);}
+			constexpr iterator insert(reverse_iterator position, char value) noexcept {return this->insert(position - this->rbegin(), value);}
+			constexpr iterator pushFront(char value) noexcept {return this->insert(0, value);}
+			constexpr iterator pushBack(char value) noexcept {return this->insert(this->getSize(), value);}
 
-			void erase(std::ptrdiff_t index) noexcept;
-			inline void erase(iterator position) noexcept {this->erase(position - this->begin());}
-			inline void erase(reverse_iterator position) noexcept {this->erase(position - this->rbegin());}
-			void erase(std::ptrdiff_t start, std::ptrdiff_t end) noexcept;
-			inline void erase(iterator start, iterator end) noexcept {this->erase(start - this->begin(), end - this->begin());}
-			inline void erase(reverse_iterator start, reverse_iterator end) noexcept {this->erase(start - this->rbegin(), end - this->rbegin());}
-			inline void popFront() noexcept {this->erase(0);}
-			inline void popBack() noexcept {this->erase(m_size - 1);}
+			constexpr void erase(std::ptrdiff_t index) noexcept;
+			constexpr void erase(iterator position) noexcept {this->erase(position - this->begin());}
+			constexpr void erase(reverse_iterator position) noexcept {this->erase(position - this->rbegin());}
+			constexpr void erase(std::ptrdiff_t start, std::ptrdiff_t end) noexcept;
+			constexpr void erase(iterator start, iterator end) noexcept {this->erase(start - this->begin(), end - this->begin());}
+			constexpr void erase(reverse_iterator start, reverse_iterator end) noexcept {this->erase(start - this->rbegin(), end - this->rbegin());}
+			constexpr void popFront() noexcept {this->erase(0);}
+			constexpr void popBack() noexcept {this->erase(m_size - 1);}
 
 			String &operator+=(const String &string) noexcept;
 
-			inline iterator begin() noexcept;
-			inline iterator end() noexcept;
-			inline const_iterator cbegin() const noexcept;
-			inline const_iterator cend() const noexcept;
-			inline const_iterator begin() const noexcept {return this->cbegin();}
-			inline const_iterator end() const noexcept {return this->cend();}
-			inline reverse_iterator rbegin() noexcept;
-			inline reverse_iterator rend() noexcept;
-			inline const_reverse_iterator crbegin() const noexcept;
-			inline const_reverse_iterator crend() const noexcept;
-			inline const_reverse_iterator rbegin() const noexcept {return this->crbegin();}
-			inline const_reverse_iterator rend() const noexcept {return this->crend();}
+			constexpr iterator begin() noexcept;
+			constexpr iterator end() noexcept;
+			constexpr const_iterator cbegin() const noexcept;
+			constexpr const_iterator cend() const noexcept;
+			constexpr const_iterator begin() const noexcept {return this->cbegin();}
+			constexpr const_iterator end() const noexcept {return this->cend();}
+			constexpr reverse_iterator rbegin() noexcept;
+			constexpr reverse_iterator rend() noexcept;
+			constexpr const_reverse_iterator crbegin() const noexcept;
+			constexpr const_reverse_iterator crend() const noexcept;
+			constexpr const_reverse_iterator rbegin() const noexcept {return this->crbegin();}
+			constexpr const_reverse_iterator rend() const noexcept {return this->crend();}
 
 
 		private:
-			inline bool m_isSSO() const noexcept;
+			constexpr bool m_isSSO() const noexcept;
 
 			std::unique_ptr<sl::memory::AllocatorView> m_allocator;
 			// not counting null-terminating character
@@ -183,9 +183,9 @@ namespace sl::utils {
 
 
 	template <std::integral T>
-	std::optional<T> stringToNumber(const sl::utils::String &string);
+	constexpr std::optional<T> stringToNumber(const sl::utils::String &string);
 	template <std::floating_point T>
-	std::optional<T> stringToNumber(const sl::utils::String &string);
+	constexpr std::optional<T> stringToNumber(const sl::utils::String &string);
 
 } // namespace sl::utils
 

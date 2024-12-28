@@ -14,46 +14,46 @@ namespace sl::utils {
 			using pointer = T*;
 			using reference = T&;
 
-			ContinousIterator() noexcept;
-			ContinousIterator(Cont *container, pointer ptr) noexcept;
-			~ContinousIterator() = default;
+			constexpr ContinousIterator() noexcept;
+			constexpr ContinousIterator(Cont *container, pointer ptr) noexcept;
+			constexpr ~ContinousIterator() = default;
 
-			ContinousIterator(const ContinousIterator<Cont, T> &iterator) noexcept;
-			ContinousIterator<Cont, T> &operator=(const ContinousIterator<Cont, T> &iterator) noexcept;
+			constexpr ContinousIterator(const ContinousIterator<Cont, T> &iterator) noexcept;
+			constexpr ContinousIterator<Cont, T> &operator=(const ContinousIterator<Cont, T> &iterator) noexcept;
 
-			operator bool() const noexcept;
+			constexpr operator bool() const noexcept;
 
-			bool operator==(const ContinousIterator<Cont, T> &iterator) const noexcept;
-			std::partial_ordering operator<=>(const ContinousIterator<Cont, T> &iterator) const noexcept;
+			constexpr bool operator==(const ContinousIterator<Cont, T> &iterator) const noexcept;
+			constexpr std::partial_ordering operator<=>(const ContinousIterator<Cont, T> &iterator) const noexcept;
 
-			ContinousIterator<Cont, T> &operator+=(difference_type diff) noexcept;
-			ContinousIterator<Cont, T> &operator-=(difference_type diff) noexcept;
+			constexpr ContinousIterator<Cont, T> &operator+=(difference_type diff) noexcept;
+			constexpr ContinousIterator<Cont, T> &operator-=(difference_type diff) noexcept;
 			template <std::integral DIFF>
-			inline ContinousIterator<Cont, T> &operator+=(DIFF diff) noexcept {return *this += static_cast<difference_type> (diff);}
+			constexpr ContinousIterator<Cont, T> &operator+=(DIFF diff) noexcept {return *this += static_cast<difference_type> (diff);}
 			template <std::integral DIFF>
-			inline ContinousIterator<Cont, T> &operator-=(DIFF diff) noexcept {return *this -= static_cast<difference_type> (diff);}
+			constexpr ContinousIterator<Cont, T> &operator-=(DIFF diff) noexcept {return *this -= static_cast<difference_type> (diff);}
 
-			ContinousIterator<Cont, T> &operator++() noexcept;
-			ContinousIterator<Cont, T> operator++(int) noexcept;
-			ContinousIterator<Cont, T> &operator--() noexcept;
-			ContinousIterator<Cont, T> operator--(int) noexcept;
+			constexpr ContinousIterator<Cont, T> &operator++() noexcept;
+			constexpr ContinousIterator<Cont, T> operator++(int) noexcept;
+			constexpr ContinousIterator<Cont, T> &operator--() noexcept;
+			constexpr ContinousIterator<Cont, T> operator--(int) noexcept;
 
-			ContinousIterator<Cont, T> operator+(difference_type diff) const noexcept;
-			ContinousIterator<Cont, T> operator-(difference_type diff) const noexcept;
+			constexpr ContinousIterator<Cont, T> operator+(difference_type diff) const noexcept;
+			constexpr ContinousIterator<Cont, T> operator-(difference_type diff) const noexcept;
 			template <std::integral DIFF>
-			inline ContinousIterator<Cont, T> operator+(DIFF diff) const noexcept {return *this + static_cast<difference_type> (diff);}
+			constexpr ContinousIterator<Cont, T> operator+(DIFF diff) const noexcept {return *this + static_cast<difference_type> (diff);}
 			template <std::integral DIFF>
-			inline ContinousIterator<Cont, T> operator-(DIFF diff) const noexcept {return *this - static_cast<difference_type> (diff);}
+			constexpr ContinousIterator<Cont, T> operator-(DIFF diff) const noexcept {return *this - static_cast<difference_type> (diff);}
 
-			difference_type operator-(const ContinousIterator<Cont, T> &iterator) const noexcept;
+			constexpr difference_type operator-(const ContinousIterator<Cont, T> &iterator) const noexcept;
 
-			reference operator*() const noexcept;
-			pointer operator->() const noexcept;
+			constexpr reference operator*() const noexcept;
+			constexpr pointer operator->() const noexcept;
 
-			reference operator[](difference_type diff) const noexcept;
+			constexpr reference operator[](difference_type diff) const noexcept;
 
-			Cont *getContainer() const noexcept {return m_container;}
-			pointer getPtr() const noexcept {return m_ptr;}
+			constexpr Cont *getContainer() const noexcept {return m_container;}
+			constexpr pointer getPtr() const noexcept {return m_ptr;}
 
 
 		protected:
@@ -62,7 +62,7 @@ namespace sl::utils {
 	};
 
 	template <typename Cont, typename T>
-	inline ContinousIterator<Cont, T> operator+(typename ContinousIterator<Cont, T>::difference_type diff, const ContinousIterator<Cont, T> &iterator) noexcept {
+	constexpr ContinousIterator<Cont, T> operator+(typename ContinousIterator<Cont, T>::difference_type diff, const ContinousIterator<Cont, T> &iterator) noexcept {
 		return iterator + diff;
 	}
 
@@ -77,46 +77,46 @@ namespace sl::utils {
 			using pointer = T*;
 			using reference = T&;
 
-			ReverseContinousIterator() noexcept;
-			ReverseContinousIterator(Cont *container, pointer ptr) noexcept;
-			~ReverseContinousIterator() = default;
+			constexpr ReverseContinousIterator() noexcept;
+			constexpr ReverseContinousIterator(Cont *container, pointer ptr) noexcept;
+			constexpr ~ReverseContinousIterator() = default;
 
-			ReverseContinousIterator(const ReverseContinousIterator<Cont, T> &iterator) noexcept;
-			ReverseContinousIterator<Cont, T> &operator=(const ReverseContinousIterator<Cont, T> &iterator) noexcept;
+			constexpr ReverseContinousIterator(const ReverseContinousIterator<Cont, T> &iterator) noexcept;
+			constexpr ReverseContinousIterator<Cont, T> &operator=(const ReverseContinousIterator<Cont, T> &iterator) noexcept;
 
-			operator bool() const noexcept;
+			constexpr operator bool() const noexcept;
 
-			bool operator==(const ReverseContinousIterator<Cont, T> &iterator) const noexcept;
-			std::partial_ordering operator<=>(const ReverseContinousIterator<Cont, T> &iterator) const noexcept;
+			constexpr bool operator==(const ReverseContinousIterator<Cont, T> &iterator) const noexcept;
+			constexpr std::partial_ordering operator<=>(const ReverseContinousIterator<Cont, T> &iterator) const noexcept;
 
-			ReverseContinousIterator<Cont, T> &operator+=(difference_type diff) noexcept;
-			ReverseContinousIterator<Cont, T> &operator-=(difference_type diff) noexcept;
+			constexpr ReverseContinousIterator<Cont, T> &operator+=(difference_type diff) noexcept;
+			constexpr ReverseContinousIterator<Cont, T> &operator-=(difference_type diff) noexcept;
 			template <std::integral DIFF>
-			inline ContinousIterator<Cont, T> &operator+=(DIFF diff) noexcept {return *this += static_cast<difference_type> (diff);}
+			constexpr ContinousIterator<Cont, T> &operator+=(DIFF diff) noexcept {return *this += static_cast<difference_type> (diff);}
 			template <std::integral DIFF>
-			inline ContinousIterator<Cont, T> &operator-=(DIFF diff) noexcept {return *this -= static_cast<difference_type> (diff);}
+			constexpr ContinousIterator<Cont, T> &operator-=(DIFF diff) noexcept {return *this -= static_cast<difference_type> (diff);}
 
-			ReverseContinousIterator<Cont, T> &operator++() noexcept;
-			ReverseContinousIterator<Cont, T> operator++(int) noexcept;
-			ReverseContinousIterator<Cont, T> &operator--() noexcept;
-			ReverseContinousIterator<Cont, T> operator--(int) noexcept;
+			constexpr ReverseContinousIterator<Cont, T> &operator++() noexcept;
+			constexpr ReverseContinousIterator<Cont, T> operator++(int) noexcept;
+			constexpr ReverseContinousIterator<Cont, T> &operator--() noexcept;
+			constexpr ReverseContinousIterator<Cont, T> operator--(int) noexcept;
 
-			ReverseContinousIterator<Cont, T> operator+(difference_type diff) const noexcept;
-			ReverseContinousIterator<Cont, T> operator-(difference_type diff) const noexcept;
+			constexpr ReverseContinousIterator<Cont, T> operator+(difference_type diff) const noexcept;
+			constexpr ReverseContinousIterator<Cont, T> operator-(difference_type diff) const noexcept;
 			template <std::integral DIFF>
-			inline ContinousIterator<Cont, T> operator+(DIFF diff) const noexcept {return *this + static_cast<difference_type> (diff);}
+			constexpr ContinousIterator<Cont, T> operator+(DIFF diff) const noexcept {return *this + static_cast<difference_type> (diff);}
 			template <std::integral DIFF>
-			inline ContinousIterator<Cont, T> operator-(DIFF diff) const noexcept {return *this - static_cast<difference_type> (diff);}
+			constexpr ContinousIterator<Cont, T> operator-(DIFF diff) const noexcept {return *this - static_cast<difference_type> (diff);}
 
-			difference_type operator-(const ReverseContinousIterator<Cont, T> &iterator) const noexcept;
+			constexpr difference_type operator-(const ReverseContinousIterator<Cont, T> &iterator) const noexcept;
 
-			reference operator*() const noexcept;
-			pointer operator->() const noexcept;
+			constexpr reference operator*() const noexcept;
+			constexpr pointer operator->() const noexcept;
 
-			reference operator[](difference_type diff) const noexcept;
+			constexpr reference operator[](difference_type diff) const noexcept;
 
-			Cont *getContainer() const noexcept {return m_container;}
-			pointer getPtr() const noexcept {return m_ptr;}
+			constexpr Cont *getContainer() const noexcept {return m_container;}
+			constexpr pointer getPtr() const noexcept {return m_ptr;}
 
 
 		protected:
@@ -125,7 +125,7 @@ namespace sl::utils {
 	};
 
 	template <typename Cont, typename T>
-	inline ReverseContinousIterator<Cont, T> operator+(typename ReverseContinousIterator<Cont, T>::difference_type diff, const ReverseContinousIterator<Cont, T> &iterator) noexcept {
+	constexpr ReverseContinousIterator<Cont, T> operator+(typename ReverseContinousIterator<Cont, T>::difference_type diff, const ReverseContinousIterator<Cont, T> &iterator) noexcept {
 		return iterator + diff;
 	}
 

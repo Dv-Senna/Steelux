@@ -64,10 +64,12 @@ class SandboxApp final : public sl::Application {
 			std::println("inline concat : {}", test2 + " Hello " + test3 + " World !");
 
 			std::cout << "Some test with iostream : " << test2 << std::endl;
-			std::cout << "Second test but with csv" << (test2 + test3) << std::endl;
+			std::cout << "Second test but with csv " << (test2 + test3) << std::endl;
 
-			std::println("severity : {}", sl::utils::LogSeverity::eWarn | sl::utils::LogSeverity::eInfo);
-			std::println("severity2 : {}", sl::utils::toString(~sl::utils::LogSeverity::eWarn));
+//			std::println("stoi : {}", sl::utils::stringToNumber<int> ("10").value_or(std::numeric_limits<int>::max()));
+
+			std::println("severity : {:5}", sl::utils::LogSeverity::eWarn | sl::utils::LogSeverity::eInfo);
+			std::println("severity2 : {:4}", ~sl::utils::LogSeverity::eWarn);
 		}
 
 		~SandboxApp() override {

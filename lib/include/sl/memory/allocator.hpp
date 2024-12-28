@@ -10,13 +10,13 @@
 namespace sl::memory {
 	class AllocatorView {
 		public:
-			AllocatorView() noexcept = default;
-			virtual ~AllocatorView() = default;
+			constexpr AllocatorView() noexcept = default;
+			constexpr virtual ~AllocatorView() = default;
 
 			[[nodiscard]] virtual std::byte *allocate(std::size_t n) noexcept = 0;
 			virtual void deallocate(std::byte *ptr, std::size_t n) noexcept = 0;
 
-			virtual std::unique_ptr<AllocatorView> copy() noexcept = 0;
+			constexpr virtual std::unique_ptr<AllocatorView> copy() noexcept = 0;
 	};
 
 
@@ -24,16 +24,16 @@ namespace sl::memory {
 	class AllocatorViewFactory final : public sl::memory::AllocatorView {
 		public:
 			// use the default constructor for stateless allocator
-			AllocatorViewFactory() noexcept;
-			~AllocatorViewFactory() override;
+			constexpr AllocatorViewFactory() noexcept;
+			constexpr ~AllocatorViewFactory() override;
 
 			// use this constructor for statefull allocator
-			AllocatorViewFactory(Alloc &allocator) noexcept;
+			constexpr AllocatorViewFactory(Alloc &allocator) noexcept;
 
 			[[nodiscard]] std::byte *allocate(std::size_t n) noexcept override;
 			void deallocate(std::byte *ptr, std::size_t n) noexcept override;
 
-			std::unique_ptr<AllocatorView> copy() noexcept override;
+			constexpr std::unique_ptr<AllocatorView> copy() noexcept override;
 
 		private:
 			Alloc *m_allocator;

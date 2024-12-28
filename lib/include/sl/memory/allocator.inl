@@ -5,7 +5,7 @@
 
 namespace sl::memory {
 	template <typename Alloc>
-	AllocatorViewFactory<Alloc>::AllocatorViewFactory() noexcept :
+	constexpr AllocatorViewFactory<Alloc>::AllocatorViewFactory() noexcept :
 		m_allocator {nullptr}
 	{
 
@@ -13,13 +13,13 @@ namespace sl::memory {
 
 
 	template <typename Alloc>
-	AllocatorViewFactory<Alloc>::~AllocatorViewFactory() {
+	constexpr AllocatorViewFactory<Alloc>::~AllocatorViewFactory() {
 
 	}
 
 
 	template <typename Alloc>
-	AllocatorViewFactory<Alloc>::AllocatorViewFactory(Alloc &allocator) noexcept :
+	constexpr AllocatorViewFactory<Alloc>::AllocatorViewFactory(Alloc &allocator) noexcept :
 		m_allocator {&allocator}
 	{
 
@@ -45,7 +45,7 @@ namespace sl::memory {
 
 
 	template <typename Alloc>
-	std::unique_ptr<AllocatorView> AllocatorViewFactory<Alloc>::copy() noexcept {
+	constexpr std::unique_ptr<AllocatorView> AllocatorViewFactory<Alloc>::copy() noexcept {
 		if (m_allocator == nullptr)
 			return std::make_unique<AllocatorViewFactory<Alloc>> ();
 		return std::make_unique<AllocatorViewFactory<Alloc>> (*m_allocator);
