@@ -23,7 +23,11 @@ using namespace sl::utils::literals;
 class SandboxApp final : public sl::Application {
 	public:
 		SandboxApp() : sl::Application() {
+			sl::memory::DebugAllocator<char> _ {};
 
+			sl::String str1 {"Hello World from Steelux !"};
+			
+			std::println("str1 : {}", str1.getData());
 		}
 
 		~SandboxApp() override {
