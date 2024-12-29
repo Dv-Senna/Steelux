@@ -4,6 +4,7 @@
 #include <chrono>
 
 #include "sl/core.hpp"
+#include "sl/memory/allocatorTraits.hpp"
 
 
 namespace sl::memory {
@@ -12,11 +13,13 @@ namespace sl::memory {
 		public:
 			using value_type = T;
 
-			DebugAllocator() noexcept;
-			~DebugAllocator();
+			constexpr DebugAllocator() noexcept;
+			constexpr ~DebugAllocator();
 
-			T *allocate(std::size_t n) noexcept;
-			void deallocate(T *ptr, std::size_t n) noexcept;
+			constexpr T *allocate(std::size_t n) noexcept;
+			constexpr void deallocate(T *ptr, std::size_t n) noexcept;
+
+			constexpr bool operator==(const DebugAllocator<T> &) const noexcept {return true;}
 
 
 		private:
@@ -25,6 +28,11 @@ namespace sl::memory {
 			static float s_averageMsBetweenAllocation;
 			static std::chrono::high_resolution_clock::time_point s_lastAllocation;
 	};
+
+	template <typename T>
+	struct IsAllocatorStatefull<sl::memory::DebugAllocator<T>> {static constexpr bool value {false};};
+
+	static_assert(sl::memory::IsAllocator<DebugAllocator<char>>);
 
 } // namespace sl::memory
 

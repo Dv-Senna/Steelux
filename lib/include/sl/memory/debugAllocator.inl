@@ -12,15 +12,17 @@
 
 namespace sl::memory {
 	template <typename T>
-	DebugAllocator<T>::DebugAllocator() noexcept {
+	constexpr DebugAllocator<T>::DebugAllocator() noexcept {
 		++s_instanceCount;
 	}
 
 
 	template <typename T>
-	DebugAllocator<T>::~DebugAllocator() {
+	constexpr DebugAllocator<T>::~DebugAllocator() {
 		--s_instanceCount;
 		if (s_instanceCount != 0)
+			return;
+		if (std::is_constant_evaluated())
 			return;
 
 		std::string typeName {typeid(T).name()};
@@ -39,7 +41,10 @@ namespace sl::memory {
 
 
 	template <typename T>
-	T *DebugAllocator<T>::allocate(std::size_t n) noexcept {
+	constexpr T *DebugAllocator<T>::allocate(std::size_t n) noexcept {
+		if (std::is_constant_evaluated())
+			return new T[n];
+
 		if (s_allocationCount != 0) {
 			s_averageMsBetweenAllocation *= static_cast<float> (s_allocationCount);
 			s_averageMsBetweenAllocation += std::chrono::duration_cast<std::chrono::duration<float, std::milli>> (std::chrono::high_resolution_clock::now() - s_lastAllocation).count();
@@ -48,13 +53,13 @@ namespace sl::memory {
 
 		++s_allocationCount;
 		s_lastAllocation = std::chrono::high_resolution_clock::now();
-		return reinterpret_cast<T*> (std::malloc(sizeof(T) * n));
+		return new T[n];
 	}
 
 
 	template <typename T>
-	void DebugAllocator<T>::deallocate(T *ptr, std::size_t n) noexcept {
-		return std::free(ptr);
+	constexpr void DebugAllocator<T>::deallocate(T *ptr, std::size_t n) noexcept {
+		return delete[] ptr;
 	}
 
 

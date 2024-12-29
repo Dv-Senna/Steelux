@@ -3,10 +3,10 @@
 #include <cstdint>
 #include <format>
 #include <ostream>
+#include <string>
 #include <type_traits>
 
 #include "sl/core.hpp"
-#include "sl/utils/string.hpp"
 
 
 namespace sl::utils {
@@ -82,14 +82,14 @@ namespace sl::utils {
 	inline FlagField<Enum> operator~(Enum flag) noexcept {return ~FlagField<Enum> (flag);}
 
 
-	SL_CORE sl::String toString(PackedEnumString value) noexcept;
+	SL_CORE std::string toString(PackedEnumString value) noexcept;
 	template <sl::utils::StringEnum Enum>
-	inline sl::String toString(Enum value) noexcept;
+	inline std::string toString(Enum value) noexcept;
 
 	template <sl::utils::FlagEnum Enum>
-	sl::String toString(const FlagField<Enum> &field) noexcept;
+	std::string toString(const FlagField<Enum> &field) noexcept;
 	template <sl::utils::FlagEnum Enum>
-	inline sl::String toString(Enum flag) noexcept;
+	inline std::string toString(Enum flag) noexcept;
 
 
 	namespace literals {
@@ -114,16 +114,16 @@ namespace sl::utils {
 
 
 template <>
-struct std::formatter<sl::utils::PackedEnumString> : std::formatter<sl::String> {
+struct std::formatter<sl::utils::PackedEnumString> : std::formatter<std::string> {
 	inline auto format(sl::utils::PackedEnumString value, std::format_context &ctx) const noexcept {
-		return std::formatter<sl::String>::format(sl::utils::toString(value), ctx);
+		return std::formatter<std::string>::format(sl::utils::toString(value), ctx);
 	}
 };
 
 template <sl::utils::StringEnum Enum>
-struct std::formatter<Enum> : std::formatter<sl::String> {
+struct std::formatter<Enum> : std::formatter<std::string> {
 	inline auto format(Enum value, std::format_context &ctx) const noexcept {
-		return std::formatter<sl::String>::format(sl::utils::toString(value), ctx);
+		return std::formatter<std::string>::format(sl::utils::toString(value), ctx);
 	}
 };
 
@@ -137,34 +137,35 @@ struct std::formatter<sl::utils::FlagField<Enum>> {
 		auto it {ctx.begin()};
 		if (it == ctx.end())
 			return it;
-		sl::String text {};
+		std::string text {};
 		text.reserve(ctx.begin() - ctx.end());
-		for (; it != ctx.end() - 1; ++it) text.pushBack(*it);
-		if (text.getSize() == 0)
+		for (; it != ctx.end() - 1; ++it) text.push_back(*it);
+		if (text.size() == 0)
 			return it;
 
-		auto bitShown {sl::utils::stringToNumber<std::int32_t> (text)};
-		if (!bitShown)
-			throw std::format_error("Invalid format args for sl::utils::FlagField<Enum>. The argument must be an integer");
-		m_bitShown = *bitShown;
+//		auto bitShown {sl::utils::stringToNumber<std::int32_t> (text)};
+		auto bitShown {std::stoi(text)};
+//		if (!bitShown)
+//			throw std::format_error("Invalid format args for sl::utils::FlagField<Enum>. The argument must be an integer");
+		m_bitShown = bitShown;
 		return it;
 	}
 
 	inline auto format(const sl::utils::FlagField<Enum> &field, std::format_context &ctx) const noexcept {
-		sl::String text {sl::utils::toString(field)};
+		std::string text {sl::utils::toString(field)};
 		if (m_bitShown < 0)
 			return std::ranges::copy(text, ctx.out()).out;
 
-		if (text.getSize() > m_bitShown) {
-			while (text.getSize() != m_bitShown)
-				text.popFront();
+		if (text.size() > m_bitShown) {
+			while (text.size() != m_bitShown)
+				text.erase(0, 1);
 		}
 
-		else if (text.getSize() < m_bitShown) {
-			sl::String missing {};
-			missing.reserve(m_bitShown - text.getSize());
-			for (auto i {text.getSize()}; i != m_bitShown; ++i)
-				missing.pushBack('0');
+		else if (text.size() < m_bitShown) {
+			std::string missing {};
+			missing.reserve(m_bitShown - text.size());
+			for (auto i {text.size()}; i != m_bitShown; ++i)
+				missing.push_back('0');
 			text = missing + text;
 		}
 		return std::ranges::copy(text, ctx.out()).out;
