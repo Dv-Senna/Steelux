@@ -247,6 +247,36 @@ namespace sl::utils {
 
 
 	template <typename CharT, sl::memory::IsAllocator Alloc>
+	template <std::forward_iterator IT>
+	requires std::convertible_to<typename std::iterator_traits<IT>::value_type, CharT>
+	constexpr BasicString<CharT, Alloc>::iterator BasicString<CharT, Alloc>::insert(difference_type position, const IT &start, const IT &end) noexcept {
+		size_type rangeSize {static_cast<size_type> (std::distance(start, end))};
+		position = this->m_normalizeIndex(position, m_content.size + 1);
+		(void)this->reserve(m_content.size + rangeSize);
+
+		if (this->m_isSSO()) {
+			(void)sl::utils::memmove(m_sso.buffer + position + rangeSize, m_sso.buffer + position, m_content.size - position + 1);
+			size_type i {0};
+			for (IT it {start}; it != end; ++it) {
+				(m_sso.buffer + position)[i] = static_cast<CharT> (*it);
+				++i;
+			}
+			m_content.size += rangeSize;
+			return this->begin() + position;
+		}
+
+		(void)sl::utils::memmove(m_heap.start + position + rangeSize, m_heap.start + position, m_content.size - position + 1);
+		size_type i {0};
+		for (IT it {start}; it != end; ++it) {
+			(m_heap.start + position)[i] = static_cast<CharT> (*it);
+			++i;
+		}
+		m_content.size += rangeSize;
+		return this->begin() + position;
+	}
+
+
+	template <typename CharT, sl::memory::IsAllocator Alloc>
 	constexpr BasicString<CharT, Alloc>::iterator BasicString<CharT, Alloc>::erase(difference_type position, size_type count) noexcept {
 		position = this->m_normalizeIndex(position);
 		if (count > m_content.size)

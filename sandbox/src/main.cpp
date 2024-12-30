@@ -70,6 +70,18 @@ class SandboxApp final : public sl::Application {
 			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
 			str2.insert(str2.rbegin() + 17, ". Ooh");
 			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
+
+			str2 = str3;
+			str2.shrinkToFit();
+
+			std::println("------------ INSERTION OF ITERATOR RANGES -------------");
+			std::string alphabet {"ABCDEFGHIJKLMNOPQRSTUVWXYZ"};
+			str2.pushFront(alphabet.begin(), alphabet.begin() + 4);
+			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
+			str2.pushBack(alphabet.begin() + 10, alphabet.begin() + 14);
+			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
+			str2.insert(str2.begin() + 4, alphabet.begin() + 4, alphabet.begin() + 8);
+			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
 		}
 
 		~SandboxApp() override {
