@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <print>
+#include <ranges>
 
 
 
@@ -81,6 +82,17 @@ class SandboxApp final : public sl::Application {
 			str2.pushBack(alphabet.begin() + 10, alphabet.begin() + 14);
 			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
 			str2.insert(str2.begin() + 4, alphabet.begin() + 4, alphabet.begin() + 8);
+			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
+
+			str2 = str3;
+			str2.shrinkToFit();
+
+			std::println("------------ INSERTION OF ITERATOR RANGES -------------");
+			str2.pushFront(std::views::iota(0, 4) | std::views::transform([](auto val) -> char {return 'A' + val;}));
+			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
+			str2.pushBack(std::views::iota(10, 14) | std::views::transform([](auto val) -> char {return 'A' + val;}));
+			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
+			str2.insert(str2.begin() + 4, std::views::iota(4, 8) | std::views::transform([](auto val) -> char {return 'A' + val;}));
 			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
 		}
 

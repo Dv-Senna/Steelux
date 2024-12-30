@@ -14,6 +14,12 @@ namespace sl::utils {
 	 */
 	template <typename CharT, sl::memory::IsAllocator Alloc = sl::memory::DefaultAllocator<CharT>>
 	class SL_CORE BasicString final {
+		template <typename T>
+		static constexpr bool IsRange = std::ranges::range<T>
+			&& !std::convertible_to<T, BasicString<CharT, Alloc>>
+			&& !std::convertible_to<T, CharT*>
+			&& !std::convertible_to<T, const CharT*>;
+
 		public:
 			using value_type = CharT;
 			using allocator_type = Alloc;
@@ -68,6 +74,19 @@ namespace sl::utils {
 			constexpr iterator pushFront(const IT &start, const IT &end) noexcept {return this->insert(this->begin(), start, end);}
 			template <std::forward_iterator IT>
 			constexpr iterator pushBack(const IT &start, const IT &end) noexcept {return this->insert(this->end(), start, end);}
+
+			template <std::ranges::range Range>
+			requires (IsRange<Range>)
+			constexpr iterator insert(difference_type position, Range &&range) noexcept {return this->insert(position, std::ranges::begin(range), std::ranges::end(range));}
+			template <std::ranges::range Range>
+			requires (IsRange<Range>)
+			constexpr iterator insert(const iterator &position, Range &&range) noexcept {return this->insert(position, std::ranges::begin(range), std::ranges::end(range));}
+			template <std::ranges::range Range>
+			requires (IsRange<Range>)
+			constexpr iterator pushFront(Range &&range) noexcept {return this->pushFront(std::ranges::begin(range), std::ranges::end(range));}
+			template <std::ranges::range Range>
+			requires (IsRange<Range>)
+			constexpr iterator pushBack(Range &&range) noexcept {return this->pushBack(std::ranges::begin(range), std::ranges::end(range));}
 
 			constexpr iterator erase(difference_type position, size_type count = 1) noexcept;
 			constexpr iterator erase(const iterator &position, size_type count = 1) noexcept {return this->erase(position - this->begin(), count);}
