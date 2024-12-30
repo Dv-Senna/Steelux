@@ -12,6 +12,7 @@ namespace sl::memory {
 	class SL_CORE DebugAllocator final {
 		public:
 			using value_type = T;
+			using is_always_equal = std::true_type;
 
 			constexpr DebugAllocator() noexcept;
 			constexpr ~DebugAllocator();
@@ -28,9 +29,6 @@ namespace sl::memory {
 			static float s_averageMsBetweenAllocation;
 			static std::chrono::high_resolution_clock::time_point s_lastAllocation;
 	};
-
-	template <typename T>
-	struct IsAllocatorStatefull<sl::memory::DebugAllocator<T>> {static constexpr bool value {false};};
 
 	static_assert(sl::memory::IsAllocator<DebugAllocator<char>>);
 

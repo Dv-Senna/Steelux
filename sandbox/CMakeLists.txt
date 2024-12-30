@@ -33,6 +33,11 @@ file(GLOB_RECURSE SANDBOX_SOURCE *.cpp)
 add_executable(${SANDBOX_NAME} ${SANDBOX_HEADER} ${SANDBOX_INLINE} ${SANDBOX_SOURCE})
 set_property(TARGET ${SANDBOX_NAME} PROPERTY CXX_STANDARD ${PROJECT_CPP_DIALECT})
 
+if (MSVC)
+	target_compile_options(${SANDBOX_NAME} PRIVATE /W4)
+else()
+	target_compile_options(${SANDBOX_NAME} PRIVATE -Wall -Wextra -pedantic)
+endif()
 #target_link_directories(./lib)
 
 target_link_libraries(

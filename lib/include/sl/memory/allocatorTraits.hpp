@@ -14,12 +14,17 @@ namespace sl::memory {
 
 
 	template <sl::memory::IsAllocator Alloc>
-	struct IsAllocatorStatefull {static constexpr bool value {true};};
+	struct IsAllocatorStatefull;
+
+	template <sl::memory::IsAllocator Alloc>
+	requires std::same_as<typename std::allocator_traits<Alloc>::is_always_equal, std::true_type>
+	struct IsAllocatorStatefull<Alloc> {static constexpr bool value {false};};
+
+	template <sl::memory::IsAllocator Alloc>
+	requires std::same_as<typename std::allocator_traits<Alloc>::is_always_equal, std::false_type>
+	struct IsAllocatorStatefull<Alloc> {static constexpr bool value {true};};
 
 	template <sl::memory::IsAllocator Alloc>
 	constexpr bool IsAllocatorStatefull_v = IsAllocatorStatefull<Alloc>::value;
 
-
-	template <typename T>
-	struct IsAllocatorStatefull<std::allocator<T>> {static constexpr bool value {false};};
 } // namespace sl::memory
