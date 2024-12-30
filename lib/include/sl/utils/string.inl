@@ -34,7 +34,7 @@ namespace sl::utils {
 		m_content.size.template setFlag<0> (true);
 		m_heap.capacity = m_content.size + 1;
 		m_heap.start = this->m_allocate(m_heap.capacity);
-		(void)sl::utils::memcpy<CharT> (m_heap.start, str, m_heap.capacity);
+		(void)sl::utils::memcpy<CharT> (&*m_heap.start, str, m_heap.capacity);
 	}
 
 
@@ -52,7 +52,7 @@ namespace sl::utils {
 		m_content.size.template setFlag<0> (true);
 		m_heap.capacity = m_content.size + 1;
 		m_heap.start = this->m_allocate(m_heap.capacity);
-		(void)sl::utils::memcpy<CharT> (m_heap.start, str, m_content.size);
+		(void)sl::utils::memcpy<CharT> (&*m_heap.start, str, m_content.size);
 		m_heap.start[m_content.size] = static_cast<CharT> ('\0');
 	}
 
@@ -80,7 +80,7 @@ namespace sl::utils {
 
 		m_heap.capacity = m_content.size + 1;
 		m_heap.start = this->m_allocate(m_heap.capacity);
-		(void)sl::utils::memcpy<CharT> (m_heap.start, str.m_heap.start, m_heap.capacity);
+		(void)sl::utils::memcpy<CharT> (&*m_heap.start, &*str.m_heap.start, m_heap.capacity);
 	}
 
 
@@ -99,7 +99,7 @@ namespace sl::utils {
 
 		m_heap.capacity = m_content.size + 1;
 		m_heap.start = this->m_allocate(m_heap.capacity);
-		(void)sl::utils::memcpy<CharT> (m_heap.start, str.m_heap.start, m_heap.capacity);
+		(void)sl::utils::memcpy<CharT> (&*m_heap.start, &*str.m_heap.start, m_heap.capacity);
 		return *this;
 	}
 
@@ -144,6 +144,54 @@ namespace sl::utils {
 
 		(void)sl::utils::memset<CharT> (str.m_sso.buffer, static_cast<CharT> ('\0'), MAX_SSO_CAPACITY);
 		return *this;
+	}
+
+
+	template <typename CharT, sl::memory::IsAllocator Alloc>
+	constexpr BasicString<CharT, Alloc>::size_type BasicString<CharT, Alloc>::reserve(size_type newSize) noexcept {
+		size_type capacity {this->getCapacity()};
+		if (newSize < capacity)
+			return capacity - 1;
+		
+		size_type newCapacity {newSize + 1};
+		pointer buffer {this->m_allocate(newCapacity)};
+		if (this->m_isSSO())
+			(void)sl::utils::memcpy(buffer, m_sso.buffer, capacity);
+		else {
+			(void)sl::utils::memmove(buffer, m_heap.start, newCapacity);
+			this->m_deallocate(m_heap.start, m_heap.capacity);
+		}
+
+		m_heap.capacity = newCapacity;
+		m_heap.start = buffer;
+		return newCapacity - 1;
+	}
+
+
+	template <typename CharT, sl::memory::IsAllocator Alloc>
+	constexpr BasicString<CharT, Alloc>::iterator BasicString<CharT, Alloc>::insert(difference_type position, CharT value, size_type count) noexcept {
+		size_type targetCapacity {m_content.size + count};
+		if (this->getCapacity() < targetCapacity) {
+			constexpr long double CAPACITY_INCREASE_FACTOR {1.5};
+			size_type newCapacity {this->getCapacity()};
+			while (newCapacity < targetCapacity)
+				newCapacity *= CAPACITY_INCREASE_FACTOR;
+			(void)this->reserve(this->getCapacity() + count);
+		}
+
+		if (this->m_isSSO()) {
+			(void)sl::utils::memmove(m_sso.buffer + position + count, m_sso.buffer + position, m_content.size - position + 1);
+			for (size_type i {0}; i < count; ++i)
+				m_sso.buffer[position + i] = value;
+			m_content.size += count;
+			return this->begin() + position;
+		}
+
+		(void)sl::utils::memmove(m_heap.start + position + count, m_heap.start + position, m_content.size - position + 1);
+		for (size_type i {0}; i < count; ++i)
+			m_heap.start[position + i] = value;
+		m_content.size += count;
+		return this->begin() + position;
 	}
 
 

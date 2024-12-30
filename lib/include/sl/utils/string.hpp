@@ -40,6 +40,13 @@ namespace sl::utils {
 			constexpr BasicString(BasicString<CharT, Alloc> &&str) noexcept;
 			constexpr BasicString<CharT, Alloc> &operator=(BasicString<CharT, Alloc> &&str) noexcept;
 
+			constexpr size_type reserve(size_type newSize) noexcept;
+
+			constexpr iterator insert(const iterator &position, CharT value, size_type count = 1) noexcept {return this->insert(position - this->begin(), value, count);}
+			constexpr iterator insert(difference_type position, CharT value, size_type count = 1) noexcept;
+			constexpr iterator pushFront(CharT value, size_type count = 1) noexcept {return this->insert(this->begin(), value, count);}
+			constexpr iterator pushBack(CharT value, size_type count = 1) noexcept {return this->insert(this->end(), value, count);}
+
 			constexpr iterator at(difference_type index) noexcept;
 			constexpr const_iterator at(difference_type index) const noexcept;
 
@@ -59,6 +66,7 @@ namespace sl::utils {
 			constexpr const_reverse_iterator rbegin() const noexcept {return this->crbegin();}
 			constexpr const_reverse_iterator rend() const noexcept {return this->crend();}
 
+			constexpr bool isEmpty() const noexcept {return m_content.size == 0;}
 			constexpr const CharT *getData() const noexcept;
 			constexpr size_type getSize() const noexcept;
 			constexpr size_type getCapacity() const noexcept;

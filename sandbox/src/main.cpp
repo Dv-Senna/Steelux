@@ -11,12 +11,6 @@
 
 
 
-struct SBO {
-	char8_t *start;
-	std::size_t length;
-	std::size_t capacity;
-};
-
 using namespace sl::utils::literals;
 
 
@@ -27,6 +21,7 @@ class SandboxApp final : public sl::Application {
 
 			std::println("sl::String : {}/{}", alignof(sl::String), sizeof(sl::String));
 			std::println("std::string : {}/{}", alignof(std::string), sizeof(std::string));
+			std::println("std::shared_ptr<char> {}/{}", alignof(std::shared_ptr<char>), sizeof(std::shared_ptr<char>));
 
 			sl::String str1 {"Hello World from Steelux !"};
 			sl::String str2 {str1};
@@ -44,6 +39,13 @@ class SandboxApp final : public sl::Application {
 			for (auto &c : str2)
 				++c;
 
+			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
+
+			str2.pushFront('*', 10);
+			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
+			str2.pushBack('-', 3);
+			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
+			str2.insert(str2.begin() + 7, '+', 5);
 			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
 		}
 
