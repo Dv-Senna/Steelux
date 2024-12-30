@@ -41,6 +41,7 @@ namespace sl::utils {
 			constexpr BasicString<CharT, Alloc> &operator=(BasicString<CharT, Alloc> &&str) noexcept;
 
 			constexpr size_type reserve(size_type newSize) noexcept;
+			constexpr size_type shrinkToFit() noexcept;
 
 			constexpr iterator insert(difference_type position, CharT value, size_type count = 1) noexcept;
 			constexpr iterator insert(const iterator &position, CharT value, size_type count = 1) noexcept {return this->insert(position - this->begin(), value, count);}

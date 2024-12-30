@@ -164,7 +164,34 @@ namespace sl::utils {
 
 		m_heap.capacity = newCapacity;
 		m_heap.start = buffer;
+		m_content.size.template setFlag<0> (true);
 		return newCapacity - 1;
+	}
+
+
+	template <typename CharT, sl::memory::IsAllocator Alloc>
+	constexpr BasicString<CharT, Alloc>::size_type BasicString<CharT, Alloc>::shrinkToFit() noexcept {
+		if (m_content.size <= MAX_SSO_SIZE) {
+			if (this->m_isSSO())
+				return MAX_SSO_SIZE;
+
+			pointer buffer {m_heap.start};
+			size_type capacity {m_heap.capacity};
+			(void)std::memcpy(m_sso.buffer, m_heap.start, m_content.size + 1);
+			this->m_deallocate(buffer, capacity);
+			m_content.size.template setFlag<0> (false);
+			return MAX_SSO_SIZE;
+		}
+
+		if (m_heap.capacity == m_content.size + 1)
+			return m_content.size;
+
+		pointer buffer {this->m_allocate(m_content.size + 1)};
+		(void)std::memcpy(buffer, m_heap.start, m_content.size + 1);
+		this->m_deallocate(m_heap.start, m_heap.capacity);
+		m_heap.start = buffer;
+		m_heap.capacity = m_content.size + 1;
+		return m_content.size;
 	}
 
 

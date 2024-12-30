@@ -38,8 +38,9 @@ class SandboxApp final : public sl::Application {
 				std::println("c : {}", c);
 			for (auto &c : str2)
 				++c;
-
 			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
+			for (auto &c : str2)
+				--c;
 
 			std::println("------------ START OF INSERTION -------------");
 			str2.pushFront('*', 10);
@@ -56,6 +57,11 @@ class SandboxApp final : public sl::Application {
 			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
 			str2.popFront(10);
 			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
+
+			std::println("------------ SHRINK TO FIT -------------");
+			str2.shrinkToFit();
+			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
+			str2.shrinkToFit();
 		}
 
 		~SandboxApp() override {
