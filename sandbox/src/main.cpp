@@ -41,11 +41,20 @@ class SandboxApp final : public sl::Application {
 
 			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
 
+			std::println("------------ START OF INSERTION -------------");
 			str2.pushFront('*', 10);
 			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
 			str2.pushBack('-', 3);
 			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
 			str2.insert(str2.begin() + 7, '+', 5);
+			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
+
+			std::println("------------ START OF ERASION -------------");
+			str2.erase(str2.begin() + 7, 5);
+			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
+			str2.popBack(3);
+			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
+			str2.popFront(10);
 			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
 		}
 

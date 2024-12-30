@@ -170,13 +170,14 @@ namespace sl::utils {
 
 	template <typename CharT, sl::memory::IsAllocator Alloc>
 	constexpr BasicString<CharT, Alloc>::iterator BasicString<CharT, Alloc>::insert(difference_type position, CharT value, size_type count) noexcept {
-		size_type targetCapacity {m_content.size + count};
+		position = this->m_normalizeIndex(position, m_content.size + 1);
+		size_type targetCapacity {m_content.size + count + 1};
 		if (this->getCapacity() < targetCapacity) {
 			constexpr long double CAPACITY_INCREASE_FACTOR {1.5};
 			size_type newCapacity {this->getCapacity()};
 			while (newCapacity < targetCapacity)
 				newCapacity *= CAPACITY_INCREASE_FACTOR;
-			(void)this->reserve(this->getCapacity() + count);
+			(void)this->reserve(newCapacity - 1);
 		}
 
 		if (this->m_isSSO()) {
@@ -196,10 +197,24 @@ namespace sl::utils {
 
 
 	template <typename CharT, sl::memory::IsAllocator Alloc>
+	constexpr BasicString<CharT, Alloc>::iterator BasicString<CharT, Alloc>::erase(difference_type position, size_type count) noexcept {
+		position = this->m_normalizeIndex(position);
+		if (count > m_content.size)
+			count = m_content.size;
+
+		if (this->m_isSSO())
+			(void)sl::utils::memmove(m_sso.buffer + position, m_sso.buffer + position + count, m_content.size - position - count + 1);
+		else
+			(void)sl::utils::memmove(m_heap.start + position, m_heap.start + position + count, m_content.size - position - count + 1);
+
+		m_content.size -= count;
+		return this->begin() + position;
+	}
+
+
+	template <typename CharT, sl::memory::IsAllocator Alloc>
 	constexpr BasicString<CharT, Alloc>::iterator BasicString<CharT, Alloc>::at(difference_type index) noexcept {
-		index %= static_cast<difference_type> (m_content.size);
-		if (index < 0)
-			index += static_cast<difference_type> (m_content.size);
+		index = this->m_normalizeIndex(index);
 		if (this->m_isSSO())
 			return this->begin() + index;
 		return this->begin() + index;
@@ -208,9 +223,7 @@ namespace sl::utils {
 
 	template <typename CharT, sl::memory::IsAllocator Alloc>
 	constexpr BasicString<CharT, Alloc>::const_iterator BasicString<CharT, Alloc>::at(difference_type index) const noexcept {
-		index %= static_cast<difference_type> (m_content.size);
-		if (index < 0)
-			index += static_cast<difference_type> (m_content.size);
+		index = this->m_normalizeIndex(index);
 		if (this->m_isSSO())
 			return this->begin() + index;
 		return this->begin() + index;
@@ -330,5 +343,15 @@ namespace sl::utils {
 		}
 	}
 
+
+	template <typename CharT, sl::memory::IsAllocator Alloc>
+	constexpr BasicString<CharT, Alloc>::difference_type BasicString<CharT, Alloc>::m_normalizeIndex(difference_type index, size_type size) const noexcept {
+		if (size == 0)
+			size = m_content.size;
+		index %= static_cast<difference_type> (size);
+		if (index < 0)
+			index += static_cast<difference_type> (size);
+		return index;
+	}
 
 } // namespace sl::utils

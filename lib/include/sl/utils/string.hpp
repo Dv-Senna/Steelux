@@ -42,10 +42,15 @@ namespace sl::utils {
 
 			constexpr size_type reserve(size_type newSize) noexcept;
 
-			constexpr iterator insert(const iterator &position, CharT value, size_type count = 1) noexcept {return this->insert(position - this->begin(), value, count);}
 			constexpr iterator insert(difference_type position, CharT value, size_type count = 1) noexcept;
+			constexpr iterator insert(const iterator &position, CharT value, size_type count = 1) noexcept {return this->insert(position - this->begin(), value, count);}
 			constexpr iterator pushFront(CharT value, size_type count = 1) noexcept {return this->insert(this->begin(), value, count);}
 			constexpr iterator pushBack(CharT value, size_type count = 1) noexcept {return this->insert(this->end(), value, count);}
+
+			constexpr iterator erase(difference_type position, size_type count = 1) noexcept;
+			constexpr iterator erase(const iterator &position, size_type count = 1) noexcept {return this->erase(position - this->begin(), count);}
+			constexpr iterator popFront(size_type count = 1) noexcept {return this->erase(this->begin(), count);}
+			constexpr iterator popBack(size_type count = 1) noexcept {return this->erase(this->end() - count, count);}
 
 			constexpr iterator at(difference_type index) noexcept;
 			constexpr const_iterator at(difference_type index) const noexcept;
@@ -76,6 +81,7 @@ namespace sl::utils {
 			constexpr bool m_isSSO() const noexcept;
 			constexpr pointer m_allocate(size_type size) const noexcept;
 			constexpr void m_deallocate(pointer res, size_type size) const noexcept;
+			constexpr difference_type m_normalizeIndex(difference_type index, size_type size = 0) const noexcept;
 
 			// size does not include the null-terminating character
 			template <typename Alloc2>
