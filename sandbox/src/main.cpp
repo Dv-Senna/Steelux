@@ -26,8 +26,12 @@ class SandboxApp final : public sl::Application {
 			sl::memory::DebugAllocator<char> _ {};
 
 			sl::String str1 {"Hello World from Steelux !"};
+			sl::String str2 {str1};
+			sl::String str3 {std::move(str1)};
 			
-			std::println("str1 : {}", str1.getData());
+			std::println("str1 : {} ({}, {})", (void*)str1.getData(), str1.getSize(), str1.getCapacity());
+			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
+			std::println("str3 : {} ({}, {})", str3.getData(), str2.getSize(), str2.getCapacity());
 		}
 
 		~SandboxApp() override {

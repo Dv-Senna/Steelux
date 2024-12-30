@@ -22,7 +22,7 @@ namespace sl::utils {
 			constexpr Self &operator=(Self &&) noexcept = default;
 
 			constexpr operator T() const noexcept {return m_value & VALUE_MASK;}
-			constexpr const Self &operator=(T value) noexcept {(m_value = m_value & FLAGS_MASK) | (value & VALUE_MASK);}
+			constexpr const Self &operator=(T value) noexcept {(m_value = m_value & FLAGS_MASK) | (value & VALUE_MASK); return *this;}
 
 			template <std::unsigned_integral U>
 			constexpr Self &operator+=(U value) noexcept {m_value = (m_value & FLAGS_MASK) | (((m_value & VALUE_MASK) + (static_cast<U> (value) & VALUE_MASK)) & VALUE_MASK); return *this;}

@@ -35,6 +35,11 @@ namespace sl::utils {
 			constexpr BasicString(const CharT *str, size_type size, const Alloc &alloc = Alloc()) noexcept;
 			constexpr ~BasicString();
 
+			constexpr BasicString(const BasicString<CharT, Alloc> &str) noexcept;
+			constexpr BasicString<CharT, Alloc> &operator=(const BasicString<CharT, Alloc> &str) noexcept;
+			constexpr BasicString(BasicString<CharT, Alloc> &&str) noexcept;
+			constexpr BasicString<CharT, Alloc> &operator=(BasicString<CharT, Alloc> &&str) noexcept;
+
 			constexpr const CharT *getData() const noexcept;
 			constexpr size_type getSize() const noexcept;
 			constexpr size_type getCapacity() const noexcept;

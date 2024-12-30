@@ -66,14 +66,92 @@ namespace sl::utils {
 
 
 	template <typename CharT, sl::memory::IsAllocator Alloc>
-	constexpr const CharT *BasicString<CharT, Alloc>::getData() const noexcept {
-		if constexpr (!std::is_same_v<pointer, CharT*>)
-			return nullptr;
-		else {
-			if (this->m_isSSO())
-				return m_sso.buffer;
-			return m_heap.start;
+	constexpr BasicString<CharT, Alloc>::BasicString(const BasicString<CharT, Alloc> &str) noexcept :
+		BasicString<CharT, Alloc> ()
+	{
+		m_content.size = str.m_content.size;
+		if constexpr (sl::memory::IsAllocatorStatefull_v<Alloc>)
+			m_content.allocator = std::allocator_traits<Alloc>::select_on_container_copy_construction(str.m_content.allocator);
+
+		if (this->m_isSSO()) {
+			(void)sl::utils::memcpy<CharT> (m_sso.buffer, str.m_sso.buffer, MAX_SSO_CAPACITY);
+			return;
 		}
+
+		m_heap.capacity = m_content.size + 1;
+		m_heap.start = this->m_allocate(m_heap.capacity);
+		(void)sl::utils::memcpy<CharT> (m_heap.start, str.m_heap.start, m_heap.capacity);
+	}
+
+
+	template <typename CharT, sl::memory::IsAllocator Alloc>
+	constexpr BasicString<CharT, Alloc> &BasicString<CharT, Alloc>::operator=(const BasicString<CharT, Alloc> &str) noexcept {
+		this->~BasicString<CharT, Alloc> ();
+
+		m_content.size = str.m_content.size;
+		if constexpr (sl::memory::IsAllocatorStatefull_v<Alloc>)
+			m_content.allocator = std::allocator_traits<Alloc>::select_on_container_copy_construction(str.m_content.allocator);
+
+		if (this->m_isSSO()) {
+			(void)sl::utils::memcpy<CharT> (m_sso.buffer, str.m_sso.buffer, MAX_SSO_CAPACITY);
+			return *this;
+		}
+
+		m_heap.capacity = m_content.size + 1;
+		m_heap.start = this->m_allocate(m_heap.capacity);
+		(void)sl::utils::memcpy<CharT> (m_heap.start, str.m_heap.start, m_heap.capacity);
+		return *this;
+	}
+
+
+	template <typename CharT, sl::memory::IsAllocator Alloc>
+	constexpr BasicString<CharT, Alloc>::BasicString(BasicString<CharT, Alloc> &&str) noexcept :
+		BasicString<CharT, Alloc> ()
+	{
+		m_content.size = str.m_content.size;
+		str.m_content.size = 0;
+		str.m_content.size.template setFlag<0> (false);
+		if constexpr (sl::memory::IsAllocatorStatefull_v<Alloc>)
+			m_content.allocator = std::move(str.m_content.allocator);
+
+		if (this->m_isSSO())
+			(void)sl::utils::memcpy<CharT> (m_sso.buffer, str.m_sso.buffer, MAX_SSO_CAPACITY);
+		else {
+			m_heap.capacity = str.m_heap.capacity;
+			m_heap.start = str.m_heap.start;
+		}
+
+		(void)sl::utils::memset<CharT> (str.m_sso.buffer, static_cast<CharT> ('\0'), MAX_SSO_CAPACITY);
+	}
+
+
+	template <typename CharT, sl::memory::IsAllocator Alloc>
+	constexpr BasicString<CharT, Alloc> &BasicString<CharT, Alloc>::operator=(BasicString<CharT, Alloc> &&str) noexcept {
+		this->~BasicString<CharT, Alloc> ();
+
+		m_content.size = str.m_content.size;
+		str.m_content.size = 0;
+		str.m_content.size.template setFlag<0> (false);
+		if constexpr (sl::memory::IsAllocatorStatefull_v<Alloc>)
+			m_content.allocator = std::move(str.m_content.allocator);
+
+		if (this->m_isSSO())
+			(void)sl::utils::memcpy<CharT> (m_sso.buffer, str.m_sso.buffer, MAX_SSO_CAPACITY);
+		else {
+			m_heap.capacity = str.m_heap.capacity;
+			m_heap.start = str.m_heap.start;
+		}
+
+		(void)sl::utils::memset<CharT> (str.m_sso.buffer, static_cast<CharT> ('\0'), MAX_SSO_CAPACITY);
+		return *this;
+	}
+
+
+	template <typename CharT, sl::memory::IsAllocator Alloc>
+	constexpr const CharT *BasicString<CharT, Alloc>::getData() const noexcept {
+		if (this->m_isSSO())
+			return m_sso.buffer;
+		return &*m_heap.start;
 	}
 
 
