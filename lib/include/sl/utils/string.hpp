@@ -24,10 +24,10 @@ namespace sl::utils {
 			using pointer = std::allocator_traits<Alloc>::pointer;
 			using const_pointer = std::allocator_traits<Alloc>::const_pointer;
 
-			using iterator = sl::utils::ContinousIterator<BasicString<Alloc>, CharT>;
-			using const_iterator = sl::utils::ContinousIterator<const BasicString<Alloc>, const CharT>;
-			using reverse_iterator = sl::utils::ReverseContinousIterator<BasicString<Alloc>, CharT>;
-			using const_reverse_iterator = sl::utils::ReverseContinousIterator<const BasicString<Alloc>, const CharT>;
+			using iterator = sl::utils::TwoTypesContinousIterator<BasicString<CharT, Alloc>, CharT, pointer>;
+			using const_iterator = sl::utils::TwoTypesContinousIterator<const BasicString<CharT, Alloc>, const CharT, const_pointer>;
+			using reverse_iterator = sl::utils::ReverseTwoTypesContinousIterator<BasicString<CharT, Alloc>, CharT, pointer>;
+			using const_reverse_iterator = sl::utils::ReverseTwoTypesContinousIterator<const BasicString<CharT, Alloc>, const CharT, const_pointer>;
 
 
 			constexpr BasicString(const Alloc &alloc = Alloc()) noexcept;
@@ -39,6 +39,25 @@ namespace sl::utils {
 			constexpr BasicString<CharT, Alloc> &operator=(const BasicString<CharT, Alloc> &str) noexcept;
 			constexpr BasicString(BasicString<CharT, Alloc> &&str) noexcept;
 			constexpr BasicString<CharT, Alloc> &operator=(BasicString<CharT, Alloc> &&str) noexcept;
+
+			constexpr iterator at(difference_type index) noexcept;
+			constexpr const_iterator at(difference_type index) const noexcept;
+
+			constexpr reference operator[](difference_type index) noexcept {return *this->at(index);}
+			constexpr const_reference operator[](difference_type index) const noexcept {return *this->at(index);}
+
+			constexpr iterator begin() noexcept;
+			constexpr iterator end() noexcept;
+			constexpr const_iterator cbegin() const noexcept;
+			constexpr const_iterator cend() const noexcept;
+			constexpr const_iterator begin() const noexcept {return this->cbegin();}
+			constexpr const_iterator end() const noexcept {return this->cend();}
+			constexpr reverse_iterator rbegin() noexcept;
+			constexpr reverse_iterator rend() noexcept;
+			constexpr const_reverse_iterator crbegin() const noexcept;
+			constexpr const_reverse_iterator crend() const noexcept;
+			constexpr const_reverse_iterator rbegin() const noexcept {return this->crbegin();}
+			constexpr const_reverse_iterator rend() const noexcept {return this->crend();}
 
 			constexpr const CharT *getData() const noexcept;
 			constexpr size_type getSize() const noexcept;
@@ -65,15 +84,18 @@ namespace sl::utils {
 
 			Content<Alloc> m_content;
 
-			union {
-				struct {
-					pointer start;
-					size_type capacity;
-				} m_heap;
+			struct Heap {
+				pointer start;
+				size_type capacity;
+			};
 
-				struct {
-					CharT buffer[sizeof(m_heap) / sizeof(CharT)];
-				} m_sso;
+			struct SSO {
+				CharT buffer[sizeof(Heap) / sizeof(CharT)];
+			};
+
+			union {
+				Heap m_heap;
+				SSO m_sso;
 			};
 
 			static constexpr size_type MAX_SSO_CAPACITY {sizeof(m_heap) / sizeof(CharT)};
@@ -81,7 +103,7 @@ namespace sl::utils {
 	};
 
 
-//	static_assert(std::ranges::random_access_range<String>, "String type must fullfill std::ranges::random_access_range concept");
+	static_assert(std::ranges::random_access_range<BasicString<char>>, "String type must fullfill std::ranges::random_access_range concept");
 
 } // namespace sl::utils
 

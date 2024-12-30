@@ -148,6 +148,92 @@ namespace sl::utils {
 
 
 	template <typename CharT, sl::memory::IsAllocator Alloc>
+	constexpr BasicString<CharT, Alloc>::iterator BasicString<CharT, Alloc>::at(difference_type index) noexcept {
+		index %= static_cast<difference_type> (m_content.size);
+		if (index < 0)
+			index += static_cast<difference_type> (m_content.size);
+		if (this->m_isSSO())
+			return this->begin() + index;
+		return this->begin() + index;
+	}
+
+
+	template <typename CharT, sl::memory::IsAllocator Alloc>
+	constexpr BasicString<CharT, Alloc>::const_iterator BasicString<CharT, Alloc>::at(difference_type index) const noexcept {
+		index %= static_cast<difference_type> (m_content.size);
+		if (index < 0)
+			index += static_cast<difference_type> (m_content.size);
+		if (this->m_isSSO())
+			return this->begin() + index;
+		return this->begin() + index;
+	}
+
+
+	template <typename CharT, sl::memory::IsAllocator Alloc>
+	constexpr BasicString<CharT, Alloc>::iterator BasicString<CharT, Alloc>::begin() noexcept {
+		if (this->m_isSSO())
+			return iterator(this, this->m_sso.buffer);
+		return iterator(this, this->m_heap.start);
+	}
+
+
+	template <typename CharT, sl::memory::IsAllocator Alloc>
+	constexpr BasicString<CharT, Alloc>::iterator BasicString<CharT, Alloc>::end() noexcept {
+		if (this->m_isSSO())
+			return iterator(this, this->m_sso.buffer + m_content.size);
+		return iterator(this, this->m_heap.start + m_content.size);
+	}
+
+
+	template <typename CharT, sl::memory::IsAllocator Alloc>
+	constexpr BasicString<CharT, Alloc>::const_iterator BasicString<CharT, Alloc>::cbegin() const noexcept {
+		if (this->m_isSSO())
+			return const_iterator(this, this->m_sso.buffer);
+		return const_iterator(this, this->m_heap.start);
+	}
+
+
+	template <typename CharT, sl::memory::IsAllocator Alloc>
+	constexpr BasicString<CharT, Alloc>::const_iterator BasicString<CharT, Alloc>::cend() const noexcept {
+		if (this->m_isSSO())
+			return const_iterator(this, this->m_sso.buffer + m_content.size);
+		return const_iterator(this, this->m_heap.start + m_content.size);
+	}
+
+
+	template <typename CharT, sl::memory::IsAllocator Alloc>
+	constexpr BasicString<CharT, Alloc>::reverse_iterator BasicString<CharT, Alloc>::rbegin() noexcept {
+		if (this->m_isSSO())
+			return reverse_iterator(this, this->m_sso.buffer + m_content.size - 1);
+		return reverse_iterator(this, this->m_heap.start + m_content.size - 1);
+	}
+
+
+	template <typename CharT, sl::memory::IsAllocator Alloc>
+	constexpr BasicString<CharT, Alloc>::reverse_iterator BasicString<CharT, Alloc>::rend() noexcept {
+		if (this->m_isSSO())
+			return reverse_iterator(this, this->m_sso.buffer - 1);
+		return reverse_iterator(this, this->m_heap.start - 1);
+	}
+
+
+	template <typename CharT, sl::memory::IsAllocator Alloc>
+	constexpr BasicString<CharT, Alloc>::const_reverse_iterator BasicString<CharT, Alloc>::crbegin() const noexcept {
+		if (this->m_isSSO())
+			return const_reverse_iterator(this, this->m_sso.buffer + m_content.size - 1);
+		return const_reverse_iterator(this, this->m_heap.start + m_content.size - 1);
+	}
+
+
+	template <typename CharT, sl::memory::IsAllocator Alloc>
+	constexpr BasicString<CharT, Alloc>::const_reverse_iterator BasicString<CharT, Alloc>::crend() const noexcept {
+		if (this->m_isSSO())
+			return const_reverse_iterator(this, this->m_sso.buffer - 1);
+		return const_reverse_iterator(this, this->m_heap.start - 1);
+	}
+
+
+	template <typename CharT, sl::memory::IsAllocator Alloc>
 	constexpr const CharT *BasicString<CharT, Alloc>::getData() const noexcept {
 		if (this->m_isSSO())
 			return m_sso.buffer;
