@@ -224,6 +224,29 @@ namespace sl::utils {
 
 
 	template <typename CharT, sl::memory::IsAllocator Alloc>
+	constexpr BasicString<CharT, Alloc>::iterator BasicString<CharT, Alloc>::insert(difference_type position, const sl::utils::BasicString<CharT, Alloc> &str) noexcept {
+		position = this->m_normalizeIndex(position, m_content.size + 1);
+		(void)this->reserve(m_content.size + str.m_content.size);
+
+		if (this->m_isSSO()) {
+			(void)sl::utils::memmove(m_sso.buffer + position + str.m_content.size, m_sso.buffer + position, m_content.size - position + 1);
+			(void)sl::utils::memmove(m_sso.buffer + position, str.m_sso.buffer, str.m_content.size);
+			m_content.size += str.m_content.size;
+			return this->begin() + position;
+		}
+
+		(void)sl::utils::memmove(m_heap.start + position + str.m_content.size, m_heap.start + position, m_content.size - position + 1);
+		if (str.m_isSSO())
+			(void)sl::utils::memmove(m_heap.start + position, str.m_sso.buffer, str.m_content.size);
+		else
+			(void)sl::utils::memmove(m_heap.start + position, str.m_heap.start, str.m_content.size);
+
+		m_content.size += str.m_content.size;
+		return this->begin() + position;
+	}
+
+
+	template <typename CharT, sl::memory::IsAllocator Alloc>
 	constexpr BasicString<CharT, Alloc>::iterator BasicString<CharT, Alloc>::erase(difference_type position, size_type count) noexcept {
 		position = this->m_normalizeIndex(position);
 		if (count > m_content.size)

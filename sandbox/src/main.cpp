@@ -62,6 +62,14 @@ class SandboxApp final : public sl::Application {
 			str2.shrinkToFit();
 			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
 			str2.shrinkToFit();
+
+			std::println("------------ INSERTION OF OTHER STRING -------------");
+			str2.pushFront("- Hi. - ");
+			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
+			str2.pushBack(". Idk what to say");
+			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
+			str2.insert(str2.rbegin() + 17, ". Ooh");
+			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
 		}
 
 		~SandboxApp() override {

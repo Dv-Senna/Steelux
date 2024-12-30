@@ -45,11 +45,23 @@ namespace sl::utils {
 
 			constexpr iterator insert(difference_type position, CharT value, size_type count = 1) noexcept;
 			constexpr iterator insert(const iterator &position, CharT value, size_type count = 1) noexcept {return this->insert(position - this->begin(), value, count);}
+			constexpr iterator insert(const iterator &start, const iterator &end, CharT value) noexcept {return this->insert(start - this->begin(), value, end - start);}
+			constexpr iterator insert(const reverse_iterator &position, CharT value, size_type count = 1) noexcept {return this->insert(this->rbegin() - position, value, count);}
+			constexpr iterator insert(const reverse_iterator &start, const reverse_iterator &end, CharT value) noexcept {return this->insert(this->rbegin() - end, value, end - start);}
 			constexpr iterator pushFront(CharT value, size_type count = 1) noexcept {return this->insert(this->begin(), value, count);}
 			constexpr iterator pushBack(CharT value, size_type count = 1) noexcept {return this->insert(this->end(), value, count);}
 
+			constexpr iterator insert(difference_type position, const sl::utils::BasicString<CharT, Alloc> &str) noexcept;
+			constexpr iterator insert(const iterator &position, const sl::utils::BasicString<CharT, Alloc> &str) noexcept {return this->insert(position - this->begin(), str);}
+			constexpr iterator insert(const reverse_iterator &position, const sl::utils::BasicString<CharT, Alloc> &str) noexcept {return this->insert(this->rbegin() - position - 1, str);}
+			constexpr iterator pushFront(const sl::utils::BasicString<CharT, Alloc> &str) noexcept {return this->insert(this->begin(), str);}
+			constexpr iterator pushBack(const sl::utils::BasicString<CharT, Alloc> &str) noexcept {return this->insert(this->end(), str);}
+
 			constexpr iterator erase(difference_type position, size_type count = 1) noexcept;
 			constexpr iterator erase(const iterator &position, size_type count = 1) noexcept {return this->erase(position - this->begin(), count);}
+			constexpr iterator erase(const iterator &start, const iterator &end) noexcept {return this->erase(this->rbegin() - end, end - start);}
+			constexpr iterator erase(const reverse_iterator &position, size_type count = 1) noexcept {return this->erase(this->rbegin() - position, count);}
+			constexpr iterator erase(const reverse_iterator &start, const reverse_iterator &end) noexcept {return this->erase(start - this->begin(), end - start);}
 			constexpr iterator popFront(size_type count = 1) noexcept {return this->erase(this->begin(), count);}
 			constexpr iterator popBack(size_type count = 1) noexcept {return this->erase(this->end() - count, count);}
 
