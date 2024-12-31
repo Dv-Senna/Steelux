@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <cstring>
 
 #include "sl/memory/allocator.hpp"
 #include "sl/utils/iterator.hpp"
@@ -48,6 +49,13 @@ namespace sl::utils {
 			constexpr BasicString<CharT, Alloc> &operator=(const BasicString<CharT, Alloc> &str) noexcept;
 			constexpr BasicString(BasicString<CharT, Alloc> &&str) noexcept;
 			constexpr BasicString<CharT, Alloc> &operator=(BasicString<CharT, Alloc> &&str) noexcept;
+
+			template <typename ...Types>
+			requires std::same_as<Alloc, typename ConcatStringView<Types...>::Allocator>
+			constexpr BasicString(const ConcatStringView<Types...> &csv) noexcept;
+			template <typename ...Types>
+			requires std::same_as<Alloc, typename ConcatStringView<Types...>::Allocator>
+			constexpr BasicString<CharT, Alloc> &operator=(const ConcatStringView<Types...> &csv) noexcept;
 
 			constexpr size_type reserve(size_type newSize) noexcept;
 			constexpr size_type shrinkToFit() noexcept;
@@ -166,6 +174,10 @@ namespace sl::utils {
 
 	static_assert(std::ranges::random_access_range<BasicString<char>>, "String type must fullfill std::ranges::random_access_range concept");
 
+	template <typename CharT>
+	constexpr std::size_t getSize(const CharT *str) noexcept {return std::strlen(str);}
+	template <typename CharT, typename Alloc>
+	constexpr BasicString<CharT, Alloc>::size_type getSize(const BasicString<CharT, Alloc> &str) noexcept {return str.getSize();}
 
 
 	template <typename ...Types>
@@ -239,6 +251,7 @@ namespace sl::utils {
 				return ConcatStringView<Types..., Types2...> (*this, csv);
 			}
 
+			constexpr operator FirstString() const noexcept {return FirstString(*this);}
 			constexpr const AddressTuple &getTuple() const noexcept {return m_strings;}
 
 		private:
@@ -264,13 +277,11 @@ namespace sl::utils {
 
 	template <typename CharT, sl::memory::IsAllocator Alloc>
 	constexpr auto operator+(const sl::utils::BasicString<CharT, Alloc> &str, const CharT *rhs) noexcept {
-		std::println("RHS : {}", (void*)rhs);
 		return ConcatStringView<sl::utils::BasicString<CharT, Alloc>, const CharT *> (str, rhs);
 	}
 
 	template <typename CharT, sl::memory::IsAllocator Alloc>
 	constexpr auto operator+(const CharT *lhs, const sl::utils::BasicString<CharT, Alloc> &str) noexcept {
-		std::println("LHS : {}", (void*)lhs);
 		return ConcatStringView<const CharT *, sl::utils::BasicString<CharT, Alloc>> (lhs, str);
 	}
 

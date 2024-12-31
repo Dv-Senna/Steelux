@@ -104,13 +104,8 @@ class SandboxApp final : public sl::Application {
 
 			sl::String csv_str1 {"Hello World !"};
 			sl::String csv_str2 {"Something ?"};
-			auto test3 {csv_str2 + "Hello" + csv_str1 + "Hi!" + "IDK what I'm doing"};
-
-			std::println("test3 <0> : {}", std::get<0> (test3.getTuple())->getData());
-			std::println("test3 <1> : {}", std::get<1> (test3.getTuple()));
-			std::println("test3 <2> : {}", std::get<2> (test3.getTuple())->getData());
-			std::println("test3 <3> : {}", std::get<3> (test3.getTuple()));
-			std::println("test3 <4> : {}", std::get<4> (test3.getTuple()));
+			str2 = csv_str2 + "Hello" + csv_str1 + "Hi!" + "IDK what I'm doing";
+			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
 		}
 
 		~SandboxApp() override {

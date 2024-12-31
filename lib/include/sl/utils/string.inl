@@ -59,9 +59,16 @@ namespace sl::utils {
 
 	template<typename CharT, sl::memory::IsAllocator Alloc>
 	constexpr BasicString<CharT, Alloc>::~BasicString() {
-		if (this->m_isSSO())
+		if (this->m_isSSO()) {
+			m_content.size = 0;
+			(void)sl::utils::memset<CharT> (m_sso.buffer, static_cast<CharT> ('\0'), MAX_SSO_CAPACITY);
 			return;
+		}
 		this->m_deallocate(m_heap.start, m_heap.capacity);
+		m_content.size = 0;
+		m_content.size.template setFlag<0> (false);
+		m_heap.start = nullptr;
+		m_heap.capacity = 0;
 	}
 
 
@@ -143,6 +150,61 @@ namespace sl::utils {
 		}
 
 		(void)sl::utils::memset<CharT> (str.m_sso.buffer, static_cast<CharT> ('\0'), MAX_SSO_CAPACITY);
+		return *this;
+	}
+
+
+	template <typename CharT, sl::memory::IsAllocator Alloc>
+	constexpr const auto &__BasicString_dereference(const sl::utils::BasicString<CharT, Alloc> *ptr) noexcept {return *ptr;}
+	template <typename CharT>
+	constexpr CharT *__BasicString_dereference(CharT *value) noexcept {return value;}
+
+	template <typename CharT, sl::memory::IsAllocator Alloc>
+	constexpr auto __BasicString_begin(const sl::utils::BasicString<CharT, Alloc> &str) noexcept {return std::begin(str);}
+	template <typename CharT>
+	constexpr auto __BasicString_begin(CharT *value) noexcept {return value;}
+	template <typename CharT, sl::memory::IsAllocator Alloc>
+	constexpr auto __BasicString_end(const sl::utils::BasicString<CharT, Alloc> &str) noexcept {return std::end(str);}
+	template <typename CharT>
+	constexpr auto __BasicString_end(CharT *value) noexcept {return value + sl::utils::getSize(value);}
+
+
+	template <typename CharT, sl::memory::IsAllocator Alloc>
+	template <typename ...Types>
+	requires std::same_as<Alloc, typename ConcatStringView<Types...>::Allocator>
+	constexpr BasicString<CharT, Alloc>::BasicString(const ConcatStringView<Types...> &csv) noexcept :
+		BasicString<CharT, Alloc> ()
+	{
+		size_type size {};
+		std::apply([&size](auto &&...args) noexcept {
+			size = (static_cast<size_type> (sl::utils::getSize(__BasicString_dereference(args))) + ...);
+		}, csv.getTuple());
+
+		this->reserve(size);
+
+		std::apply([this](auto &&...args) noexcept {
+			(this->pushBack(__BasicString_begin(__BasicString_dereference(args)), __BasicString_end(__BasicString_dereference(args))), ...);
+		}, csv.getTuple());
+	}
+
+
+	template <typename CharT, sl::memory::IsAllocator Alloc>
+	template <typename ...Types>
+	requires std::same_as<Alloc, typename ConcatStringView<Types...>::Allocator>
+	constexpr BasicString<CharT, Alloc> &BasicString<CharT, Alloc>::operator=(const ConcatStringView<Types...> &csv) noexcept {
+		this->~BasicString<CharT, Alloc> ();
+
+		size_type size {};
+		std::apply([&size](auto &&...args) noexcept {
+			size = (static_cast<size_type> (sl::utils::getSize(__BasicString_dereference(args))) + ...);
+		}, csv.getTuple());
+
+		this->reserve(size);
+
+		std::apply([this](auto &&...args) noexcept {
+			(this->pushBack(__BasicString_begin(__BasicString_dereference(args)), __BasicString_end(__BasicString_dereference(args))), ...);
+		}, csv.getTuple());
+
 		return *this;
 	}
 
