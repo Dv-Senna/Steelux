@@ -221,16 +221,69 @@ namespace sl::utils {
 		};
 
 
+		template <typename T>
+		struct RemoveArrayFromType {
+			using Type = T;
+		};
+
+		template <typename T, std::size_t N>
+		struct RemoveArrayFromType<const T(&)[N]> {
+			using Type = const T;
+		};
+
+
+		template <typename T>
+		struct AddPointerToType {
+			using Type = std::conditional_t<
+				std::is_pointer_v<std::remove_reference_t<T>> || std::is_array_v<std::remove_reference_t<T>>,
+				T,
+				std::add_pointer_t<std::add_const_t<T>>
+/*				std::add_pointer_t<std::conditional_t<
+					std::is_array_v<std::remove_reference_t<T>>,
+					typename RemoveArrayFromType<T>::Type,
+					std::add_const_t<T>
+				>>*/
+			>;
+		};
+
+
+		template <typename T>
+		struct AddPointerToTupleElement {
+			using Type = void;
+		};
+
+		template <typename ...Args>
+		struct AddPointerToTupleElement<std::tuple<Args...>> {
+			using Type = std::tuple<typename AddPointerToType<Args>::Type ...>;
+		};
+
 		public:
 			using Left = LeftT;
 			using Right = RightT;
 			using Tuple = TupleConcatenater<typename GetTupleIfAny<LeftT>::Type, typename GetTupleIfAny<RightT>::Type>::Type;
+			using AddressTuple = AddPointerToTupleElement<Tuple>::Type;
 			using FirstString = FirstStringFinder<Tuple>::Type;
 			using CharT = typename FirstString::value_type;
 			using Allocator = typename FirstString::allocator_type;
 
 
+			ConcatStringView(const LeftT &left, const RightT &right) noexcept;
+
+			constexpr const AddressTuple &getTuple() const noexcept {return m_strings;}
+
 		private:
+			static AddressTuple s_concatenateTuples(const LeftT &left, const RightT &right) noexcept;
+
+			template <typename LeftT2, typename RightT2>
+			static AddressTuple s_concatenateTuplesInternal(const LeftT2 &left, const RightT2 &right) noexcept;
+			template <typename ...LeftArgs, typename RightT2>
+			static AddressTuple s_concatenateTuplesInternal(const std::tuple<LeftArgs...> &left, const RightT2 &right) noexcept;
+			template <typename LeftT2, typename ...RightArgs>
+			static AddressTuple s_concatenateTuplesInternal(const LeftT2 &left, const std::tuple<RightArgs...> &right) noexcept;
+			template <typename ...LeftArgs, typename ...RightArgs>
+			static AddressTuple s_concatenateTuplesInternal(const std::tuple<LeftArgs...> &left, const std::tuple<RightArgs...> &right) noexcept;
+
+			AddressTuple m_strings;
 	};
 
 } // namespace sl::utils

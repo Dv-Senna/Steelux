@@ -96,9 +96,22 @@ class SandboxApp final : public sl::Application {
 			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
 
 
+			std::println("------------ CONCAT STRING VIEW -------------");
 			using Test = sl::utils::ConcatStringView<sl::utils::ConcatStringView<const char(&)[6], sl::String>, const char(&)[4]>;
 			static_assert(std::same_as<Test::FirstString, sl::String>);
 			static_assert(std::same_as<Test::Tuple, std::tuple<const char(&)[6], sl::String, const char(&)[4]>>);
+//			static_assert(std::same_as<Test::AddressTuple, std::tuple<const char(*)[6], const sl::String*, const char(*)[4]>>);
+
+			using Test2 = sl::utils::ConcatStringView<const char(&)[6], sl::String>;
+			static_assert(std::same_as<Test2::FirstString, sl::String>);
+			static_assert(std::same_as<Test2::Tuple, std::tuple<const char(&)[6], sl::String>>);
+//			static_assert(std::same_as<Test2::AddressTuple, std::tuple<const char*, const sl::String*>>);
+
+			Test2 test2 {"Hello", sl::String("Hello World !")};
+			Test test {test2, "Hi!"};
+			std::println("<0> : {}", std::get<0> (test.getTuple()));
+			std::println("<1> : {}", std::get<1> (test.getTuple())->getData());
+			std::println("<2> : {}", std::get<2> (test.getTuple()));
 		}
 
 		~SandboxApp() override {
