@@ -68,11 +68,26 @@ namespace sl::utils {
 			constexpr iterator pushFront(CharT value, size_type count = 1) noexcept {return this->insert(this->begin(), value, count);}
 			constexpr iterator pushBack(CharT value, size_type count = 1) noexcept {return this->insert(this->end(), value, count);}
 
-			constexpr iterator insert(difference_type position, const sl::utils::BasicString<CharT, Alloc> &str) noexcept;
-			constexpr iterator insert(const iterator &position, const sl::utils::BasicString<CharT, Alloc> &str) noexcept {return this->insert(position - this->begin(), str);}
-			constexpr iterator insert(const reverse_iterator &position, const sl::utils::BasicString<CharT, Alloc> &str) noexcept {return this->insert(this->rbegin() - position - 1, str);}
-			constexpr iterator pushFront(const sl::utils::BasicString<CharT, Alloc> &str) noexcept {return this->insert(this->begin(), str);}
-			constexpr iterator pushBack(const sl::utils::BasicString<CharT, Alloc> &str) noexcept {return this->insert(this->end(), str);}
+			template <sl::memory::IsAllocator Alloc2>
+			constexpr iterator insert(difference_type position, const sl::utils::BasicString<CharT, Alloc2> &str) noexcept;
+			template <sl::memory::IsAllocator Alloc2>
+			constexpr iterator insert(const iterator &position, const sl::utils::BasicString<CharT, Alloc2> &str) noexcept {return this->insert(position - this->begin(), str);}
+			template <sl::memory::IsAllocator Alloc2>
+			constexpr iterator insert(const reverse_iterator &position, const sl::utils::BasicString<CharT, Alloc2> &str) noexcept {return this->insert(this->rbegin() - position - 1, str);}
+			template <sl::memory::IsAllocator Alloc2>
+			constexpr iterator pushFront(const sl::utils::BasicString<CharT, Alloc2> &str) noexcept {return this->insert(this->begin(), str);}
+			template <sl::memory::IsAllocator Alloc2>
+			constexpr iterator pushBack(const sl::utils::BasicString<CharT, Alloc2> &str) noexcept {return this->insert(this->end(), str);}
+
+			constexpr iterator insert(difference_type position, const CharT *str) noexcept {return this->insert(position, BasicString(str));}
+			constexpr iterator insert(const iterator &position, const CharT *str) noexcept {return this->insert(position, BasicString(str));}
+			constexpr iterator insert(const reverse_iterator &position, const CharT *str) noexcept {return this->insert(position, BasicString(str));}
+			constexpr iterator pushFront(const CharT *str) noexcept {return this->pushFront(BasicString(str));}
+			constexpr iterator pushBack(const CharT *str) noexcept {return this->pushBack(BasicString(str));}
+
+			template <sl::memory::IsAllocator Alloc2>
+			constexpr BasicString<CharT, Alloc> &operator+=(const sl::utils::BasicString<CharT, Alloc2> &str) noexcept {(void)this->pushBack(str); return *this;}
+			constexpr BasicString<CharT, Alloc> &operator+=(const CharT *str) noexcept {(void)this->pushBack(str); return *this;}
 
 			template <std::forward_iterator IT>
 			requires std::convertible_to<typename std::iterator_traits<IT>::value_type, CharT>

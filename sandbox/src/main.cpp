@@ -106,6 +106,8 @@ class SandboxApp final : public sl::Application {
 			sl::String csv_str2 {"Something ?"};
 			str2 = csv_str2 + "Hello" + csv_str1 + "Hi!" + "IDK what I'm doing";
 			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
+			str2 += ". Heeeeeeeere we gooo";
+			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
 		}
 
 		~SandboxApp() override {

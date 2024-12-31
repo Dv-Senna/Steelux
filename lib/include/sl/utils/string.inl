@@ -286,7 +286,8 @@ namespace sl::utils {
 
 
 	template <typename CharT, sl::memory::IsAllocator Alloc>
-	constexpr BasicString<CharT, Alloc>::iterator BasicString<CharT, Alloc>::insert(difference_type position, const sl::utils::BasicString<CharT, Alloc> &str) noexcept {
+	template <sl::memory::IsAllocator Alloc2>
+	constexpr BasicString<CharT, Alloc>::iterator BasicString<CharT, Alloc>::insert(difference_type position, const sl::utils::BasicString<CharT, Alloc2> &str) noexcept {
 		position = this->m_normalizeIndex(position, m_content.size + 1);
 		(void)this->reserve(m_content.size + str.m_content.size);
 
