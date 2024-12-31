@@ -87,13 +87,18 @@ class SandboxApp final : public sl::Application {
 			str2 = str3;
 			str2.shrinkToFit();
 
-			std::println("------------ INSERTION OF ITERATOR RANGES -------------");
+			std::println("------------ INSERTION OF RANGES -------------");
 			str2.pushFront(std::views::iota(0, 4) | std::views::transform([](auto val) -> char {return 'A' + val;}));
 			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
 			str2.pushBack(std::views::iota(10, 14) | std::views::transform([](auto val) -> char {return 'A' + val;}));
 			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
 			str2.insert(str2.begin() + 4, std::views::iota(4, 8) | std::views::transform([](auto val) -> char {return 'A' + val;}));
 			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
+
+
+			using Test = sl::utils::ConcatStringView<sl::utils::ConcatStringView<const char(&)[6], sl::String>, const char(&)[4]>;
+			static_assert(std::same_as<Test::FirstString, sl::String>);
+			static_assert(std::same_as<Test::Tuple, std::tuple<const char(&)[6], sl::String, const char(&)[4]>>);
 		}
 
 		~SandboxApp() override {

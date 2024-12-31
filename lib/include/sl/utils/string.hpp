@@ -2,18 +2,21 @@
 
 #include <cstddef>
 
-#include "sl/core.hpp"
 #include "sl/memory/allocator.hpp"
 #include "sl/utils/iterator.hpp"
 #include "sl/utils/numberWrapper.hpp"
 
 
 namespace sl::utils {
+	template <typename Left, typename Right>
+	class ConcatStringView;
+
+
 	/**
 	 * @brief A class that handles strings in Steelux
 	 */
 	template <typename CharT, sl::memory::IsAllocator Alloc = sl::memory::DefaultAllocator<CharT>>
-	class SL_CORE BasicString final {
+	class BasicString final {
 		template <typename T>
 		static constexpr bool IsRange = std::ranges::range<T>
 			&& !std::convertible_to<T, BasicString<CharT, Alloc>>
@@ -162,6 +165,73 @@ namespace sl::utils {
 
 
 	static_assert(std::ranges::random_access_range<BasicString<char>>, "String type must fullfill std::ranges::random_access_range concept");
+
+
+
+	template <typename LeftT, typename RightT>
+	class ConcatStringView final {
+		template <typename ...Args>
+		using void_t = void;
+
+		template <typename T>
+		struct FirstStringFinder {
+			using Type = void;
+		};
+
+		template <typename CharT, sl::memory::IsAllocator Alloc, typename ...Args>
+		struct FirstStringFinder<std::tuple<sl::utils::BasicString<CharT, Alloc>, Args...>> {
+			using Type = sl::utils::BasicString<CharT, Alloc>;
+		};
+
+		template <typename T, typename ...Args>
+		struct FirstStringFinder<std::tuple<T, Args...>> {
+			using Type = FirstStringFinder<std::tuple<Args...>>::Type;
+		};
+
+
+		template <typename T, typename = void>
+		struct GetTupleIfAny {
+			using Type = T;
+		};
+
+		template <typename T>
+		struct GetTupleIfAny<T, void_t<typename T::Tuple>> {
+			using Type = typename T::Tuple;
+		};
+
+
+		template <typename LeftT2, typename RightT2>
+		struct TupleConcatenater {
+			using Type = std::tuple<LeftT2, RightT2>;
+		};
+
+		template <typename ...LeftArgs, typename RightT2>
+		struct TupleConcatenater<std::tuple<LeftArgs...>, RightT2> {
+			using Type = std::tuple<LeftArgs..., RightT2>;
+		};
+
+		template <typename LeftT2, typename ...RightArgs>
+		struct TupleConcatenater<LeftT2, std::tuple<RightArgs...>> {
+			using Type = std::tuple<LeftT2, RightArgs...>;
+		};
+
+		template <typename ...LeftArgs, typename ...RightArgs>
+		struct TupleConcatenater<std::tuple<LeftArgs...>, std::tuple<RightArgs...>> {
+			using Type = std::tuple<LeftArgs..., RightArgs...>;
+		};
+
+
+		public:
+			using Left = LeftT;
+			using Right = RightT;
+			using Tuple = TupleConcatenater<typename GetTupleIfAny<LeftT>::Type, typename GetTupleIfAny<RightT>::Type>::Type;
+			using FirstString = FirstStringFinder<Tuple>::Type;
+			using CharT = typename FirstString::value_type;
+			using Allocator = typename FirstString::allocator_type;
+
+
+		private:
+	};
 
 } // namespace sl::utils
 
