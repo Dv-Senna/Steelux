@@ -438,68 +438,48 @@ namespace sl::utils {
 
 
 
-
+	template <typename ...Types>
 	template <typename LeftT, typename RightT>
-	ConcatStringView<LeftT, RightT>::ConcatStringView(const LeftT &left, const RightT &right) noexcept :
-		m_strings {s_concatenateTuples(left, right)}
+	constexpr ConcatStringView<Types...>::ConcatStringView(const LeftT &lhs, const RightT &rhs) noexcept :
+		m_strings {std::make_tuple(&lhs, &rhs)}
 	{
 
 	}
 
 
-	template <typename LeftT, typename RightT>
-	ConcatStringView<LeftT, RightT>::AddressTuple ConcatStringView<LeftT, RightT>::s_concatenateTuples(const LeftT &left, const RightT &right) noexcept {
-		if constexpr (std::is_same_v<typename GetTupleIfAny<LeftT>::Type, LeftT> && std::is_same_v<typename GetTupleIfAny<RightT>::Type, RightT>)
-			return s_concatenateTuplesInternal(left, right);
-		else if constexpr (std::is_same_v<typename GetTupleIfAny<LeftT>::Type, LeftT>)
-			return s_concatenateTuplesInternal(left, right.getTuple());
-		else if constexpr (std::is_same_v<typename GetTupleIfAny<RightT>::Type, RightT>)
-			return s_concatenateTuplesInternal(left.getTuple(), right);
-		else
-			return s_concatenateTuplesInternal(left.getTuple(), right.getTuple());
+	template <typename ...Types>
+	template <typename ...Types2, typename RightT>
+	constexpr ConcatStringView<Types...>::ConcatStringView(const ConcatStringView<Types2...> &csv, const RightT &rhs) noexcept :
+		m_strings {std::tuple_cat(csv.getTuple(), std::make_tuple(&rhs))}
+	{
+
 	}
 
 
-	template <typename LeftT, typename RightT>
-	template <typename LeftT2, typename RightT2>
-	ConcatStringView<LeftT, RightT>::AddressTuple ConcatStringView<LeftT, RightT>::s_concatenateTuplesInternal(const LeftT2 &left, const RightT2 &right) noexcept {
-		if constexpr (std::is_same_v<typename AddPointerToType<LeftT2>::Type, LeftT2> && std::is_same_v<typename AddPointerToType<RightT2>::Type, RightT2>)
-			return std::make_tuple(left, right);
-		else if constexpr (std::is_same_v<typename AddPointerToType<LeftT2>::Type, LeftT2>)
-			return std::make_tuple(left, &right);
-		else if constexpr (std::is_same_v<typename AddPointerToType<RightT2>::Type, RightT2>)
-			return std::make_tuple(&left, right);
-		else
-			return std::make_tuple(&left, &right);
+	template <typename ...Types>
+	template <typename LeftT, typename ...Types2>
+	constexpr ConcatStringView<Types...>::ConcatStringView(const LeftT &lhs, const ConcatStringView<Types2...> &csv) noexcept :
+		m_strings {std::tuple_cat(std::make_tuple(&lhs), csv.getTuple())}
+	{
+
 	}
 
 
-	template <typename LeftT, typename RightT>
-	template <typename ...LeftArgs, typename RightT2>
-	ConcatStringView<LeftT, RightT>::AddressTuple ConcatStringView<LeftT, RightT>::s_concatenateTuplesInternal(const std::tuple<LeftArgs...> &left, const RightT2 &right) noexcept {
-		if constexpr (std::is_same_v<typename AddPointerToType<RightT2>::Type, RightT2>)
-			return std::tuple_cat(left, std::make_tuple(right));
-		else
-			return std::tuple_cat(left, std::make_tuple(&right));
+	template <typename ...Types>
+	template <typename ...LeftTs, typename ...RightTs>
+	constexpr ConcatStringView<Types...>::ConcatStringView(const ConcatStringView<LeftTs...> &lhs, const ConcatStringView<RightTs...> &rhs) noexcept :
+		m_strings {std::tuple_cat(lhs.getTuple(), rhs.getTuple())}
+	{
+
 	}
 
 
-	template <typename LeftT, typename RightT>
-	template <typename LeftT2, typename ...RightArgs>
-	ConcatStringView<LeftT, RightT>::AddressTuple ConcatStringView<LeftT, RightT>::s_concatenateTuplesInternal(const LeftT2 &left, const std::tuple<RightArgs...> &right) noexcept {
-		if constexpr (std::is_same_v<typename AddPointerToType<LeftT2>::Type, LeftT2>)
-			return std::tuple_cat(std::make_tuple(left), right);
-		else
-			return std::tuple_cat(std::make_tuple(&left), right);
+	template <typename ...Types>
+	constexpr ConcatStringView<Types...>::ConcatStringView(ConcatStringView<Types...> &&csv) noexcept :
+		m_strings {csv.m_strings}
+	{
+
 	}
 
+ } // namespace sl::utils
 
-	template <typename LeftT, typename RightT>
-	template <typename ...LeftArgs, typename ...RightArgs>
-	ConcatStringView<LeftT, RightT>::AddressTuple ConcatStringView<LeftT, RightT>::s_concatenateTuplesInternal(
-		const std::tuple<LeftArgs...> &left, const std::tuple<RightArgs...> &right
-	) noexcept {
-		return std::tuple_cat(left, right);
-	}
-
-} // namespace sl::utils
