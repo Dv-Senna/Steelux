@@ -189,10 +189,35 @@ namespace sl::utils {
 			using Type = FirstStringFinder<std::tuple<Args...>>::Type;
 		};
 
+		
+		template <typename T>
+		struct RemoveArray {
+			using Type = T;
+		};
+
+		template <typename T, std::size_t N>
+		struct RemoveArray<T[N]> {
+			using Type = T;
+		};
+
+
+		template <typename T>
+		struct AddPointer {
+			using Type = std::conditional_t<
+				std::is_pointer_v<std::remove_reference_t<T>>,
+				std::remove_reference_t<T>,
+				std::add_pointer_t<std::add_const_t<std::conditional_t<
+					std::is_array_v<std::remove_reference_t<T>>,
+					typename RemoveArray<std::remove_reference_t<T>>::Type,
+					std::remove_reference_t<T>
+				>>>
+			>;
+		};
+
 
 		public:
 			using Tuple = std::tuple<Types...>;
-			using AddressTuple = std::tuple<std::add_pointer_t<std::add_const_t<Types>>...>;
+			using AddressTuple = std::tuple<typename AddPointer<Types>::Type...>;
 			using FirstString = FirstStringFinder<Tuple>::Type;
 			using CharT = typename FirstString::value_type;
 			using Allocator = typename FirstString::allocator_type;
@@ -217,6 +242,13 @@ namespace sl::utils {
 			constexpr const AddressTuple &getTuple() const noexcept {return m_strings;}
 
 		private:
+			template <typename T>
+			constexpr const T *s_makePointer(const T &value) noexcept {return &value;}
+/*			template <typename T, std::size_t N>
+			constexpr const T *s_makePointer(const T (&value)[N]) noexcept {return *&value;}*/
+			template <typename T>
+			constexpr const typename RemoveArray<T>::Type *s_makePointer(T *ptr) noexcept {return ptr;}
+
 			AddressTuple m_strings;
 	};
 
@@ -228,6 +260,23 @@ namespace sl::utils {
 	template <typename ...Types, typename T>
 	constexpr auto operator+(const T &lhs, const ConcatStringView<Types...> &csv) noexcept {
 		return ConcatStringView<T, Types...> (lhs, csv);
+	}
+
+	template <typename CharT, sl::memory::IsAllocator Alloc>
+	constexpr auto operator+(const sl::utils::BasicString<CharT, Alloc> &str, const CharT *rhs) noexcept {
+		std::println("RHS : {}", (void*)rhs);
+		return ConcatStringView<sl::utils::BasicString<CharT, Alloc>, const CharT *> (str, rhs);
+	}
+
+	template <typename CharT, sl::memory::IsAllocator Alloc>
+	constexpr auto operator+(const CharT *lhs, const sl::utils::BasicString<CharT, Alloc> &str) noexcept {
+		std::println("LHS : {}", (void*)lhs);
+		return ConcatStringView<const CharT *, sl::utils::BasicString<CharT, Alloc>> (lhs, str);
+	}
+
+	template <typename CharT, sl::memory::IsAllocator Alloc, sl::memory::IsAllocator Alloc2>
+	constexpr auto operator+(const sl::utils::BasicString<CharT, Alloc> &lhs, const sl::utils::BasicString<CharT, Alloc2> &rhs) noexcept {
+		return ConcatStringView<sl::utils::BasicString<CharT, Alloc>, sl::utils::BasicString<CharT, Alloc2>> (lhs, rhs);
 	}
 
 } // namespace sl::utils

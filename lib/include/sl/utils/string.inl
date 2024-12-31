@@ -441,7 +441,7 @@ namespace sl::utils {
 	template <typename ...Types>
 	template <typename LeftT, typename RightT>
 	constexpr ConcatStringView<Types...>::ConcatStringView(const LeftT &lhs, const RightT &rhs) noexcept :
-		m_strings {std::make_tuple(&lhs, &rhs)}
+		m_strings {std::make_tuple(s_makePointer(lhs), s_makePointer(rhs))}
 	{
 
 	}
@@ -450,7 +450,7 @@ namespace sl::utils {
 	template <typename ...Types>
 	template <typename ...Types2, typename RightT>
 	constexpr ConcatStringView<Types...>::ConcatStringView(const ConcatStringView<Types2...> &csv, const RightT &rhs) noexcept :
-		m_strings {std::tuple_cat(csv.getTuple(), std::make_tuple(&rhs))}
+		m_strings {std::tuple_cat(csv.getTuple(), std::make_tuple(s_makePointer(rhs)))}
 	{
 
 	}
@@ -459,7 +459,7 @@ namespace sl::utils {
 	template <typename ...Types>
 	template <typename LeftT, typename ...Types2>
 	constexpr ConcatStringView<Types...>::ConcatStringView(const LeftT &lhs, const ConcatStringView<Types2...> &csv) noexcept :
-		m_strings {std::tuple_cat(std::make_tuple(&lhs), csv.getTuple())}
+		m_strings {std::tuple_cat(std::make_tuple(s_makePointer(lhs)), csv.getTuple())}
 	{
 
 	}
