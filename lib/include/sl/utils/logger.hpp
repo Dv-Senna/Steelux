@@ -55,6 +55,8 @@ namespace sl::utils {
 			std::ostream *m_stream;
 	};
 
+	extern Logger mainLogger;
+
 } // namespace sl::utils
 
 #include "sl/utils/logger.inl"
