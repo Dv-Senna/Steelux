@@ -118,6 +118,17 @@ class SandboxApp final : public sl::Application {
 			std::println("~sl::utils::LogSeverity::eWarn : {}", ~sl::utils::LogSeverity::eWarn);
 			std::println("~sl::utils::LogSeverity::eWarn<4> : {:4}", ~sl::utils::LogSeverity::eWarn);
 			std::println("sl::utils::LogSeverity::eWarn | sl::utils::LogSeverity::eError : {}", sl::utils::LogSeverity::eWarn | sl::utils::LogSeverity::eError);
+
+			str2 = str3;
+			str2.shrinkToFit();
+
+			std::println("------------ LOGGER -------------");
+			sl::utils::Logger logger {"default"};
+			logger.setSeverityMask(~sl::utils::LogSeverity::eDebug);
+			logger.debug("Debug {}", str2);
+			logger.info("Info {}", str2);
+			logger.warn("Warning {}", str2);
+			logger.error("Error {}", str2);
 		}
 
 		~SandboxApp() override {
