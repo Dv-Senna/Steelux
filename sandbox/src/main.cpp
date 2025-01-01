@@ -124,7 +124,6 @@ class SandboxApp final : public sl::Application {
 
 			std::println("------------ LOGGER -------------");
 			sl::utils::Logger logger {"default"};
-			logger.setSeverityMask(~sl::utils::LogSeverity::eDebug);
 			logger.debug("Debug {}", str2);
 			logger.info("Info {}", str2);
 			logger.warn("Warning {}", str2);

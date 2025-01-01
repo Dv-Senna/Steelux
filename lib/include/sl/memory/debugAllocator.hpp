@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <chrono>
+#include <string>
 
 #include "sl/core.hpp"
 #include "sl/memory/allocatorTraits.hpp"
@@ -31,6 +32,8 @@ namespace sl::memory {
 	};
 
 	static_assert(sl::memory::IsAllocator<DebugAllocator<char>>);
+
+	void __DebugAllocator_print(const std::string &typeName, std::size_t allocationCount, float averageMsBetweenAllocation);
 
 } // namespace sl::memory
 

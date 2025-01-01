@@ -37,7 +37,7 @@ namespace sl::memory {
 		}
 	#endif
 
-		std::println("\033[33mDEBUG ALLOCATOR : {}\n\t- Count : {}\n\t- Time : {}[ms]\033[m", typeName, s_allocationCount, s_averageMsBetweenAllocation);
+		sl::memory::__DebugAllocator_print(typeName, s_allocationCount, s_averageMsBetweenAllocation);
 	}
 
 

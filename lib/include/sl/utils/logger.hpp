@@ -16,6 +16,7 @@ namespace sl::utils {
 	};
 
 	class SL_CORE Logger {
+		using String = sl::utils::BasicString<char, std::allocator<char>>;
 		public:
 			/* 0 : log's content
 			 * 1 : logger's name
@@ -23,14 +24,14 @@ namespace sl::utils {
 			 * 3 : log's color start
 			 * 4 : log's color end
 			 * */
-			using FormatString = std::format_string<std::string, const sl::String&, sl::String&, sl::String&, sl::String>;
+			using FormatString = std::format_string<std::string, const String&, String&, String&, String>;
 			static constexpr FormatString DEFAULT_FORMAT_STRING {"{3}[{1}] {2} > {0}{4}"};
 			static constexpr sl::utils::FlagField<LogSeverity> DEFAULT_SEVERITY_MASK {LogSeverity::eDebug | LogSeverity::eInfo | LogSeverity::eWarn | LogSeverity::eError};
 
-			constexpr Logger(const sl::String &name, std::ostream &stream = std::cout) noexcept;
-			constexpr Logger(const sl::String &name, sl::utils::FlagField<LogSeverity> severityMask, std::ostream &stream = std::cout) noexcept;
-			constexpr Logger(const sl::String &name, FormatString formatString, std::ostream &stream = std::cout) noexcept;
-			constexpr Logger(const sl::String &name, sl::utils::FlagField<LogSeverity> severityMask, FormatString formatString, std::ostream &stream = std::cout) noexcept;
+			constexpr Logger(const String &name, std::ostream &stream = std::cout) noexcept;
+			constexpr Logger(const String &name, sl::utils::FlagField<LogSeverity> severityMask, std::ostream &stream = std::cout) noexcept;
+			constexpr Logger(const String &name, FormatString formatString, std::ostream &stream = std::cout) noexcept;
+			constexpr Logger(const String &name, sl::utils::FlagField<LogSeverity> severityMask, FormatString formatString, std::ostream &stream = std::cout) noexcept;
 
 			template <typename ...Args>
 			constexpr void log(LogSeverity severity, std::format_string<Args...> str, Args &&...args) noexcept;
@@ -48,7 +49,7 @@ namespace sl::utils {
 
 
 		private:
-			const sl::String m_name;
+			const String m_name;
 			FormatString m_formatString;
 			sl::utils::FlagField<LogSeverity> m_severityMask;
 			std::ostream *m_stream;
