@@ -2,11 +2,11 @@
 
 
 namespace sl::utils {
-	std::string toString(sl::utils::PackedEnumString value) noexcept {
+	sl::String toString(sl::utils::PackedEnumString value) noexcept {
 		constexpr std::size_t MAX_STRING_SIZE {10};
 		constexpr std::size_t CHARACTER_SIZE {6};
 		constexpr std::size_t CHARACTER_FILTER {0b00111111};
-		std::string result {};
+		sl::String result {};
 		result.reserve(MAX_STRING_SIZE);
 
 		for (std::size_t i {0}; i < MAX_STRING_SIZE; ++i) {
@@ -26,7 +26,7 @@ namespace sl::utils {
 				character = '0' + current - 52;
 			else if (current == 62)
 				character = '_';
-			result.push_back(character);
+			result.pushBack(character);
 		}
 
 		return result;

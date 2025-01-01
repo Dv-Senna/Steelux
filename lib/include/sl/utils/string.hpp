@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <cstring>
+#include <optional>
 
 #include "sl/memory/allocator.hpp"
 #include "sl/utils/iterator.hpp"
@@ -141,7 +142,7 @@ namespace sl::utils {
 			constexpr const_reverse_iterator rbegin() const noexcept {return this->crbegin();}
 			constexpr const_reverse_iterator rend() const noexcept {return this->crend();}
 
-			constexpr bool isEmpty() const noexcept {return m_content.size == 0;}
+			constexpr bool isEmpty() const noexcept {return this->getSize() == 0;}
 			constexpr const CharT *getData() const noexcept;
 			constexpr size_type getSize() const noexcept;
 			constexpr size_type getCapacity() const noexcept;
@@ -305,8 +306,34 @@ namespace sl::utils {
 		return ConcatStringView<sl::utils::BasicString<CharT, Alloc>, sl::utils::BasicString<CharT, Alloc2>> (lhs, rhs);
 	}
 
+
+	template <std::integral T, typename CharT, sl::memory::IsAllocator Alloc>
+	constexpr std::optional<T> stringToNumber(const sl::utils::BasicString<CharT, Alloc> &string) noexcept;
+	template <std::floating_point T, typename CharT, sl::memory::IsAllocator Alloc>
+	constexpr std::optional<T> stringToNumber(const sl::utils::BasicString<CharT, Alloc> &string) noexcept;
+
+	
+	template <typename CharT, sl::memory::IsAllocator Alloc>
+	inline std::ostream &operator<<(std::ostream &stream, const sl::utils::BasicString<CharT, Alloc> &str) noexcept {
+		stream << str.getData();
+		return stream;
+	}
+
+	namespace literals {
+		constexpr sl::utils::BasicString<char> operator ""_s(const char *str, std::size_t length) noexcept {
+			return sl::utils::BasicString<char> (str, length);
+		}
+	} // namespace literals
+
 } // namespace sl::utils
 
+
+template <typename CharT, sl::memory::IsAllocator Alloc>
+struct std::formatter<sl::utils::BasicString<CharT, Alloc>> : public std::formatter<const CharT*> {
+	auto format(const sl::utils::BasicString<CharT, Alloc> &str, std::format_context &ctx) const {
+		return std::formatter<const CharT*>::format(str.getData(), ctx);
+	}
+};
 
 #include "sl/utils/string.inl"
 

@@ -13,16 +13,17 @@
 namespace sl::memory {
 	template <typename T>
 	constexpr DebugAllocator<T>::DebugAllocator() noexcept {
-		++s_instanceCount;
+		if (!std::is_constant_evaluated())
+			++s_instanceCount;
 	}
 
 
 	template <typename T>
 	constexpr DebugAllocator<T>::~DebugAllocator() {
+		if (std::is_constant_evaluated())
+			return;
 		--s_instanceCount;
 		if (s_instanceCount != 0)
-			return;
-		if (std::is_constant_evaluated())
 			return;
 
 		std::string typeName {typeid(T).name()};

@@ -29,48 +29,48 @@ class SandboxApp final : public sl::Application {
 			const sl::String str3 {std::move(str1)};
 			
 			std::println("str1 : {} ({}, {})", (void*)str1.getData(), str1.getSize(), str1.getCapacity());
-			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
-			std::println("str3 : {} ({}, {})", str3.getData(), str2.getSize(), str2.getCapacity());
+			std::println("str2 : {} ({}, {})", str2, str2.getSize(), str2.getCapacity());
+			std::println("str3 : {} ({}, {})", str3, str2.getSize(), str2.getCapacity());
 
 			str2[-1] = str3[3];
-			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
+			std::println("str2 : {} ({}, {})", str2, str2.getSize(), str2.getCapacity());
 
 			for (const auto &c : str3)
 				std::println("c : {}", c);
 			for (auto &c : str2)
 				++c;
-			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
+			std::println("str2 : {} ({}, {})", str2, str2.getSize(), str2.getCapacity());
 			for (auto &c : str2)
 				--c;
 
 			std::println("------------ START OF INSERTION -------------");
 			str2.pushFront('*', 10);
-			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
+			std::println("str2 : {} ({}, {})", str2, str2.getSize(), str2.getCapacity());
 			str2.pushBack('-', 3);
-			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
+			std::println("str2 : {} ({}, {})", str2, str2.getSize(), str2.getCapacity());
 			str2.insert(str2.begin() + 7, '+', 5);
-			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
+			std::println("str2 : {} ({}, {})", str2, str2.getSize(), str2.getCapacity());
 
 			std::println("------------ START OF ERASION -------------");
 			str2.erase(str2.begin() + 7, 5);
-			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
+			std::println("str2 : {} ({}, {})", str2, str2.getSize(), str2.getCapacity());
 			str2.popBack(3);
-			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
+			std::println("str2 : {} ({}, {})", str2, str2.getSize(), str2.getCapacity());
 			str2.popFront(10);
-			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
+			std::println("str2 : {} ({}, {})", str2, str2.getSize(), str2.getCapacity());
 
 			std::println("------------ SHRINK TO FIT -------------");
 			str2.shrinkToFit();
-			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
+			std::println("str2 : {} ({}, {})", str2, str2.getSize(), str2.getCapacity());
 			str2.shrinkToFit();
 
 			std::println("------------ INSERTION OF OTHER STRING -------------");
 			str2.pushFront("- Hi. - ");
-			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
+			std::println("str2 : {} ({}, {})", str2, str2.getSize(), str2.getCapacity());
 			str2.pushBack(". Idk what to say");
-			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
+			std::println("str2 : {} ({}, {})", str2, str2.getSize(), str2.getCapacity());
 			str2.insert(str2.rbegin() + 17, ". Ooh");
-			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
+			std::println("str2 : {} ({}, {})", str2, str2.getSize(), str2.getCapacity());
 
 			str2 = str3;
 			str2.shrinkToFit();
@@ -78,22 +78,22 @@ class SandboxApp final : public sl::Application {
 			std::println("------------ INSERTION OF ITERATOR RANGES -------------");
 			std::string alphabet {"ABCDEFGHIJKLMNOPQRSTUVWXYZ"};
 			str2.pushFront(alphabet.begin(), alphabet.begin() + 4);
-			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
+			std::println("str2 : {} ({}, {})", str2, str2.getSize(), str2.getCapacity());
 			str2.pushBack(alphabet.begin() + 10, alphabet.begin() + 14);
-			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
+			std::println("str2 : {} ({}, {})", str2, str2.getSize(), str2.getCapacity());
 			str2.insert(str2.begin() + 4, alphabet.begin() + 4, alphabet.begin() + 8);
-			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
+			std::println("str2 : {} ({}, {})", str2, str2.getSize(), str2.getCapacity());
 
 			str2 = str3;
 			str2.shrinkToFit();
 
 			std::println("------------ INSERTION OF RANGES -------------");
 			str2.pushFront(std::views::iota(0, 4) | std::views::transform([](auto val) -> char {return 'A' + val;}));
-			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
+			std::println("str2 : {} ({}, {})", str2, str2.getSize(), str2.getCapacity());
 			str2.pushBack(std::views::iota(10, 14) | std::views::transform([](auto val) -> char {return 'A' + val;}));
-			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
+			std::println("str2 : {} ({}, {})", str2, str2.getSize(), str2.getCapacity());
 			str2.insert(str2.begin() + 4, std::views::iota(4, 8) | std::views::transform([](auto val) -> char {return 'A' + val;}));
-			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
+			std::println("str2 : {} ({}, {})", str2, str2.getSize(), str2.getCapacity());
 
 
 			std::println("------------ CONCAT STRING VIEW -------------");
@@ -105,9 +105,19 @@ class SandboxApp final : public sl::Application {
 			sl::String csv_str1 {"Hello World !"};
 			sl::String csv_str2 {"Something ?"};
 			str2 = csv_str2 + "Hello" + csv_str1 + "Hi!" + "IDK what I'm doing";
-			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
+			std::println("str2 : {} ({}, {})", str2, str2.getSize(), str2.getCapacity());
 			str2 += ". Heeeeeeeere we gooo";
-			std::println("str2 : {} ({}, {})", str2.getData(), str2.getSize(), str2.getCapacity());
+			std::println("str2 : {} ({}, {})", str2, str2.getSize(), str2.getCapacity());
+
+
+			std::println("------------ STRING ENUMS -------------");
+			std::println("sl::Result::eSuccess : {}", sl::Result::eSuccess);
+			std::println("sl::Result::eFailure : {}", sl::Result::eFailure);
+
+			std::println("------------ BIT FLAG ENUMS -------------");
+			std::println("~sl::utils::LogSeverity::eWarn : {}", ~sl::utils::LogSeverity::eWarn);
+			std::println("~sl::utils::LogSeverity::eWarn<4> : {:4}", ~sl::utils::LogSeverity::eWarn);
+			std::println("sl::utils::LogSeverity::eWarn | sl::utils::LogSeverity::eError : {}", sl::utils::LogSeverity::eWarn | sl::utils::LogSeverity::eError);
 		}
 
 		~SandboxApp() override {

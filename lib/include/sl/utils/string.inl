@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstring>
+#include <map>
 
 #include "sl/utils/memory.hpp"
 
@@ -542,6 +543,136 @@ namespace sl::utils {
 		m_strings {csv.m_strings}
 	{
 
+	}
+
+
+
+
+	template <std::integral T, typename CharT, sl::memory::IsAllocator Alloc>
+	constexpr std::optional<T> stringToNumber(const sl::utils::BasicString<CharT, Alloc> &string) noexcept {
+		const sl::utils::BasicString<char> allowedDigits[17] {{}, {},
+			"01", {}, {}, {}, {}, {},
+			"01234567", {},
+			"0123456789", {}, {}, {}, {}, {},
+			"0123456789abcdef"
+		};
+
+		T result {0};
+		if (string.isEmpty())
+			return std::nullopt;
+		bool isPositive {true};
+
+		auto it {string.begin()};
+		if (*it == '-') {
+			if constexpr (std::unsigned_integral<T>)
+				return std::nullopt;
+			else {
+				if (string.getSize() == 1)
+					return std::nullopt;
+				isPositive = false;
+				++it;
+			}
+		}
+
+		else if (*it == '+')
+			++it;
+
+		T base {10};
+		if (*it == '0') {
+			++it;
+			if (*it == 'b') {
+				base = 2;
+				++it;
+			}
+			else if (*it == 'x') {
+				base = 16;
+				++it;
+			}
+			else if (*it == 'o') {
+				base = 8;
+				++it;
+			}
+		}
+
+		const sl::utils::BasicString<char> &baseDigits {allowedDigits[base]};
+
+		for (; it != string.end(); ++it) {
+			auto digit {std::ranges::find(baseDigits, *it)};
+			if (digit == baseDigits.end())
+				return std::nullopt;
+			T value {static_cast<T> (digit - baseDigits.begin())};
+			const T position {static_cast<T> (string.end() - it - 1)};
+			value *= std::pow(base, position);
+			result += value;
+		}
+
+		return isPositive ? result : -result;
+	}
+
+
+	template <std::floating_point T, typename CharT, sl::memory::IsAllocator Alloc>
+	constexpr std::optional<T> stringToNumber(const sl::utils::BasicString<CharT, Alloc> &string) noexcept {
+		const sl::utils::BasicString<char> digits {"0123456789"};
+
+		T result {0};
+		T exponant {0};
+		if (string.isEmpty())
+			return std::nullopt;
+		bool isPositive {true};
+		auto it {string.begin()};
+		if (*it == '-') {
+			if (string.getSize() == 1)
+				return std::nullopt;
+			isPositive = false;
+			++it;
+		}
+
+		if (std::ranges::count(string, '.') > 1)
+			return std::nullopt;
+		if (std::ranges::count(string, 'e') > 1)
+			return std::nullopt;
+		auto dotIt {std::ranges::find(string, '.')};
+		auto sciIt {std::ranges::find(string, 'e')};
+		if (dotIt != string.end() && dotIt > sciIt)
+			return std::nullopt;
+
+		bool exponentIsPositive {true};
+		for (; it != string.end(); ++it) {
+			if (it == dotIt || it == sciIt)
+				continue;
+
+			if (it == sciIt + 1) {
+				if (*it == '-') {
+					exponentIsPositive = false;
+					continue;
+				}
+				if (*it == '+')
+					continue;
+			}
+
+			auto digit {std::ranges::find(digits, *it)};
+			if (digit == digits.end())
+				return std::nullopt;
+			T value {static_cast<T> (digit - digits.begin())};
+
+			if (it > sciIt) {
+				const T position {static_cast<T> (string.end() - it - 1)};
+				value *= std::pow(static_cast<T> (10), position);
+				exponant += value;
+				continue;
+			}
+
+			T position {};
+			if (it > dotIt)
+				position = static_cast<T> (dotIt - it);
+			else
+				position = static_cast<T> (std::min(dotIt, sciIt) - it - 1);
+			value *= std::pow(static_cast<T> (10), position);
+			result += value;
+		}
+
+		result *= std::pow(static_cast<T> (10), exponentIsPositive ? exponant : -exponant);
+		return isPositive ? result : -result;
 	}
 
  } // namespace sl::utils

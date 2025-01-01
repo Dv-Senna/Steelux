@@ -9,27 +9,27 @@
 
 namespace sl::utils {
 	template <sl::utils::StringEnum Enum>
-	std::string toString(Enum value) noexcept {
+	sl::String toString(Enum value) noexcept {
 		return toString(static_cast<sl::utils::PackedEnumString> (value));
 	}
 
 
 	template <sl::utils::FlagEnum Enum>
-	std::string toString(const FlagField<Enum> &field) noexcept {
+	sl::String toString(const FlagField<Enum> &field) noexcept {
 		std::size_t size {0};
 		for (auto value {static_cast<sl::utils::FlagEnumBit> (field)}; value != 0; value >>= 1) ++size;
 		if (size == 0)
 			size = 1;
-		std::string result {};
+		sl::String result {};
 		result.reserve(size);
 
 		for (auto mask {static_cast<sl::utils::FlagEnumBit> (1ULL << (size - 1))}; mask != 0; mask >>= 1)
-			result.push_back(field & static_cast<Enum> (mask) ? '1' : '0');
+			result.pushBack(field & static_cast<Enum> (mask) ? '1' : '0');
 		return result;
 	}
 
 	template <sl::utils::FlagEnum Enum>
-	std::string toString(Enum flag) noexcept {
+	sl::String toString(Enum flag) noexcept {
 		return toString(FlagField<Enum> (flag));
 	}
 
