@@ -45,7 +45,7 @@ namespace sl::utils {
 
 		*m_stream << std::format(
 			m_formatString,
-			std::format<Args...> (str, args...),
+			std::format<Args...> (str, std::forward<Args> (args)...),
 			m_name,
 			severityString,
 			severityColor,

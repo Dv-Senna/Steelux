@@ -37,13 +37,13 @@ namespace sl::utils {
 			template <typename ...Args>
 			constexpr void log(LogSeverity severity, std::format_string<Args...> str, Args &&...args) noexcept;
 			template <typename ...Args>
-			constexpr void debug(std::format_string<Args...> str, Args &&...args) noexcept {return this->log<Args...> (LogSeverity::eDebug, str, args...);}
+			constexpr void debug(std::format_string<Args...> str, Args &&...args) noexcept {return this->log<Args...> (LogSeverity::eDebug, str, std::forward<Args> (args)...);}
 			template <typename ...Args>
-			constexpr void info(std::format_string<Args...> str, Args &&...args) noexcept {return this->log<Args...> (LogSeverity::eInfo, str, args...);}
+			constexpr void info(std::format_string<Args...> str, Args &&...args) noexcept {return this->log<Args...> (LogSeverity::eInfo, str, std::forward<Args> (args)...);}
 			template <typename ...Args>
-			constexpr void warn(std::format_string<Args...> str, Args &&...args) noexcept {return this->log<Args...> (LogSeverity::eWarn, str, args...);}
+			constexpr void warn(std::format_string<Args...> str, Args &&...args) noexcept {return this->log<Args...> (LogSeverity::eWarn, str, std::forward<Args> (args)...);}
 			template <typename ...Args>
-			constexpr void error(std::format_string<Args...> str, Args &&...args) noexcept {return this->log<Args...> (LogSeverity::eError, str, args...);}
+			constexpr void error(std::format_string<Args...> str, Args &&...args) noexcept {return this->log<Args...> (LogSeverity::eError, str, std::forward<Args> (args)...);}
 
 			constexpr void setSeverityMask(sl::utils::FlagField<LogSeverity> severityMask) noexcept {m_severityMask = severityMask;}
 			constexpr void setStream(std::ostream &stream) noexcept {m_stream = &stream;}

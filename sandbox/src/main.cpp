@@ -134,22 +134,19 @@ class SandboxApp final : public sl::Application {
 
 
 			std::println("------------ UNITS -------------");
-			sl::utils::Mibibytes mibibyte {1_MiB};
-			sl::utils::Kibibytes kibibyte {1_MiB};
-			sl::utils::Bytes byte {1_MiB};
-			sl::mainLogger.info("1Mio : {}, {}, {}", mibibyte, kibibyte, byte);
+			sl::mainLogger.info("1Mio : {}, {}, {}", 1_MiB, sl::utils::Kibibytes(1_MiB), sl::utils::Bytes(1_MiB));
 
 
 			std::println("------------ POOL ALLOCATOR -------------");
 			sl::memory::PoolAllocator<int> poolAllocator {64};
 			int *value {poolAllocator.allocate()};
 			*value = 10;
-			std::println("value : {}, {}", (void*)value, *value);
+			sl::mainLogger.info("value : {}, {}", (void*)value, *value);
 			for (const auto &_ : std::views::iota(0, 30))
 				(void)poolAllocator.allocate();
 			//poolAllocator.deallocate(value);
 			value = poolAllocator.allocate();
-			std::println("value : {}, {}", (void*)value, *value);
+			sl::mainLogger.info("value : {}, {}", (void*)value, *value);
 			poolAllocator.deallocate(value);
 		}
 
