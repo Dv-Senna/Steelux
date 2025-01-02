@@ -1,9 +1,72 @@
 #pragma once
 
 #include "sl/memory/poolAllocator.hpp"
+#include "sl/utils/assert.hpp"
 
 
 namespace sl::memory {
+	template <typename T>
+	auto PoolAllocatorIterator<T>::operator==(const PoolAllocatorIterator<T> &it) const noexcept -> bool {
+		return m_allocator == it.m_allocator && m_position == it.m_position;
+	}
+
+
+	template <typename T>
+	auto PoolAllocatorIterator<T>::operator++() noexcept -> PoolAllocatorIterator<T>& {
+		while (
+			static_cast<PoolAllocator<T>::size_type> (m_position) < m_allocator->m_poolSize &&
+			!m_allocator->m_poolState[++m_position]
+		);
+		return *this;
+	}
+
+
+	template <typename T>
+	auto PoolAllocatorIterator<T>::operator++(int) noexcept -> PoolAllocatorIterator<T> {
+		auto tmp {*this};
+		++(*this);
+		return tmp;
+	}
+
+
+	template <typename T>
+	auto PoolAllocatorIterator<T>::operator--() noexcept -> PoolAllocatorIterator<T>& {
+		while (m_position > 0 && !m_allocator->m_poolState[--m_position]);
+		return *this;
+	}
+
+
+	template <typename T>
+	auto PoolAllocatorIterator<T>::operator--(int) noexcept -> PoolAllocatorIterator<T> {
+		auto tmp {*this};
+		--(*this);
+		return tmp;
+	}
+
+
+	template <typename T>
+	auto PoolAllocatorIterator<T>::operator*() const noexcept -> reference {
+		return m_allocator->m_pool[m_position];
+	}
+
+
+	template <typename T>
+	auto PoolAllocatorIterator<T>::operator->() const noexcept -> pointer {
+		return m_allocator->m_pool + m_position;
+	}
+
+
+	template <typename T>
+	PoolAllocatorIterator<T>::PoolAllocatorIterator(PoolAllocator<T> &allocator, difference_type position) noexcept :
+		m_allocator {&allocator},
+		m_position {position}
+	{
+
+	}
+
+
+
+
 	template <typename T>
 	PoolAllocator<T>::PoolAllocator(size_type size) noexcept :
 		m_poolSize {size},
@@ -90,7 +153,9 @@ namespace sl::memory {
 
 	template <typename T>
 	[[nodiscard]]
-	auto PoolAllocator<T>::allocate() noexcept -> pointer {
+	auto PoolAllocator<T>::allocate(size_type n) noexcept -> pointer {
+		SL_TEXT_ASSERT(n == 1, "n of PoolAllocator->allocate must be 1");
+
 		for (size_type i {0}; i < m_poolSize; ++i) {
 			if (m_poolState[i])
 				continue;
@@ -105,7 +170,9 @@ namespace sl::memory {
 
 
 	template <typename T>
-	auto PoolAllocator<T>::deallocate(pointer ptr) noexcept -> void {
+	auto PoolAllocator<T>::deallocate(pointer ptr, size_type n) noexcept -> void {
+		SL_TEXT_ASSERT(n == 1, "n of PoolAllocator->deallocate must be 1");
+
 		difference_type diff {ptr - m_pool};
 		if (diff < 0)
 			return;

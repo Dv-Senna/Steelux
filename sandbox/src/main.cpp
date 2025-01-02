@@ -147,7 +147,9 @@ class SandboxApp final : public sl::Application {
 			//poolAllocator.deallocate(value);
 			value = poolAllocator.allocate();
 			sl::mainLogger.info("value : {}, {}", (void*)value, *value);
-			poolAllocator.deallocate(value);
+			poolAllocator.deallocate(value - 10);
+			for (const auto &allocation : poolAllocator)
+				sl::mainLogger.info("\t- Allocation : {}, {}", (void*)&allocation, allocation);
 		}
 
 		~SandboxApp() override {
