@@ -123,11 +123,11 @@ class SandboxApp final : public sl::Application {
 			str2.shrinkToFit();
 
 			std::println("------------ LOGGER -------------");
-			//sl::utils::mainLogger.setSeverityMask(~sl::utils::LogSeverity::eDebug);
-			sl::utils::mainLogger.debug("Debug {}", str2);
-			sl::utils::mainLogger.info("Info {}", str2);
-			sl::utils::mainLogger.warn("Warning {}", str2);
-			sl::utils::mainLogger.error("Error {}", str2);
+			//sl::mainLogger.setSeverityMask(~sl::utils::LogSeverity::eDebug);
+			sl::mainLogger.debug("Debug {}", str2);
+			sl::mainLogger.info("Info {}", str2);
+			sl::mainLogger.warn("Warning {}", str2);
+			sl::mainLogger.error("Error {}", str2);
 		}
 
 		~SandboxApp() override {
