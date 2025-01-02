@@ -5,6 +5,7 @@
 #include <sl/utils/endianness.hpp>
 #include <sl/utils/string.hpp>
 #include <sl/utils/logger.hpp>
+#include <sl/utils/units.hpp>
 
 #include <memory>
 #include <print>
@@ -128,6 +129,13 @@ class SandboxApp final : public sl::Application {
 			sl::mainLogger.info("Info {}", str2);
 			sl::mainLogger.warn("Warning {}", str2);
 			sl::mainLogger.error("Error {}", str2);
+
+
+			std::println("------------ UNITS -------------");
+			sl::utils::Mibibytes mibibyte {1_MiB};
+			sl::utils::Kibibytes kibibyte {1_MiB};
+			sl::utils::Bytes byte {1_MiB};
+			sl::mainLogger.info("1Mio : {}, {}, {}", mibibyte, kibibyte, byte);
 		}
 
 		~SandboxApp() override {
