@@ -7,6 +7,8 @@
 #include <sl/utils/logger.hpp>
 #include <sl/utils/units.hpp>
 
+#include <sl/memory/poolAllocator.hpp>
+
 #include <memory>
 #include <print>
 #include <ranges>
@@ -136,6 +138,19 @@ class SandboxApp final : public sl::Application {
 			sl::utils::Kibibytes kibibyte {1_MiB};
 			sl::utils::Bytes byte {1_MiB};
 			sl::mainLogger.info("1Mio : {}, {}, {}", mibibyte, kibibyte, byte);
+
+
+			std::println("------------ POOL ALLOCATOR -------------");
+			sl::memory::PoolAllocator<int> poolAllocator {64};
+			int *value {poolAllocator.allocate()};
+			*value = 10;
+			std::println("value : {}, {}", (void*)value, *value);
+			for (const auto &_ : std::views::iota(0, 30))
+				(void)poolAllocator.allocate();
+			//poolAllocator.deallocate(value);
+			value = poolAllocator.allocate();
+			std::println("value : {}, {}", (void*)value, *value);
+			poolAllocator.deallocate(value);
 		}
 
 		~SandboxApp() override {
