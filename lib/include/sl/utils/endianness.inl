@@ -4,7 +4,7 @@
 
 
 namespace sl::utils {
-	constexpr Endianness getCompiletimeEndianness() {
+	constexpr auto getCompiletimeEndianness() noexcept -> Endianness {
 		union {
 			std::uint32_t i;
 			char c[4];
@@ -15,7 +15,7 @@ namespace sl::utils {
 	}
 
 
-	Endianness getRuntimeEndianness() {
+	auto getRuntimeEndianness() noexcept -> Endianness {
 		static Endianness endianness {};
 		static bool firstRun {true};
 		if (!firstRun)

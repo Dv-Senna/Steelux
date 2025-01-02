@@ -19,41 +19,41 @@ namespace sl::utils {
 			constexpr ~ContinousIterator() = default;
 
 			constexpr ContinousIterator(const ContinousIterator<Cont, T> &iterator) noexcept;
-			constexpr ContinousIterator<Cont, T> &operator=(const ContinousIterator<Cont, T> &iterator) noexcept;
+			constexpr auto operator=(const ContinousIterator<Cont, T> &iterator) noexcept -> ContinousIterator<Cont, T>&;
 
 			constexpr operator bool() const noexcept;
 
-			constexpr bool operator==(const ContinousIterator<Cont, T> &iterator) const noexcept;
-			constexpr std::partial_ordering operator<=>(const ContinousIterator<Cont, T> &iterator) const noexcept;
+			constexpr auto operator==(const ContinousIterator<Cont, T> &iterator) const noexcept -> bool;
+			constexpr auto operator<=>(const ContinousIterator<Cont, T> &iterator) const noexcept -> std::partial_ordering;
 
-			constexpr ContinousIterator<Cont, T> &operator+=(difference_type diff) noexcept;
-			constexpr ContinousIterator<Cont, T> &operator-=(difference_type diff) noexcept;
+			constexpr auto operator+=(difference_type diff) noexcept -> ContinousIterator<Cont, T>&;
+			constexpr auto operator-=(difference_type diff) noexcept -> ContinousIterator<Cont, T>&;
 			template <std::integral DIFF>
-			constexpr ContinousIterator<Cont, T> &operator+=(DIFF diff) noexcept {return *this += static_cast<difference_type> (diff);}
+			constexpr auto operator+=(DIFF diff) noexcept -> ContinousIterator<Cont, T>& {return *this += static_cast<difference_type> (diff);}
 			template <std::integral DIFF>
-			constexpr ContinousIterator<Cont, T> &operator-=(DIFF diff) noexcept {return *this -= static_cast<difference_type> (diff);}
+			constexpr auto operator-=(DIFF diff) noexcept -> ContinousIterator<Cont, T>& {return *this -= static_cast<difference_type> (diff);}
 
-			constexpr ContinousIterator<Cont, T> &operator++() noexcept;
-			constexpr ContinousIterator<Cont, T> operator++(int) noexcept;
-			constexpr ContinousIterator<Cont, T> &operator--() noexcept;
-			constexpr ContinousIterator<Cont, T> operator--(int) noexcept;
+			constexpr auto operator++() noexcept -> ContinousIterator<Cont, T>&;
+			constexpr auto operator++(int) noexcept -> ContinousIterator<Cont, T>;
+			constexpr auto operator--() noexcept -> ContinousIterator<Cont, T>&;
+			constexpr auto operator--(int) noexcept -> ContinousIterator<Cont, T>;
 
-			constexpr ContinousIterator<Cont, T> operator+(difference_type diff) const noexcept;
-			constexpr ContinousIterator<Cont, T> operator-(difference_type diff) const noexcept;
+			constexpr auto operator+(difference_type diff) const noexcept -> ContinousIterator<Cont, T>;
+			constexpr auto operator-(difference_type diff) const noexcept -> ContinousIterator<Cont, T>;
 			template <std::integral DIFF>
-			constexpr ContinousIterator<Cont, T> operator+(DIFF diff) const noexcept {return *this + static_cast<difference_type> (diff);}
+			constexpr auto operator+(DIFF diff) const noexcept -> ContinousIterator<Cont, T> {return *this + static_cast<difference_type> (diff);}
 			template <std::integral DIFF>
-			constexpr ContinousIterator<Cont, T> operator-(DIFF diff) const noexcept {return *this - static_cast<difference_type> (diff);}
+			constexpr auto operator-(DIFF diff) const noexcept -> ContinousIterator<Cont, T> {return *this - static_cast<difference_type> (diff);}
 
-			constexpr difference_type operator-(const ContinousIterator<Cont, T> &iterator) const noexcept;
+			constexpr auto operator-(const ContinousIterator<Cont, T> &iterator) const noexcept -> difference_type;
 
-			constexpr reference operator*() const noexcept;
-			constexpr pointer operator->() const noexcept;
+			constexpr auto operator*() const noexcept -> reference;
+			constexpr auto operator->() const noexcept -> pointer;
 
-			constexpr reference operator[](difference_type diff) const noexcept;
+			constexpr auto operator[](difference_type diff) const noexcept -> reference;
 
-			constexpr Cont *getContainer() const noexcept {return m_container;}
-			constexpr pointer getPtr() const noexcept {return m_ptr;}
+			constexpr auto getContainer() const noexcept -> Cont* {return m_container;}
+			constexpr auto getPtr() const noexcept -> pointer {return m_ptr;}
 
 
 		protected:
@@ -62,7 +62,7 @@ namespace sl::utils {
 	};
 
 	template <typename Cont, typename T>
-	constexpr ContinousIterator<Cont, T> operator+(typename ContinousIterator<Cont, T>::difference_type diff, const ContinousIterator<Cont, T> &iterator) noexcept {
+	constexpr auto operator+(typename ContinousIterator<Cont, T>::difference_type diff, const ContinousIterator<Cont, T> &iterator) noexcept -> ContinousIterator<Cont, T> {
 		return iterator + diff;
 	}
 
@@ -86,37 +86,37 @@ namespace sl::utils {
 
 			constexpr operator bool() const noexcept;
 
-			constexpr bool operator==(const ReverseContinousIterator<Cont, T> &iterator) const noexcept;
-			constexpr std::partial_ordering operator<=>(const ReverseContinousIterator<Cont, T> &iterator) const noexcept;
+			constexpr auto operator==(const ReverseContinousIterator<Cont, T> &iterator) const noexcept -> bool;
+			constexpr auto operator<=>(const ReverseContinousIterator<Cont, T> &iterator) const noexcept -> std::partial_ordering;
 
-			constexpr ReverseContinousIterator<Cont, T> &operator+=(difference_type diff) noexcept;
-			constexpr ReverseContinousIterator<Cont, T> &operator-=(difference_type diff) noexcept;
+			constexpr auto operator+=(difference_type diff) noexcept -> ReverseContinousIterator<Cont, T>&;
+			constexpr auto operator-=(difference_type diff) noexcept -> ReverseContinousIterator<Cont, T>&;
 			template <std::integral DIFF>
-			constexpr ReverseContinousIterator<Cont, T> &operator+=(DIFF diff) noexcept {return *this += static_cast<difference_type> (diff);}
+			constexpr auto operator+=(DIFF diff) noexcept -> ReverseContinousIterator<Cont, T>& {return *this += static_cast<difference_type> (diff);}
 			template <std::integral DIFF>
-			constexpr ReverseContinousIterator<Cont, T> &operator-=(DIFF diff) noexcept {return *this -= static_cast<difference_type> (diff);}
+			constexpr auto operator-=(DIFF diff) noexcept -> ReverseContinousIterator<Cont, T>& {return *this -= static_cast<difference_type> (diff);}
 
-			constexpr ReverseContinousIterator<Cont, T> &operator++() noexcept;
-			constexpr ReverseContinousIterator<Cont, T> operator++(int) noexcept;
-			constexpr ReverseContinousIterator<Cont, T> &operator--() noexcept;
-			constexpr ReverseContinousIterator<Cont, T> operator--(int) noexcept;
+			constexpr auto operator++() noexcept -> ReverseContinousIterator<Cont, T>&;
+			constexpr auto operator++(int) noexcept -> ReverseContinousIterator<Cont, T>;
+			constexpr auto operator--() noexcept -> ReverseContinousIterator<Cont, T>&;
+			constexpr auto operator--(int) noexcept -> ReverseContinousIterator<Cont, T>;
 
-			constexpr ReverseContinousIterator<Cont, T> operator+(difference_type diff) const noexcept;
-			constexpr ReverseContinousIterator<Cont, T> operator-(difference_type diff) const noexcept;
+			constexpr auto operator+(difference_type diff) const noexcept -> ReverseContinousIterator<Cont, T>;
+			constexpr auto operator-(difference_type diff) const noexcept -> ReverseContinousIterator<Cont, T>;
 			template <std::integral DIFF>
-			constexpr ReverseContinousIterator<Cont, T> operator+(DIFF diff) const noexcept {return *this + static_cast<difference_type> (diff);}
+			constexpr auto operator+(DIFF diff) const noexcept -> ReverseContinousIterator<Cont, T> {return *this + static_cast<difference_type> (diff);}
 			template <std::integral DIFF>
-			constexpr ReverseContinousIterator<Cont, T> operator-(DIFF diff) const noexcept {return *this - static_cast<difference_type> (diff);}
+			constexpr auto operator-(DIFF diff) const noexcept -> ReverseContinousIterator<Cont, T> {return *this - static_cast<difference_type> (diff);}
 
-			constexpr difference_type operator-(const ReverseContinousIterator<Cont, T> &iterator) const noexcept;
+			constexpr auto operator-(const ReverseContinousIterator<Cont, T> &iterator) const noexcept -> difference_type;
 
-			constexpr reference operator*() const noexcept;
-			constexpr pointer operator->() const noexcept;
+			constexpr auto operator*() const noexcept -> reference;
+			constexpr auto operator->() const noexcept -> pointer;
 
-			constexpr reference operator[](difference_type diff) const noexcept;
+			constexpr auto operator[](difference_type diff) const noexcept -> reference;
 
-			constexpr Cont *getContainer() const noexcept {return m_container;}
-			constexpr pointer getPtr() const noexcept {return m_ptr;}
+			constexpr auto getContainer() const noexcept -> Cont* {return m_container;}
+			constexpr auto getPtr() const noexcept -> pointer {return m_ptr;}
 
 
 		protected:
@@ -125,7 +125,9 @@ namespace sl::utils {
 	};
 
 	template <typename Cont, typename T>
-	constexpr ReverseContinousIterator<Cont, T> operator+(typename ReverseContinousIterator<Cont, T>::difference_type diff, const ReverseContinousIterator<Cont, T> &iterator) noexcept {
+	constexpr auto operator+(
+		typename ReverseContinousIterator<Cont, T>::difference_type diff, const ReverseContinousIterator<Cont, T> &iterator
+	) noexcept -> ReverseContinousIterator<Cont, T> {
 		return iterator + diff;
 	}
 
@@ -153,37 +155,37 @@ namespace sl::utils {
 
 			constexpr operator bool() const noexcept;
 
-			constexpr bool operator==(const BasicTwoTypesContinousIterator<Cont, T, Ptr> &iterator) const noexcept;
-			constexpr std::partial_ordering operator<=>(const BasicTwoTypesContinousIterator<Cont, T, Ptr> &iterator) const noexcept;
+			constexpr auto operator==(const BasicTwoTypesContinousIterator<Cont, T, Ptr> &iterator) const noexcept -> bool;
+			constexpr auto operator<=>(const BasicTwoTypesContinousIterator<Cont, T, Ptr> &iterator) const noexcept -> std::partial_ordering;
 
-			constexpr BasicTwoTypesContinousIterator<Cont, T, Ptr> &operator+=(difference_type diff) noexcept;
-			constexpr BasicTwoTypesContinousIterator<Cont, T, Ptr> &operator-=(difference_type diff) noexcept;
+			constexpr auto operator+=(difference_type diff) noexcept -> BasicTwoTypesContinousIterator<Cont, T, Ptr>&;
+			constexpr auto operator-=(difference_type diff) noexcept -> BasicTwoTypesContinousIterator<Cont, T, Ptr>&;
 			template <std::integral DIFF>
-			constexpr BasicTwoTypesContinousIterator<Cont, T, Ptr> &operator+=(DIFF diff) noexcept {return *this += static_cast<difference_type> (diff);}
+			constexpr auto operator+=(DIFF diff) noexcept -> BasicTwoTypesContinousIterator<Cont, T, Ptr>& {return *this += static_cast<difference_type> (diff);}
 			template <std::integral DIFF>
-			constexpr BasicTwoTypesContinousIterator<Cont, T, Ptr> &operator-=(DIFF diff) noexcept {return *this -= static_cast<difference_type> (diff);}
+			constexpr auto operator-=(DIFF diff) noexcept -> BasicTwoTypesContinousIterator<Cont, T, Ptr>& {return *this -= static_cast<difference_type> (diff);}
 
-			constexpr BasicTwoTypesContinousIterator<Cont, T, Ptr> &operator++() noexcept;
-			constexpr BasicTwoTypesContinousIterator<Cont, T, Ptr> operator++(int) noexcept;
-			constexpr BasicTwoTypesContinousIterator<Cont, T, Ptr> &operator--() noexcept;
-			constexpr BasicTwoTypesContinousIterator<Cont, T, Ptr> operator--(int) noexcept;
+			constexpr auto operator++() noexcept -> BasicTwoTypesContinousIterator<Cont, T, Ptr>&;
+			constexpr auto operator++(int) noexcept -> BasicTwoTypesContinousIterator<Cont, T, Ptr>;
+			constexpr auto operator--() noexcept -> BasicTwoTypesContinousIterator<Cont, T, Ptr>&;
+			constexpr auto operator--(int) noexcept -> BasicTwoTypesContinousIterator<Cont, T, Ptr>;
 
-			constexpr BasicTwoTypesContinousIterator<Cont, T, Ptr> operator+(difference_type diff) const noexcept;
-			constexpr BasicTwoTypesContinousIterator<Cont, T, Ptr> operator-(difference_type diff) const noexcept;
+			constexpr auto operator+(difference_type diff) const noexcept -> BasicTwoTypesContinousIterator<Cont, T, Ptr>;
+			constexpr auto operator-(difference_type diff) const noexcept -> BasicTwoTypesContinousIterator<Cont, T, Ptr>;
 			template <std::integral DIFF>
-			constexpr BasicTwoTypesContinousIterator<Cont, T, Ptr> operator+(DIFF diff) const noexcept {return *this + static_cast<difference_type> (diff);}
+			constexpr auto operator+(DIFF diff) const noexcept -> BasicTwoTypesContinousIterator<Cont, T, Ptr> {return *this + static_cast<difference_type> (diff);}
 			template <std::integral DIFF>
-			constexpr BasicTwoTypesContinousIterator<Cont, T, Ptr> operator-(DIFF diff) const noexcept {return *this - static_cast<difference_type> (diff);}
+			constexpr auto operator-(DIFF diff) const noexcept -> BasicTwoTypesContinousIterator<Cont, T, Ptr> {return *this - static_cast<difference_type> (diff);}
 
-			constexpr difference_type operator-(const BasicTwoTypesContinousIterator<Cont, T, Ptr> &iterator) const noexcept;
+			constexpr auto operator-(const BasicTwoTypesContinousIterator<Cont, T, Ptr> &iterator) const noexcept -> difference_type;
 
-			constexpr reference operator*() const noexcept;
-			constexpr pointer operator->() const noexcept;
+			constexpr auto operator*() const noexcept -> reference;
+			constexpr auto operator->() const noexcept -> pointer;
 
-			constexpr reference operator[](difference_type diff) const noexcept;
+			constexpr auto operator[](difference_type diff) const noexcept -> reference;
 
-			constexpr Cont *getContainer() const noexcept {return m_container;}
-			constexpr pointer getPtr() const noexcept {return m_isFirst ? m_ptr.first : &*m_ptr.second;}
+			constexpr auto getContainer() const noexcept -> Cont* {return m_container;}
+			constexpr auto getPtr() const noexcept -> pointer {return m_isFirst ? m_ptr.first : &*m_ptr.second;}
 
 
 		protected:
@@ -224,37 +226,37 @@ namespace sl::utils {
 
 			constexpr operator bool() const noexcept;
 
-			constexpr bool operator==(const BasicReverseTwoTypesContinousIterator<Cont, T, Ptr> &iterator) const noexcept;
-			constexpr std::partial_ordering operator<=>(const BasicReverseTwoTypesContinousIterator<Cont, T, Ptr> &iterator) const noexcept;
+			constexpr auto operator==(const BasicReverseTwoTypesContinousIterator<Cont, T, Ptr> &iterator) const noexcept -> bool;
+			constexpr auto operator<=>(const BasicReverseTwoTypesContinousIterator<Cont, T, Ptr> &iterator) const noexcept -> std::partial_ordering;
 
-			constexpr BasicReverseTwoTypesContinousIterator<Cont, T, Ptr> &operator+=(difference_type diff) noexcept;
-			constexpr BasicReverseTwoTypesContinousIterator<Cont, T, Ptr> &operator-=(difference_type diff) noexcept;
+			constexpr auto operator+=(difference_type diff) noexcept -> BasicReverseTwoTypesContinousIterator<Cont, T, Ptr>&;
+			constexpr auto operator-=(difference_type diff) noexcept -> BasicReverseTwoTypesContinousIterator<Cont, T, Ptr>&;
 			template <std::integral DIFF>
-			constexpr BasicReverseTwoTypesContinousIterator<Cont, T, Ptr> &operator+=(DIFF diff) noexcept {return *this += static_cast<difference_type> (diff);}
+			constexpr auto operator+=(DIFF diff) noexcept -> BasicReverseTwoTypesContinousIterator<Cont, T, Ptr>& {return *this += static_cast<difference_type> (diff);}
 			template <std::integral DIFF>
-			constexpr BasicReverseTwoTypesContinousIterator<Cont, T, Ptr> &operator-=(DIFF diff) noexcept {return *this -= static_cast<difference_type> (diff);}
+			constexpr auto operator-=(DIFF diff) noexcept -> BasicReverseTwoTypesContinousIterator<Cont, T, Ptr>& {return *this -= static_cast<difference_type> (diff);}
 
-			constexpr BasicReverseTwoTypesContinousIterator<Cont, T, Ptr> &operator++() noexcept;
-			constexpr BasicReverseTwoTypesContinousIterator<Cont, T, Ptr> operator++(int) noexcept;
-			constexpr BasicReverseTwoTypesContinousIterator<Cont, T, Ptr> &operator--() noexcept;
-			constexpr BasicReverseTwoTypesContinousIterator<Cont, T, Ptr> operator--(int) noexcept;
+			constexpr auto operator++() noexcept -> BasicReverseTwoTypesContinousIterator<Cont, T, Ptr>&;
+			constexpr auto operator++(int) noexcept -> BasicReverseTwoTypesContinousIterator<Cont, T, Ptr>;
+			constexpr auto operator--() noexcept -> BasicReverseTwoTypesContinousIterator<Cont, T, Ptr>&;
+			constexpr auto operator--(int) noexcept -> BasicReverseTwoTypesContinousIterator<Cont, T, Ptr>;
 
-			constexpr BasicReverseTwoTypesContinousIterator<Cont, T, Ptr> operator+(difference_type diff) const noexcept;
-			constexpr BasicReverseTwoTypesContinousIterator<Cont, T, Ptr> operator-(difference_type diff) const noexcept;
+			constexpr auto operator+(difference_type diff) const noexcept -> BasicReverseTwoTypesContinousIterator<Cont, T, Ptr>;
+			constexpr auto operator-(difference_type diff) const noexcept -> BasicReverseTwoTypesContinousIterator<Cont, T, Ptr>;
 			template <std::integral DIFF>
-			constexpr BasicReverseTwoTypesContinousIterator<Cont, T, Ptr> operator+(DIFF diff) const noexcept {return *this + static_cast<difference_type> (diff);}
+			constexpr auto operator+(DIFF diff) const noexcept -> BasicReverseTwoTypesContinousIterator<Cont, T, Ptr> {return *this + static_cast<difference_type> (diff);}
 			template <std::integral DIFF>
-			constexpr BasicReverseTwoTypesContinousIterator<Cont, T, Ptr> operator-(DIFF diff) const noexcept {return *this - static_cast<difference_type> (diff);}
+			constexpr auto operator-(DIFF diff) const noexcept -> BasicReverseTwoTypesContinousIterator<Cont, T, Ptr> {return *this - static_cast<difference_type> (diff);}
 
-			constexpr difference_type operator-(const BasicReverseTwoTypesContinousIterator<Cont, T, Ptr> &iterator) const noexcept;
+			constexpr auto operator-(const BasicReverseTwoTypesContinousIterator<Cont, T, Ptr> &iterator) const noexcept -> difference_type;
 
-			constexpr reference operator*() const noexcept;
-			constexpr pointer operator->() const noexcept;
+			constexpr auto operator*() const noexcept -> reference;
+			constexpr auto operator->() const noexcept -> pointer;
 
-			constexpr reference operator[](difference_type diff) const noexcept;
+			constexpr auto operator[](difference_type diff) const noexcept -> reference;
 
-			constexpr Cont *getContainer() const noexcept {return m_container;}
-			constexpr pointer getPtr() const noexcept {return m_isFirst ? m_ptr.first : &*m_ptr.second;}
+			constexpr auto getContainer() const noexcept -> Cont* {return m_container;}
+			constexpr auto getPtr() const noexcept -> pointer {return m_isFirst ? m_ptr.first : &*m_ptr.second;}
 
 
 		protected:

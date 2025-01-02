@@ -16,11 +16,11 @@ namespace sl {
 			Application() noexcept = default;
 			virtual ~Application() = default;
 
-			sl::Result create() noexcept;
-			void destroy() noexcept;
+			auto create() noexcept -> sl::Result;
+			auto destroy() noexcept -> void;
 
-			virtual sl::Result onCreation() noexcept = 0;
-			virtual void onDestruction() noexcept = 0;
+			virtual auto onCreation() noexcept -> sl::Result = 0;
+			virtual auto onDestruction() noexcept -> void = 0;
 
 
 		protected:

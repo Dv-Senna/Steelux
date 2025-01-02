@@ -18,10 +18,11 @@ namespace sl::memory {
 			constexpr DebugAllocator() noexcept;
 			constexpr ~DebugAllocator();
 
-			constexpr T *allocate(std::size_t n) noexcept;
-			constexpr void deallocate(T *ptr, std::size_t n) noexcept;
+			[[nodiscard]]
+			constexpr auto allocate(std::size_t n) noexcept -> T*;
+			constexpr auto deallocate(T *ptr, std::size_t n) noexcept -> void;
 
-			constexpr bool operator==(const DebugAllocator<T> &) const noexcept {return true;}
+			constexpr auto operator==(const DebugAllocator<T> &) const noexcept -> bool {return true;}
 
 
 		private:
@@ -33,7 +34,7 @@ namespace sl::memory {
 
 	static_assert(sl::memory::IsAllocator<DebugAllocator<char>>);
 
-	void __DebugAllocator_print(const std::string &typeName, std::size_t allocationCount, float averageMsBetweenAllocation);
+	auto __DebugAllocator_print(const std::string &typeName, std::size_t allocationCount, float averageMsBetweenAllocation) -> void;
 
 } // namespace sl::memory
 

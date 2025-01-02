@@ -27,8 +27,9 @@ namespace sl::memory {
 			HeapAllocator(HeapAllocator &&allocator) noexcept;
 			HeapAllocator &operator=(HeapAllocator &&allocator) noexcept;
 
-			pointer allocate(size_type size, size_type alignement = 1) noexcept;
-			void deallocate(const pointer &ptr) noexcept;
+			[[nodiscard]]
+			auto allocate(size_type size, size_type alignement = 1) noexcept -> pointer;
+			auto deallocate(const pointer &ptr) noexcept -> void;
 
 
 		private:

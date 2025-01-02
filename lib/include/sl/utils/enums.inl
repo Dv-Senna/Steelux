@@ -35,7 +35,7 @@ namespace sl::utils {
 
 
 	namespace literals {
-		constexpr sl::utils::PackedEnumString operator ""_pes(const char *str, std::size_t length) noexcept {
+		constexpr auto operator ""_pes(const char *str, std::size_t length) noexcept -> sl::utils::PackedEnumString {
 			#define __FAILURE(...) std::unreachable()
 
 			constexpr std::size_t MAX_STRING_SIZE {10};
@@ -65,7 +65,7 @@ namespace sl::utils {
 		}
 
 
-		constexpr sl::utils::FlagEnumBit operator ""_feb(unsigned long long position) noexcept {
+		constexpr auto operator ""_feb(unsigned long long position) noexcept -> sl::utils::FlagEnumBit {
 			return static_cast<FlagEnumBit> (1 << position);
 		}
 

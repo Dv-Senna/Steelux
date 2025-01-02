@@ -21,10 +21,12 @@ namespace sl::utils {
 	template <typename Cont, typename T>
 	constexpr ContinousIterator<Cont, T>::operator bool() const noexcept {return m_container != nullptr;}
 	template <typename Cont, typename T>
-	constexpr bool ContinousIterator<Cont, T>::operator==(const ContinousIterator<Cont, T> &iterator) const noexcept {return m_container == iterator.m_container && m_ptr == iterator.m_ptr;}
+	constexpr auto ContinousIterator<Cont, T>::operator==(const ContinousIterator<Cont, T> &iterator) const noexcept -> bool {
+		return m_container == iterator.m_container && m_ptr == iterator.m_ptr;
+	}
 
 	template <typename Cont, typename T>
-	constexpr std::partial_ordering ContinousIterator<Cont, T>::operator<=>(const ContinousIterator<Cont, T> &iterator) const noexcept {
+	constexpr auto ContinousIterator<Cont, T>::operator<=>(const ContinousIterator<Cont, T> &iterator) const noexcept -> std::partial_ordering {
 		if (m_container == nullptr || iterator.m_container == nullptr)
 			return std::partial_ordering::unordered;
 		if (m_container != iterator.m_container)
@@ -33,34 +35,36 @@ namespace sl::utils {
 	}
 
 	template <typename Cont, typename T>
-	constexpr ContinousIterator<Cont, T> &ContinousIterator<Cont, T>::operator+=(difference_type diff) noexcept {m_ptr += diff; return *this;}
+	constexpr auto ContinousIterator<Cont, T>::operator+=(difference_type diff) noexcept -> ContinousIterator<Cont, T>& {m_ptr += diff; return *this;}
 	template <typename Cont, typename T>
-	constexpr ContinousIterator<Cont, T> &ContinousIterator<Cont, T>::operator-=(difference_type diff) noexcept {m_ptr -= diff; return *this;}
+	constexpr auto ContinousIterator<Cont, T>::operator-=(difference_type diff) noexcept -> ContinousIterator<Cont, T>& {m_ptr -= diff; return *this;}
 
 	template <typename Cont, typename T>
-	constexpr ContinousIterator<Cont, T> &ContinousIterator<Cont, T>::operator++() noexcept {++m_ptr; return *this;}
+	constexpr auto ContinousIterator<Cont, T>::operator++() noexcept -> ContinousIterator<Cont, T>& {++m_ptr; return *this;}
 	template <typename Cont, typename T>
-	constexpr ContinousIterator<Cont, T> ContinousIterator<Cont, T>::operator++(int) noexcept {auto tmp {*this}; ++m_ptr; return tmp;}
+	constexpr auto ContinousIterator<Cont, T>::operator++(int) noexcept -> ContinousIterator<Cont, T> {auto tmp {*this}; ++m_ptr; return tmp;}
 
 	template <typename Cont, typename T>
-	constexpr ContinousIterator<Cont, T> &ContinousIterator<Cont, T>::operator--() noexcept {--m_ptr; return *this;}
+	constexpr auto ContinousIterator<Cont, T>::operator--() noexcept -> ContinousIterator<Cont, T>& {--m_ptr; return *this;}
 	template <typename Cont, typename T>
-	constexpr ContinousIterator<Cont, T> ContinousIterator<Cont, T>::operator--(int) noexcept {auto tmp {*this}; --m_ptr; return tmp;}
+	constexpr auto ContinousIterator<Cont, T>::operator--(int) noexcept -> ContinousIterator<Cont, T> {auto tmp {*this}; --m_ptr; return tmp;}
 
 	template <typename Cont, typename T>
-	constexpr ContinousIterator<Cont, T> ContinousIterator<Cont, T>::operator+(difference_type diff) const noexcept {auto tmp {*this}; return tmp += diff;}
+	constexpr auto ContinousIterator<Cont, T>::operator+(difference_type diff) const noexcept -> ContinousIterator<Cont, T> {auto tmp {*this}; return tmp += diff;}
 	template <typename Cont, typename T>
-	constexpr ContinousIterator<Cont, T> ContinousIterator<Cont, T>::operator-(difference_type diff) const noexcept {auto tmp {*this}; return tmp -= diff;}
+	constexpr auto ContinousIterator<Cont, T>::operator-(difference_type diff) const noexcept -> ContinousIterator<Cont, T> {auto tmp {*this}; return tmp -= diff;}
 
 	template <typename Cont, typename T>
-	constexpr ContinousIterator<Cont, T>::difference_type ContinousIterator<Cont, T>::operator-(const ContinousIterator<Cont, T> &iterator) const noexcept {return m_ptr - iterator.m_ptr;}
+	constexpr auto ContinousIterator<Cont, T>::operator-(const ContinousIterator<Cont, T> &iterator) const noexcept -> ContinousIterator<Cont, T>::difference_type {
+		return m_ptr - iterator.m_ptr;
+	}
 
 	template <typename Cont, typename T>
-	constexpr ContinousIterator<Cont, T>::reference ContinousIterator<Cont, T>::operator*() const noexcept {return *m_ptr;}
+	constexpr auto ContinousIterator<Cont, T>::operator*() const noexcept -> ContinousIterator<Cont, T>::reference {return *m_ptr;}
 	template <typename Cont, typename T>
-	constexpr ContinousIterator<Cont, T>::pointer ContinousIterator<Cont, T>::operator->() const noexcept {return m_ptr;}
+	constexpr auto ContinousIterator<Cont, T>::operator->() const noexcept -> ContinousIterator<Cont, T>::pointer {return m_ptr;}
 	template <typename Cont, typename T>
-	constexpr ContinousIterator<Cont, T>::reference ContinousIterator<Cont, T>::operator[](difference_type diff) const noexcept {return m_ptr[diff];}
+	constexpr auto ContinousIterator<Cont, T>::operator[](difference_type diff) const noexcept -> ContinousIterator<Cont, T>::reference {return m_ptr[diff];}
 
 
 
@@ -83,12 +87,12 @@ namespace sl::utils {
 	template <typename Cont, typename T>
 	constexpr ReverseContinousIterator<Cont, T>::operator bool() const noexcept {return m_container != nullptr;}
 	template <typename Cont, typename T>
-	constexpr bool ReverseContinousIterator<Cont, T>::operator==(const ReverseContinousIterator<Cont, T> &iterator) const noexcept {
+	constexpr auto ReverseContinousIterator<Cont, T>::operator==(const ReverseContinousIterator<Cont, T> &iterator) const noexcept -> bool {
 		return m_container == iterator.m_container && m_ptr == iterator.m_ptr;
 	}
 
 	template <typename Cont, typename T>
-	constexpr std::partial_ordering ReverseContinousIterator<Cont, T>::operator<=>(const ReverseContinousIterator<Cont, T> &iterator) const noexcept {
+	constexpr auto ReverseContinousIterator<Cont, T>::operator<=>(const ReverseContinousIterator<Cont, T> &iterator) const noexcept -> std::partial_ordering {
 		if (m_container == nullptr || iterator.m_container == nullptr)
 			return std::partial_ordering::unordered;
 		if (m_container != iterator.m_container)
@@ -97,36 +101,36 @@ namespace sl::utils {
 	}
 
 	template <typename Cont, typename T>
-	constexpr ReverseContinousIterator<Cont, T> &ReverseContinousIterator<Cont, T>::operator+=(difference_type diff) noexcept {m_ptr -= diff; return *this;}
+	constexpr auto ReverseContinousIterator<Cont, T>::operator+=(difference_type diff) noexcept -> ReverseContinousIterator<Cont, T>& {m_ptr -= diff; return *this;}
 	template <typename Cont, typename T>
-	constexpr ReverseContinousIterator<Cont, T> &ReverseContinousIterator<Cont, T>::operator-=(difference_type diff) noexcept {m_ptr += diff; return *this;}
+	constexpr auto ReverseContinousIterator<Cont, T>::operator-=(difference_type diff) noexcept -> ReverseContinousIterator<Cont, T>& {m_ptr += diff; return *this;}
 
 	template <typename Cont, typename T>
-	constexpr ReverseContinousIterator<Cont, T> &ReverseContinousIterator<Cont, T>::operator++() noexcept {--m_ptr; return *this;}
+	constexpr auto ReverseContinousIterator<Cont, T>::operator++() noexcept -> ReverseContinousIterator<Cont, T>& {--m_ptr; return *this;}
 	template <typename Cont, typename T>
-	constexpr ReverseContinousIterator<Cont, T> ReverseContinousIterator<Cont, T>::operator++(int) noexcept {auto tmp {*this}; --m_ptr; return tmp;}
+	constexpr auto ReverseContinousIterator<Cont, T>::operator++(int) noexcept -> ReverseContinousIterator<Cont, T> {auto tmp {*this}; --m_ptr; return tmp;}
 
 	template <typename Cont, typename T>
-	constexpr ReverseContinousIterator<Cont, T> &ReverseContinousIterator<Cont, T>::operator--() noexcept {++m_ptr; return *this;}
+	constexpr auto ReverseContinousIterator<Cont, T>::operator--() noexcept -> ReverseContinousIterator<Cont, T>& {++m_ptr; return *this;}
 	template <typename Cont, typename T>
-	constexpr ReverseContinousIterator<Cont, T> ReverseContinousIterator<Cont, T>::operator--(int) noexcept {auto tmp {*this}; ++m_ptr; return tmp;}
+	constexpr auto ReverseContinousIterator<Cont, T>::operator--(int) noexcept -> ReverseContinousIterator<Cont, T> {auto tmp {*this}; ++m_ptr; return tmp;}
 
 	template <typename Cont, typename T>
-	constexpr ReverseContinousIterator<Cont, T> ReverseContinousIterator<Cont, T>::operator+(difference_type diff) const noexcept {auto tmp {*this}; return tmp += diff;}
+	constexpr auto ReverseContinousIterator<Cont, T>::operator+(difference_type diff) const noexcept -> ReverseContinousIterator<Cont, T> {auto tmp {*this}; return tmp += diff;}
 	template <typename Cont, typename T>
-	constexpr ReverseContinousIterator<Cont, T> ReverseContinousIterator<Cont, T>::operator-(difference_type diff) const noexcept {auto tmp {*this}; return tmp -= diff;}
+	constexpr auto ReverseContinousIterator<Cont, T>::operator-(difference_type diff) const noexcept -> ReverseContinousIterator<Cont, T> {auto tmp {*this}; return tmp -= diff;}
 
 	template <typename Cont, typename T>
-	constexpr ReverseContinousIterator<Cont, T>::difference_type ReverseContinousIterator<Cont, T>::operator-(const ReverseContinousIterator<Cont, T> &iterator) const noexcept {
+	constexpr auto ReverseContinousIterator<Cont, T>::operator-(const ReverseContinousIterator<Cont, T> &iterator) const noexcept -> ReverseContinousIterator<Cont, T>::difference_type {
 		return iterator.m_ptr - m_ptr;
 	}
 
 	template <typename Cont, typename T>
-	constexpr ReverseContinousIterator<Cont, T>::reference ReverseContinousIterator<Cont, T>::operator*() const noexcept {return *m_ptr;}
+	constexpr auto ReverseContinousIterator<Cont, T>::operator*() const noexcept -> ReverseContinousIterator<Cont, T>::reference {return *m_ptr;}
 	template <typename Cont, typename T>
-	constexpr ReverseContinousIterator<Cont, T>::pointer ReverseContinousIterator<Cont, T>::operator->() const noexcept {return m_ptr;}
+	constexpr auto ReverseContinousIterator<Cont, T>::operator->() const noexcept -> ReverseContinousIterator<Cont, T>::pointer {return m_ptr;}
 	template <typename Cont, typename T>
-	constexpr ReverseContinousIterator<Cont, T>::reference ReverseContinousIterator<Cont, T>::operator[](difference_type diff) const noexcept {return m_ptr[-diff];}
+	constexpr auto ReverseContinousIterator<Cont, T>::operator[](difference_type diff) const noexcept -> ReverseContinousIterator<Cont, T>::reference {return m_ptr[-diff];}
 
 
 

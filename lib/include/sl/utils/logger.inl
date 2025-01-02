@@ -23,7 +23,7 @@ namespace sl::utils {
 
 
 	template <typename ...Args>
-	constexpr void Logger::log(LogSeverity severity, std::format_string<Args...> str, Args &&...args) noexcept {
+	constexpr auto Logger::log(LogSeverity severity, std::format_string<Args...> str, Args &&...args) noexcept -> void {
 		if (!(severity & m_severityMask))
 			return;
 		String severityString {};

@@ -27,8 +27,12 @@ namespace sl::memory {
 			PoolAllocator(PoolAllocator<T> &&allocator) noexcept;
 			PoolAllocator<T> &operator=(PoolAllocator<T> &&allocator) noexcept;
 
-			[[nodiscard]] pointer allocate() noexcept;
-			void deallocate(pointer ptr) noexcept;
+			[[nodiscard]]
+			auto allocate() noexcept -> pointer;
+			auto deallocate(pointer ptr) noexcept -> void;
+
+			[[nodiscard]]
+			inline auto operator==(const PoolAllocator<T> &allocator) const noexcept {return m_instanceID == allocator.m_instanceID;}
 
 
 		private:
@@ -40,6 +44,8 @@ namespace sl::memory {
 			static size_type s_lastInstanceID;
 			static std::map<size_type, size_type> s_instanceCounts;
 	};
+
+//	static_assert(sl::memory::IsAllocator<PoolAllocator<char>>);
 
 } // namespace sl::memory
 

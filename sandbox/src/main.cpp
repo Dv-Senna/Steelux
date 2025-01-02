@@ -154,17 +154,17 @@ class SandboxApp final : public sl::Application {
 
 		}
 
-		sl::Result onCreation() noexcept override {
+		auto onCreation() noexcept -> sl::Result override {
 			std::println("Creation");
 			return sl::Result::eSuccess;
 		}
 
-		void onDestruction() noexcept override {
+		auto onDestruction() noexcept -> void override {
 			std::println("Destruction");
 		}
 };
 
 
-std::unique_ptr<sl::Application> createApplication() {
+auto createApplication() noexcept -> std::unique_ptr<sl::Application> {
 	return std::make_unique<SandboxApp> ();
 }

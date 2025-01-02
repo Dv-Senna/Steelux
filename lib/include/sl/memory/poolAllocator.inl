@@ -89,7 +89,8 @@ namespace sl::memory {
 
 
 	template <typename T>
-	[[nodiscard]] PoolAllocator<T>::pointer PoolAllocator<T>::allocate() noexcept {
+	[[nodiscard]]
+	auto PoolAllocator<T>::allocate() noexcept -> pointer {
 		for (size_type i {0}; i < m_poolSize; ++i) {
 			if (m_poolState[i])
 				continue;
@@ -104,7 +105,7 @@ namespace sl::memory {
 
 
 	template <typename T>
-	void PoolAllocator<T>::deallocate(pointer ptr) noexcept {
+	auto PoolAllocator<T>::deallocate(pointer ptr) noexcept -> void {
 		difference_type diff {ptr - m_pool};
 		if (diff < 0)
 			return;

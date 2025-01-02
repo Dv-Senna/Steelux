@@ -34,28 +34,28 @@ namespace sl::utils {
 			constexpr ~FlagField() = default;
 
 			constexpr FlagField(const FlagField<Enum> &field) noexcept : m_value {field.m_value} {}
-			constexpr const FlagField &operator=(const FlagField<Enum> &field) noexcept {m_value = field.m_value; return *this;}
+			constexpr auto operator=(const FlagField<Enum> &field) noexcept -> FlagField& {m_value = field.m_value; return *this;}
 
 			constexpr FlagField(FlagField<Enum> &&field) noexcept : m_value {field.m_value} {field.m_value = 0;}
-			constexpr const FlagField &operator=(FlagField<Enum> &&field) noexcept {m_value = field.m_value; field.m_value = 0; return *this;}
+			constexpr auto operator=(FlagField<Enum> &&field) noexcept -> FlagField& {m_value = field.m_value; field.m_value = 0; return *this;}
 
-			constexpr const FlagField &operator&=(const FlagField<Enum> &field) noexcept {m_value &= field.m_value; return *this;}
-			constexpr const FlagField &operator&=(Enum flag) noexcept {m_value &= static_cast<sl::utils::FlagEnumBit> (flag); return *this;}
-			constexpr const FlagField &operator|=(const FlagField<Enum> &field) noexcept {m_value |= field.m_value; return *this;}
-			constexpr const FlagField &operator|=(Enum flag) noexcept {m_value |= static_cast<sl::utils::FlagEnumBit> (flag); return *this;}
-			constexpr const FlagField &operator^=(const FlagField<Enum> &field) noexcept {m_value ^= field.m_value; return *this;}
-			constexpr const FlagField &operator^=(Enum flag) noexcept {m_value ^= static_cast<sl::utils::FlagEnumBit> (flag); return *this;}
+			constexpr auto operator&=(const FlagField<Enum> &field) noexcept -> FlagField& {m_value &= field.m_value; return *this;}
+			constexpr auto operator&=(Enum flag) noexcept -> FlagField& {m_value &= static_cast<sl::utils::FlagEnumBit> (flag); return *this;}
+			constexpr auto operator|=(const FlagField<Enum> &field) noexcept -> FlagField& {m_value |= field.m_value; return *this;}
+			constexpr auto operator|=(Enum flag) noexcept -> FlagField& {m_value |= static_cast<sl::utils::FlagEnumBit> (flag); return *this;}
+			constexpr auto operator^=(const FlagField<Enum> &field) noexcept -> FlagField& {m_value ^= field.m_value; return *this;}
+			constexpr auto operator^=(Enum flag) noexcept -> FlagField& {m_value ^= static_cast<sl::utils::FlagEnumBit> (flag); return *this;}
 
-			constexpr FlagField operator~() const noexcept {return FlagField<Enum> (~m_value);}
-			constexpr FlagField operator&(FlagField<Enum> field) const noexcept {return field &= *this;}
-			constexpr FlagField operator&(Enum flag) const noexcept {auto tmp {*this}; return tmp &= flag;}
-			constexpr FlagField operator|(FlagField<Enum> field) const noexcept {return field |= *this;}
-			constexpr FlagField operator|(Enum flag) const noexcept {auto tmp {*this}; return tmp |= flag;}
-			constexpr FlagField operator^(FlagField<Enum> field) const noexcept {return field ^= *this;}
-			constexpr FlagField operator^(Enum flag) const noexcept {auto tmp {*this}; return tmp ^= flag;}
+			constexpr auto operator~() const noexcept -> FlagField {return FlagField<Enum> (~m_value);}
+			constexpr auto operator&(FlagField<Enum> field) const noexcept -> FlagField {return field &= *this;}
+			constexpr auto operator&(Enum flag) const noexcept -> FlagField {auto tmp {*this}; return tmp &= flag;}
+			constexpr auto operator|(FlagField<Enum> field) const noexcept -> FlagField {return field |= *this;}
+			constexpr auto operator|(Enum flag) const noexcept -> FlagField {auto tmp {*this}; return tmp |= flag;}
+			constexpr auto operator^(FlagField<Enum> field) const noexcept -> FlagField {return field ^= *this;}
+			constexpr auto operator^(Enum flag) const noexcept -> FlagField {auto tmp {*this}; return tmp ^= flag;}
 
-			constexpr bool operator==(const FlagField<Enum> &field) const noexcept {return m_value == field.m_value;}
-			constexpr bool operator==(Enum flag) const noexcept {return m_value == static_cast<sl::utils::FlagEnumBit> (flag);}
+			constexpr auto operator==(const FlagField<Enum> &field) const noexcept -> bool {return m_value == field.m_value;}
+			constexpr auto operator==(Enum flag) const noexcept -> bool {return m_value == static_cast<sl::utils::FlagEnumBit> (flag);}
 
 			constexpr operator bool() const noexcept {return !!m_value;}
 			constexpr explicit operator sl::utils::FlagEnumBit() const noexcept {return m_value;}
@@ -67,45 +67,45 @@ namespace sl::utils {
 	};
 
 	template <sl::utils::FlagEnum Enum>
-	constexpr FlagField<Enum> operator&(Enum lhs, Enum rhs) noexcept {return FlagField<Enum> (lhs) & rhs;}
+	constexpr auto operator&(Enum lhs, Enum rhs) noexcept -> FlagField<Enum> {return FlagField<Enum> (lhs) & rhs;}
 	template <sl::utils::FlagEnum Enum>
-	constexpr FlagField<Enum> operator&(Enum lhs, FlagField<Enum> rhs) noexcept {return rhs &= lhs;}
+	constexpr auto operator&(Enum lhs, FlagField<Enum> rhs) noexcept -> FlagField<Enum> {return rhs &= lhs;}
 	template <sl::utils::FlagEnum Enum>
-	constexpr FlagField<Enum> operator|(Enum lhs, Enum rhs) noexcept {return FlagField<Enum> (lhs) | rhs;}
+	constexpr auto operator|(Enum lhs, Enum rhs) noexcept -> FlagField<Enum> {return FlagField<Enum> (lhs) | rhs;}
 	template <sl::utils::FlagEnum Enum>
-	constexpr FlagField<Enum> operator|(Enum lhs, FlagField<Enum> rhs) noexcept {return rhs |= lhs;}
+	constexpr auto operator|(Enum lhs, FlagField<Enum> rhs) noexcept -> FlagField<Enum> {return rhs |= lhs;}
 	template <sl::utils::FlagEnum Enum>
-	constexpr FlagField<Enum> operator^(Enum lhs, Enum rhs) noexcept {return FlagField<Enum> (lhs) ^ rhs;}
+	constexpr auto operator^(Enum lhs, Enum rhs) noexcept -> FlagField<Enum> {return FlagField<Enum> (lhs) ^ rhs;}
 	template <sl::utils::FlagEnum Enum>
-	constexpr FlagField<Enum> operator^(Enum lhs, FlagField<Enum> rhs) noexcept {return rhs ^= lhs;}
+	constexpr auto operator^(Enum lhs, FlagField<Enum> rhs) noexcept -> FlagField<Enum> {return rhs ^= lhs;}
 	template <sl::utils::FlagEnum Enum>
-	constexpr FlagField<Enum> operator~(Enum flag) noexcept {return ~FlagField<Enum> (flag);}
+	constexpr auto operator~(Enum flag) noexcept -> FlagField<Enum> {return ~FlagField<Enum> (flag);}
 
 
-	SL_CORE sl::String toString(PackedEnumString value) noexcept;
+	SL_CORE auto toString(PackedEnumString value) noexcept -> sl::String;
 	template <sl::utils::StringEnum Enum>
-	inline sl::String toString(Enum value) noexcept;
+	inline auto toString(Enum value) noexcept -> sl::String;
 
 	template <sl::utils::FlagEnum Enum>
-	sl::String toString(const FlagField<Enum> &field) noexcept;
+	auto toString(const FlagField<Enum> &field) noexcept -> sl::String;
 	template <sl::utils::FlagEnum Enum>
-	inline sl::String toString(Enum flag) noexcept;
+	inline auto toString(Enum flag) noexcept -> sl::String;
 
 
 	namespace literals {
-		constexpr sl::utils::PackedEnumString operator ""_pes(const char *str, std::size_t length) noexcept;
-		constexpr sl::utils::FlagEnumBit operator ""_feb(unsigned long long position) noexcept;
+		constexpr auto operator ""_pes(const char *str, std::size_t length) noexcept -> sl::utils::PackedEnumString;
+		constexpr auto operator ""_feb(unsigned long long position) noexcept -> sl::utils::FlagEnumBit;
 	} // namespace literals
 
 
-	constexpr std::ostream &operator<<(std::ostream &stream, PackedEnumString value) noexcept {stream << toString(value); return stream;}
+	constexpr auto operator<<(std::ostream &stream, PackedEnumString value) noexcept -> std::ostream& {return stream << toString(value);}
 	template <sl::utils::StringEnum Enum>
-	inline std::ostream &operator<<(std::ostream &stream, Enum value) noexcept {stream << toString(value); return stream;}
+	inline auto operator<<(std::ostream &stream, Enum value) noexcept -> std::ostream& {return stream << toString(value);}
 
 	template <sl::utils::FlagEnum Enum>
-	constexpr std::ostream &operator<<(std::ostream &stream, const FlagField<Enum> &field) noexcept {stream << toString(field); return stream;}
+	constexpr auto operator<<(std::ostream &stream, const FlagField<Enum> &field) noexcept -> std::ostream& {return stream << toString(field);}
 	template <sl::utils::FlagEnum Enum>
-	inline std::ostream &operator<<(std::ostream &stream, Enum flag) noexcept {stream << toString(flag); return stream;}
+	inline auto operator<<(std::ostream &stream, Enum flag) noexcept -> std::ostream& {return stream << toString(flag);}
 
 	using namespace sl::utils::literals;
 } // namespace sl::utils

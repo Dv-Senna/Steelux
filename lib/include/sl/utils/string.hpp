@@ -47,112 +47,118 @@ namespace sl::utils {
 			constexpr ~BasicString();
 
 			constexpr BasicString(const BasicString<CharT, Alloc> &str) noexcept;
-			constexpr BasicString<CharT, Alloc> &operator=(const BasicString<CharT, Alloc> &str) noexcept;
+			constexpr auto operator=(const BasicString<CharT, Alloc> &str) noexcept -> BasicString<CharT, Alloc>&;
 			constexpr BasicString(BasicString<CharT, Alloc> &&str) noexcept;
-			constexpr BasicString<CharT, Alloc> &operator=(BasicString<CharT, Alloc> &&str) noexcept;
+			constexpr auto operator=(BasicString<CharT, Alloc> &&str) noexcept -> BasicString<CharT, Alloc>&;
 
 			template <typename ...Types>
 			requires std::same_as<Alloc, typename ConcatStringView<Types...>::Allocator>
 			constexpr BasicString(const ConcatStringView<Types...> &csv) noexcept;
 			template <typename ...Types>
 			requires std::same_as<Alloc, typename ConcatStringView<Types...>::Allocator>
-			constexpr BasicString<CharT, Alloc> &operator=(const ConcatStringView<Types...> &csv) noexcept;
+			constexpr auto operator=(const ConcatStringView<Types...> &csv) noexcept -> BasicString<CharT, Alloc>&;
 
-			constexpr size_type reserve(size_type newSize) noexcept;
-			constexpr size_type shrinkToFit() noexcept;
+			constexpr auto reserve(size_type newSize) noexcept -> size_type;
+			constexpr auto shrinkToFit() noexcept -> size_type;
 
-			constexpr iterator insert(difference_type position, CharT value, size_type count = 1) noexcept;
-			constexpr iterator insert(const iterator &position, CharT value, size_type count = 1) noexcept {return this->insert(position - this->begin(), value, count);}
-			constexpr iterator insert(const iterator &start, const iterator &end, CharT value) noexcept {return this->insert(start - this->begin(), value, end - start);}
-			constexpr iterator insert(const reverse_iterator &position, CharT value, size_type count = 1) noexcept {return this->insert(this->rbegin() - position - 1, value, count);}
-			constexpr iterator insert(const reverse_iterator &start, const reverse_iterator &end, CharT value) noexcept {return this->insert(this->rbegin() - end - 1, value, end - start);}
-			constexpr iterator pushFront(CharT value, size_type count = 1) noexcept {return this->insert(this->begin(), value, count);}
-			constexpr iterator pushBack(CharT value, size_type count = 1) noexcept {return this->insert(this->end(), value, count);}
-
-			template <sl::memory::IsAllocator Alloc2>
-			constexpr iterator insert(difference_type position, const sl::utils::BasicString<CharT, Alloc2> &str) noexcept;
-			template <sl::memory::IsAllocator Alloc2>
-			constexpr iterator insert(const iterator &position, const sl::utils::BasicString<CharT, Alloc2> &str) noexcept {return this->insert(position - this->begin(), str);}
-			template <sl::memory::IsAllocator Alloc2>
-			constexpr iterator insert(const reverse_iterator &position, const sl::utils::BasicString<CharT, Alloc2> &str) noexcept {return this->insert(this->rbegin() - position - 1, str);}
-			template <sl::memory::IsAllocator Alloc2>
-			constexpr iterator pushFront(const sl::utils::BasicString<CharT, Alloc2> &str) noexcept {return this->insert(this->begin(), str);}
-			template <sl::memory::IsAllocator Alloc2>
-			constexpr iterator pushBack(const sl::utils::BasicString<CharT, Alloc2> &str) noexcept {return this->insert(this->end(), str);}
-
-			constexpr iterator insert(difference_type position, const CharT *str) noexcept {return this->insert(position, BasicString(str));}
-			constexpr iterator insert(const iterator &position, const CharT *str) noexcept {return this->insert(position, BasicString(str));}
-			constexpr iterator insert(const reverse_iterator &position, const CharT *str) noexcept {return this->insert(position, BasicString(str));}
-			constexpr iterator pushFront(const CharT *str) noexcept {return this->pushFront(BasicString(str));}
-			constexpr iterator pushBack(const CharT *str) noexcept {return this->pushBack(BasicString(str));}
+			constexpr auto insert(difference_type position, CharT value, size_type count = 1) noexcept -> iterator;
+			constexpr auto insert(const iterator &position, CharT value, size_type count = 1) noexcept -> iterator {return this->insert(position - this->begin(), value, count);}
+			constexpr auto insert(const iterator &start, const iterator &end, CharT value) noexcept -> iterator {return this->insert(start - this->begin(), value, end - start);}
+			constexpr auto insert(const reverse_iterator &position, CharT value, size_type count = 1) noexcept -> iterator {
+				return this->insert(this->rbegin() - position - 1, value, count);
+			}
+			constexpr auto insert(const reverse_iterator &start, const reverse_iterator &end, CharT value) noexcept -> iterator {
+				return this->insert(this->rbegin() - end - 1, value, end - start);
+			}
+			constexpr auto pushFront(CharT value, size_type count = 1) noexcept -> iterator {return this->insert(this->begin(), value, count);}
+			constexpr auto pushBack(CharT value, size_type count = 1) noexcept -> iterator {return this->insert(this->end(), value, count);}
 
 			template <sl::memory::IsAllocator Alloc2>
-			constexpr BasicString<CharT, Alloc> &operator+=(const sl::utils::BasicString<CharT, Alloc2> &str) noexcept {(void)this->pushBack(str); return *this;}
-			constexpr BasicString<CharT, Alloc> &operator+=(const CharT *str) noexcept {(void)this->pushBack(str); return *this;}
+			constexpr auto insert(difference_type position, const sl::utils::BasicString<CharT, Alloc2> &str) noexcept -> iterator;
+			template <sl::memory::IsAllocator Alloc2>
+			constexpr auto insert(const iterator &position, const sl::utils::BasicString<CharT, Alloc2> &str) noexcept -> iterator {return this->insert(position - this->begin(), str);}
+			template <sl::memory::IsAllocator Alloc2>
+			constexpr auto insert(const reverse_iterator &position, const sl::utils::BasicString<CharT, Alloc2> &str) noexcept -> iterator {
+				return this->insert(this->rbegin() - position - 1, str);
+			}
+			template <sl::memory::IsAllocator Alloc2>
+			constexpr auto pushFront(const sl::utils::BasicString<CharT, Alloc2> &str) noexcept -> iterator {return this->insert(this->begin(), str);}
+			template <sl::memory::IsAllocator Alloc2>
+			constexpr auto pushBack(const sl::utils::BasicString<CharT, Alloc2> &str) noexcept -> iterator {return this->insert(this->end(), str);}
+
+			constexpr auto insert(difference_type position, const CharT *str) noexcept -> iterator {return this->insert(position, BasicString(str));}
+			constexpr auto insert(const iterator &position, const CharT *str) noexcept -> iterator {return this->insert(position, BasicString(str));}
+			constexpr auto insert(const reverse_iterator &position, const CharT *str) noexcept -> iterator {return this->insert(position, BasicString(str));}
+			constexpr auto pushFront(const CharT *str) noexcept -> iterator {return this->pushFront(BasicString(str));}
+			constexpr auto pushBack(const CharT *str) noexcept -> iterator {return this->pushBack(BasicString(str));}
+
+			template <sl::memory::IsAllocator Alloc2>
+			constexpr auto operator+=(const sl::utils::BasicString<CharT, Alloc2> &str) noexcept -> BasicString<CharT, Alloc>& {(void)this->pushBack(str); return *this;}
+			constexpr auto operator+=(const CharT *str) noexcept -> BasicString<CharT, Alloc>& {(void)this->pushBack(str); return *this;}
 
 			template <std::forward_iterator IT>
 			requires std::convertible_to<typename std::iterator_traits<IT>::value_type, CharT>
-			constexpr iterator insert(difference_type position, const IT &start, const IT &end) noexcept;
+			constexpr auto insert(difference_type position, const IT &start, const IT &end) noexcept -> iterator;
 			template <std::forward_iterator IT>
-			constexpr iterator insert(const iterator &position, const IT &start, const IT &end) noexcept {return this->insert(position - this->begin(), start, end);}
+			constexpr auto insert(const iterator &position, const IT &start, const IT &end) noexcept -> iterator {return this->insert(position - this->begin(), start, end);}
 			template <std::forward_iterator IT>
-			constexpr iterator insert(const reverse_iterator &position, const IT &start, const IT &end) noexcept {return this->insert(this->rbegin() - position - 1, start, end);}
+			constexpr auto insert(const reverse_iterator &position, const IT &start, const IT &end) noexcept -> iterator {return this->insert(this->rbegin() - position - 1, start, end);}
 			template <std::forward_iterator IT>
-			constexpr iterator pushFront(const IT &start, const IT &end) noexcept {return this->insert(this->begin(), start, end);}
+			constexpr auto pushFront(const IT &start, const IT &end) noexcept -> iterator {return this->insert(this->begin(), start, end);}
 			template <std::forward_iterator IT>
-			constexpr iterator pushBack(const IT &start, const IT &end) noexcept {return this->insert(this->end(), start, end);}
+			constexpr auto pushBack(const IT &start, const IT &end) noexcept -> iterator {return this->insert(this->end(), start, end);}
 
 			template <std::ranges::range Range>
 			requires (IsRange<Range>)
-			constexpr iterator insert(difference_type position, Range &&range) noexcept {return this->insert(position, std::ranges::begin(range), std::ranges::end(range));}
+			constexpr auto insert(difference_type position, Range &&range) noexcept -> iterator {return this->insert(position, std::ranges::begin(range), std::ranges::end(range));}
 			template <std::ranges::range Range>
 			requires (IsRange<Range>)
-			constexpr iterator insert(const iterator &position, Range &&range) noexcept {return this->insert(position, std::ranges::begin(range), std::ranges::end(range));}
+			constexpr auto insert(const iterator &position, Range &&range) noexcept -> iterator {return this->insert(position, std::ranges::begin(range), std::ranges::end(range));}
 			template <std::ranges::range Range>
 			requires (IsRange<Range>)
-			constexpr iterator pushFront(Range &&range) noexcept {return this->pushFront(std::ranges::begin(range), std::ranges::end(range));}
+			constexpr auto pushFront(Range &&range) noexcept -> iterator {return this->pushFront(std::ranges::begin(range), std::ranges::end(range));}
 			template <std::ranges::range Range>
 			requires (IsRange<Range>)
-			constexpr iterator pushBack(Range &&range) noexcept {return this->pushBack(std::ranges::begin(range), std::ranges::end(range));}
+			constexpr auto pushBack(Range &&range) noexcept -> iterator {return this->pushBack(std::ranges::begin(range), std::ranges::end(range));}
 
-			constexpr iterator erase(difference_type position, size_type count = 1) noexcept;
-			constexpr iterator erase(const iterator &position, size_type count = 1) noexcept {return this->erase(position - this->begin(), count);}
-			constexpr iterator erase(const iterator &start, const iterator &end) noexcept {return this->erase(this->rbegin() - end, end - start);}
-			constexpr iterator erase(const reverse_iterator &position, size_type count = 1) noexcept {return this->erase(this->rbegin() - position - 1, count);}
-			constexpr iterator erase(const reverse_iterator &start, const reverse_iterator &end) noexcept {return this->erase(start - this->rbegin() - 1, end - start);}
-			constexpr iterator popFront(size_type count = 1) noexcept {return this->erase(this->begin(), count);}
-			constexpr iterator popBack(size_type count = 1) noexcept {return this->erase(this->end() - count, count);}
+			constexpr auto erase(difference_type position, size_type count = 1) noexcept -> iterator;
+			constexpr auto erase(const iterator &position, size_type count = 1) noexcept -> iterator {return this->erase(position - this->begin(), count);}
+			constexpr auto erase(const iterator &start, const iterator &end) noexcept -> iterator {return this->erase(this->rbegin() - end, end - start);}
+			constexpr auto erase(const reverse_iterator &position, size_type count = 1) noexcept -> iterator {return this->erase(this->rbegin() - position - 1, count);}
+			constexpr auto erase(const reverse_iterator &start, const reverse_iterator &end) noexcept -> iterator {return this->erase(start - this->rbegin() - 1, end - start);}
+			constexpr auto popFront(size_type count = 1) noexcept -> iterator {return this->erase(this->begin(), count);}
+			constexpr auto popBack(size_type count = 1) noexcept -> iterator {return this->erase(this->end() - count, count);}
 
-			constexpr iterator at(difference_type index) noexcept;
-			constexpr const_iterator at(difference_type index) const noexcept;
+			constexpr auto at(difference_type index) noexcept -> iterator;
+			constexpr auto at(difference_type index) const noexcept -> const_iterator;
 
-			constexpr reference operator[](difference_type index) noexcept {return *this->at(index);}
-			constexpr const_reference operator[](difference_type index) const noexcept {return *this->at(index);}
+			constexpr auto operator[](difference_type index) noexcept -> reference {return *this->at(index);}
+			constexpr auto operator[](difference_type index) const noexcept -> const_reference {return *this->at(index);}
 
-			constexpr iterator begin() noexcept;
-			constexpr iterator end() noexcept;
-			constexpr const_iterator cbegin() const noexcept;
-			constexpr const_iterator cend() const noexcept;
-			constexpr const_iterator begin() const noexcept {return this->cbegin();}
-			constexpr const_iterator end() const noexcept {return this->cend();}
-			constexpr reverse_iterator rbegin() noexcept;
-			constexpr reverse_iterator rend() noexcept;
-			constexpr const_reverse_iterator crbegin() const noexcept;
-			constexpr const_reverse_iterator crend() const noexcept;
-			constexpr const_reverse_iterator rbegin() const noexcept {return this->crbegin();}
-			constexpr const_reverse_iterator rend() const noexcept {return this->crend();}
+			constexpr auto begin() noexcept -> iterator;
+			constexpr auto end() noexcept -> iterator;
+			constexpr auto cbegin() const noexcept -> const_iterator;
+			constexpr auto cend() const noexcept -> const_iterator;
+			constexpr auto begin() const noexcept -> const_iterator {return this->cbegin();}
+			constexpr auto end() const noexcept -> const_iterator {return this->cend();}
+			constexpr auto rbegin() noexcept -> reverse_iterator;
+			constexpr auto rend() noexcept -> reverse_iterator;
+			constexpr auto crbegin() const noexcept -> const_reverse_iterator;
+			constexpr auto crend() const noexcept -> const_reverse_iterator;
+			constexpr auto rbegin() const noexcept -> const_reverse_iterator {return this->crbegin();}
+			constexpr auto rend() const noexcept -> const_reverse_iterator {return this->crend();}
 
-			constexpr bool isEmpty() const noexcept {return this->getSize() == 0;}
-			constexpr const CharT *getData() const noexcept;
-			constexpr size_type getSize() const noexcept;
-			constexpr size_type getCapacity() const noexcept;
+			constexpr auto isEmpty() const noexcept -> bool {return this->getSize() == 0;}
+			constexpr auto getData() const noexcept -> const CharT*;
+			constexpr auto getSize() const noexcept -> size_type;
+			constexpr auto getCapacity() const noexcept -> size_type;
 
 
 		private:
-			constexpr bool m_isSSO() const noexcept;
-			constexpr pointer m_allocate(size_type size) const noexcept;
-			constexpr void m_deallocate(pointer res, size_type size) const noexcept;
-			constexpr difference_type m_normalizeIndex(difference_type index, size_type size = 0) const noexcept;
+			constexpr auto m_isSSO() const noexcept -> bool;
+			constexpr auto m_allocate(size_type size) const noexcept -> pointer;
+			constexpr auto m_deallocate(pointer res, size_type size) const noexcept -> void;
+			constexpr auto m_normalizeIndex(difference_type index, size_type size = 0) const noexcept-> difference_type ;
 
 			// size does not include the null-terminating character
 			template <typename Alloc2>
@@ -191,9 +197,9 @@ namespace sl::utils {
 	static_assert(std::ranges::random_access_range<BasicString<char>>, "String type must fullfill std::ranges::random_access_range concept");
 
 	template <typename CharT>
-	constexpr std::size_t getSize(const CharT *str) noexcept {return std::strlen(str);}
+	constexpr auto getSize(const CharT *str) noexcept -> std::size_t {return std::strlen(str);}
 	template <typename CharT, typename Alloc>
-	constexpr BasicString<CharT, Alloc>::size_type getSize(const BasicString<CharT, Alloc> &str) noexcept {return str.getSize();}
+	constexpr auto getSize(const BasicString<CharT, Alloc> &str) noexcept -> BasicString<CharT, Alloc>::size_type {return str.getSize();}
 
 
 	template <typename ...Types>
@@ -268,15 +274,13 @@ namespace sl::utils {
 			}
 
 			constexpr operator FirstString() const noexcept {return FirstString(*this);}
-			constexpr const AddressTuple &getTuple() const noexcept {return m_strings;}
+			constexpr auto getTuple() const noexcept -> const AddressTuple& {return m_strings;}
 
 		private:
 			template <typename T>
-			constexpr const T *s_makePointer(const T &value) noexcept {return &value;}
-/*			template <typename T, std::size_t N>
-			constexpr const T *s_makePointer(const T (&value)[N]) noexcept {return *&value;}*/
+			constexpr auto s_makePointer(const T &value) noexcept -> const T* {return &value;}
 			template <typename T>
-			constexpr const typename RemoveArray<T>::Type *s_makePointer(T *ptr) noexcept {return ptr;}
+			constexpr auto s_makePointer(T *ptr) noexcept -> const typename RemoveArray<T>::Type* {return ptr;}
 
 			AddressTuple m_strings;
 	};
@@ -308,19 +312,18 @@ namespace sl::utils {
 
 
 	template <std::integral T, typename CharT, sl::memory::IsAllocator Alloc>
-	constexpr std::optional<T> stringToNumber(const sl::utils::BasicString<CharT, Alloc> &string) noexcept;
+	constexpr auto stringToNumber(const sl::utils::BasicString<CharT, Alloc> &string) noexcept -> std::optional<T>;
 	template <std::floating_point T, typename CharT, sl::memory::IsAllocator Alloc>
-	constexpr std::optional<T> stringToNumber(const sl::utils::BasicString<CharT, Alloc> &string) noexcept;
+	constexpr auto stringToNumber(const sl::utils::BasicString<CharT, Alloc> &string) noexcept -> std::optional<T>;
 
 	
 	template <typename CharT, sl::memory::IsAllocator Alloc>
-	inline std::ostream &operator<<(std::ostream &stream, const sl::utils::BasicString<CharT, Alloc> &str) noexcept {
-		stream << str.getData();
-		return stream;
+	inline auto operator<<(std::ostream &stream, const sl::utils::BasicString<CharT, Alloc> &str) noexcept -> std::ostream& {
+		return stream << str.getData();
 	}
 
 	namespace literals {
-		constexpr sl::utils::BasicString<char> operator ""_s(const char *str, std::size_t length) noexcept {
+		constexpr auto operator ""_s(const char *str, std::size_t length) noexcept -> sl::utils::BasicString<char> {
 			return sl::utils::BasicString<char> (str, length);
 		}
 	} // namespace literals

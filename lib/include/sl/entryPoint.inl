@@ -4,16 +4,17 @@
 #include <print>
 
 #include "sl/application.hpp"
+#include "sl/utils/logger.hpp"
 
-std::unique_ptr<sl::Application> createApplication();
+auto createApplication() noexcept -> std::unique_ptr<sl::Application>;
 
 
 
-int main(int, char**) {
+auto main(int, char**) -> int {
 	auto application {createApplication()};
 	sl::Result applicationCreationResult {application->create()};
 	if (applicationCreationResult != sl::Result::eSuccess) {
-		std::println(stderr, "\033[31mCan't create application : {}\033[m", sl::utils::toString(applicationCreationResult));
+		sl::mainLogger.error("Can't create application : {}", sl::utils::toString(applicationCreationResult));
 		return EXIT_FAILURE;
 	}
 	application->destroy();

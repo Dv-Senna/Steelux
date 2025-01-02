@@ -9,8 +9,8 @@ namespace sl::utils {
 		eBig = "big"_pes
 	};
 
-	constexpr Endianness getCompiletimeEndianness();
-	inline Endianness getRuntimeEndianness();
+	constexpr auto getCompiletimeEndianness() noexcept -> Endianness;
+	inline auto getRuntimeEndianness() noexcept -> Endianness;
 } // namespace sl::utils
 
 #include "sl/utils/endianness.inl"

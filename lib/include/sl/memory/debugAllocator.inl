@@ -42,7 +42,8 @@ namespace sl::memory {
 
 
 	template <typename T>
-	constexpr T *DebugAllocator<T>::allocate(std::size_t n) noexcept {
+	[[nodiscard]]
+	constexpr auto DebugAllocator<T>::allocate(std::size_t n) noexcept -> T* {
 		if (std::is_constant_evaluated())
 			return new T[n];
 
@@ -59,8 +60,8 @@ namespace sl::memory {
 
 
 	template <typename T>
-	constexpr void DebugAllocator<T>::deallocate(T *ptr, std::size_t) noexcept {
-		return delete[] ptr;
+	constexpr auto DebugAllocator<T>::deallocate(T *ptr, std::size_t) noexcept -> void {
+		delete[] ptr;
 	}
 
 

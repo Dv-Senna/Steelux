@@ -35,19 +35,19 @@ namespace sl::utils {
 			constexpr Logger(const String &name, sl::utils::FlagField<LogSeverity> severityMask, FormatString formatString, std::ostream &stream = std::cout) noexcept;
 
 			template <typename ...Args>
-			constexpr void log(LogSeverity severity, std::format_string<Args...> str, Args &&...args) noexcept;
+			constexpr auto log(LogSeverity severity, std::format_string<Args...> str, Args &&...args) noexcept -> void;
 			template <typename ...Args>
-			constexpr void debug(std::format_string<Args...> str, Args &&...args) noexcept {return this->log<Args...> (LogSeverity::eDebug, str, std::forward<Args> (args)...);}
+			constexpr auto debug(std::format_string<Args...> str, Args &&...args) noexcept -> void {return this->log<Args...> (LogSeverity::eDebug, str, std::forward<Args> (args)...);}
 			template <typename ...Args>
-			constexpr void info(std::format_string<Args...> str, Args &&...args) noexcept {return this->log<Args...> (LogSeverity::eInfo, str, std::forward<Args> (args)...);}
+			constexpr auto info(std::format_string<Args...> str, Args &&...args) noexcept -> void {return this->log<Args...> (LogSeverity::eInfo, str, std::forward<Args> (args)...);}
 			template <typename ...Args>
-			constexpr void warn(std::format_string<Args...> str, Args &&...args) noexcept {return this->log<Args...> (LogSeverity::eWarn, str, std::forward<Args> (args)...);}
+			constexpr auto warn(std::format_string<Args...> str, Args &&...args) noexcept -> void {return this->log<Args...> (LogSeverity::eWarn, str, std::forward<Args> (args)...);}
 			template <typename ...Args>
-			constexpr void error(std::format_string<Args...> str, Args &&...args) noexcept {return this->log<Args...> (LogSeverity::eError, str, std::forward<Args> (args)...);}
+			constexpr auto error(std::format_string<Args...> str, Args &&...args) noexcept -> void {return this->log<Args...> (LogSeverity::eError, str, std::forward<Args> (args)...);}
 
-			constexpr void setSeverityMask(sl::utils::FlagField<LogSeverity> severityMask) noexcept {m_severityMask = severityMask;}
-			constexpr void setStream(std::ostream &stream) noexcept {m_stream = &stream;}
-			constexpr void setFormatString(FormatString formatString) noexcept {m_formatString = formatString;}
+			constexpr auto setSeverityMask(sl::utils::FlagField<LogSeverity> severityMask) noexcept -> void {m_severityMask = severityMask;}
+			constexpr auto setStream(std::ostream &stream) noexcept -> void {m_stream = &stream;}
+			constexpr auto setFormatString(FormatString formatString) noexcept -> void {m_formatString = formatString;}
 
 
 		private:
