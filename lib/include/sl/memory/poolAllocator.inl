@@ -87,7 +87,7 @@ namespace sl::memory {
 		if (--s_instanceCounts[m_instanceID] != 0)
 			return;
 
-		for (const auto &it : m_pool)
+		for (auto &it : *this)
 			it.~T();
 
 		m_instanceID = 0;

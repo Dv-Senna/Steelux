@@ -79,6 +79,10 @@ namespace sl::memory {
 			auto allocate(size_type n = 1, Args &&...args) noexcept -> pointer;
 			auto deallocate(pointer ptr, size_type n = 1) noexcept -> void;
 
+			template <typename ...Args>
+			[[nodiscard]]
+			auto allocateIt(Args &&...args) noexcept {return PoolAllocatorIterator<T> (*this, this->allocate(1, std::forward<Args> (args)...) - m_pool);}
+
 			inline auto operator==(const PoolAllocator<T> &allocator) const noexcept {return m_instanceID == allocator.m_instanceID;}
 
 			inline auto begin() noexcept {return PoolAllocatorIterator<T> (*this, 0);}

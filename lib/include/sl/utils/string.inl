@@ -13,7 +13,7 @@
 namespace sl::utils {
 	template <typename CharT, sl::memory::IsAllocator Alloc>
 	constexpr BasicString<CharT, Alloc>::BasicString(const Alloc &alloc) noexcept :
-		m_content {},
+		m_content {s_createContent(alloc)},
 		m_sso {}
 	{
 		if constexpr (sl::memory::IsAllocatorStatefull_v<Alloc>)
@@ -75,11 +75,9 @@ namespace sl::utils {
 
 	template <typename CharT, sl::memory::IsAllocator Alloc>
 	constexpr BasicString<CharT, Alloc>::BasicString(const BasicString<CharT, Alloc> &str) noexcept :
-		BasicString<CharT, Alloc> ()
+		BasicString<CharT, Alloc> (std::allocator_traits<Alloc>::select_on_container_copy_construction(str.m_copyAllocator()))
 	{
 		m_content.size = str.m_content.size;
-		if constexpr (sl::memory::IsAllocatorStatefull_v<Alloc>)
-			m_content.allocator = std::allocator_traits<Alloc>::select_on_container_copy_construction(str.m_content.allocator);
 
 		if (this->m_isSSO()) {
 			(void)sl::utils::memcpy<CharT> (m_sso.buffer, str.m_sso.buffer, MAX_SSO_CAPACITY);
@@ -114,13 +112,11 @@ namespace sl::utils {
 
 	template <typename CharT, sl::memory::IsAllocator Alloc>
 	constexpr BasicString<CharT, Alloc>::BasicString(BasicString<CharT, Alloc> &&str) noexcept :
-		BasicString<CharT, Alloc> ()
+		BasicString<CharT, Alloc> (std::move(str.m_copyAllocator()))
 	{
 		m_content.size = str.m_content.size;
 		str.m_content.size = 0;
 		str.m_content.size.template setFlag<0> (false);
-		if constexpr (sl::memory::IsAllocatorStatefull_v<Alloc>)
-			m_content.allocator = std::move(str.m_content.allocator);
 
 		if (this->m_isSSO())
 			(void)sl::utils::memcpy<CharT> (m_sso.buffer, str.m_sso.buffer, MAX_SSO_CAPACITY);
@@ -467,7 +463,7 @@ namespace sl::utils {
 
 
 	template <typename CharT, sl::memory::IsAllocator Alloc>
-	constexpr BasicString<CharT, Alloc>::pointer BasicString<CharT, Alloc>::m_allocate(size_type size) const noexcept {
+	constexpr BasicString<CharT, Alloc>::pointer BasicString<CharT, Alloc>::m_allocate(size_type size) noexcept {
 		if constexpr (sl::memory::IsAllocatorStatefull_v<Alloc>)
 			return std::allocator_traits<Alloc>::allocate(m_content.allocator, size);
 		else {
@@ -478,7 +474,7 @@ namespace sl::utils {
 
 
 	template <typename CharT, sl::memory::IsAllocator Alloc>
-	constexpr void BasicString<CharT, Alloc>::m_deallocate(pointer res, size_type size) const noexcept {
+	constexpr void BasicString<CharT, Alloc>::m_deallocate(pointer res, size_type size) noexcept {
 		if constexpr (sl::memory::IsAllocatorStatefull_v<Alloc>)
 			std::allocator_traits<Alloc>::deallocate(m_content.allocator, res, size);
 		else {
@@ -496,6 +492,24 @@ namespace sl::utils {
 		if (index < 0)
 			index += static_cast<difference_type> (size);
 		return index;
+	}
+
+
+	template <typename CharT, sl::memory::IsAllocator Alloc>
+	constexpr auto BasicString<CharT, Alloc>::m_copyAllocator() const noexcept -> Alloc {
+		if constexpr (sl::memory::IsAllocatorStatefull_v<Alloc>)
+			return m_content.allocator;
+		else
+			return Alloc();
+	}
+
+
+	template <typename CharT, sl::memory::IsAllocator Alloc>
+	constexpr auto BasicString<CharT, Alloc>::s_createContent(const Alloc &alloc) noexcept -> Content<Alloc> {
+		if constexpr (sl::memory::IsAllocatorStatefull_v<Alloc>)
+			return Content<Alloc> {alloc, sl::utils::UnsignedIntFlagWrapper<size_type, 1> (0ULL)};
+		else
+			return Content<Alloc> {sl::utils::UnsignedIntFlagWrapper<size_type, 1> (0ULL)};
 	}
 
 

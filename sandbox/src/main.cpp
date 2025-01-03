@@ -8,6 +8,7 @@
 #include <sl/utils/units.hpp>
 
 #include <sl/memory/poolAllocator.hpp>
+#include <sl/memory/heapAllocator.hpp>
 
 #include <memory>
 #include <print>
@@ -22,14 +23,18 @@ class SandboxApp final : public sl::Application {
 	public:
 		SandboxApp() : sl::Application() {
 			sl::memory::DebugAllocator<char> _ {};
+			sl::memory::HeapAllocator heapAllocator {};
+
+			using String = sl::utils::BasicString<char, sl::memory::HeapAllocatorView<char>>;
+
 
 			std::println("sl::String : {}/{}", alignof(sl::String), sizeof(sl::String));
 			std::println("std::string : {}/{}", alignof(std::string), sizeof(std::string));
 			std::println("std::shared_ptr<char> {}/{}", alignof(std::shared_ptr<char>), sizeof(std::shared_ptr<char>));
 
-			sl::String str1 {"Hello World from Steelux !"};
-			sl::String str2 {str1};
-			const sl::String str3 {std::move(str1)};
+			String str1 {"Hello World from Steelux !", sl::memory::HeapAllocatorView<char> (heapAllocator)};
+			String str2 {str1};
+			const String str3 {std::move(str1)};
 			
 			std::println("str1 : {} ({}, {})", (void*)str1.getData(), str1.getSize(), str1.getCapacity());
 			std::println("str2 : {} ({}, {})", str2, str2.getSize(), str2.getCapacity());
@@ -106,7 +111,7 @@ class SandboxApp final : public sl::Application {
 			static_assert(std::same_as<Test::AddressTuple, std::tuple<const char*, const sl::String*, const char*>>);
 
 			sl::String csv_str1 {"Hello World !"};
-			sl::String csv_str2 {"Something ?"};
+			String csv_str2 {"Something ?", sl::memory::HeapAllocatorView<char> (heapAllocator)};
 			str2 = csv_str2 + "Hello" + csv_str1 + "Hi!" + "IDK what I'm doing";
 			std::println("str2 : {} ({}, {})", str2, str2.getSize(), str2.getCapacity());
 			str2 += ". Heeeeeeeere we gooo";

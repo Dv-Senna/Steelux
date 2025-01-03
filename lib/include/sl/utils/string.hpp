@@ -86,11 +86,11 @@ namespace sl::utils {
 			template <sl::memory::IsAllocator Alloc2>
 			constexpr auto pushBack(const sl::utils::BasicString<CharT, Alloc2> &str) noexcept -> iterator {return this->insert(this->end(), str);}
 
-			constexpr auto insert(difference_type position, const CharT *str) noexcept -> iterator {return this->insert(position, BasicString(str));}
-			constexpr auto insert(const iterator &position, const CharT *str) noexcept -> iterator {return this->insert(position, BasicString(str));}
-			constexpr auto insert(const reverse_iterator &position, const CharT *str) noexcept -> iterator {return this->insert(position, BasicString(str));}
-			constexpr auto pushFront(const CharT *str) noexcept -> iterator {return this->pushFront(BasicString(str));}
-			constexpr auto pushBack(const CharT *str) noexcept -> iterator {return this->pushBack(BasicString(str));}
+			constexpr auto insert(difference_type position, const CharT *str) noexcept -> iterator {return this->insert(position, BasicString(str, this->m_copyAllocator()));}
+			constexpr auto insert(const iterator &position, const CharT *str) noexcept -> iterator {return this->insert(position, BasicString(str, this->m_copyAllocator()));}
+			constexpr auto insert(const reverse_iterator &position, const CharT *str) noexcept -> iterator {return this->insert(position, BasicString(str, this->m_copyAllocator()));}
+			constexpr auto pushFront(const CharT *str) noexcept -> iterator {return this->pushFront(BasicString(str, this->m_copyAllocator()));}
+			constexpr auto pushBack(const CharT *str) noexcept -> iterator {return this->pushBack(BasicString(str, this->m_copyAllocator()));}
 
 			template <sl::memory::IsAllocator Alloc2>
 			constexpr auto operator+=(const sl::utils::BasicString<CharT, Alloc2> &str) noexcept -> BasicString<CharT, Alloc>& {(void)this->pushBack(str); return *this;}
@@ -156,9 +156,10 @@ namespace sl::utils {
 
 		private:
 			constexpr auto m_isSSO() const noexcept -> bool;
-			constexpr auto m_allocate(size_type size) const noexcept -> pointer;
-			constexpr auto m_deallocate(pointer res, size_type size) const noexcept -> void;
-			constexpr auto m_normalizeIndex(difference_type index, size_type size = 0) const noexcept-> difference_type ;
+			constexpr auto m_allocate(size_type size) noexcept -> pointer;
+			constexpr auto m_deallocate(pointer res, size_type size) noexcept -> void;
+			constexpr auto m_normalizeIndex(difference_type index, size_type size = 0) const noexcept -> difference_type;
+			constexpr auto m_copyAllocator() const noexcept -> Alloc;
 
 			// size does not include the null-terminating character
 			template <typename Alloc2>
@@ -172,6 +173,8 @@ namespace sl::utils {
 			struct Content<Alloc2> {
 				sl::utils::UnsignedIntFlagWrapper<size_type, 1> size;
 			};
+
+			static constexpr auto s_createContent(const Alloc &alloc) noexcept -> Content<Alloc>;
 
 			Content<Alloc> m_content;
 
