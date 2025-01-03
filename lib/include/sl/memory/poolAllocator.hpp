@@ -74,8 +74,9 @@ namespace sl::memory {
 			PoolAllocator(PoolAllocator<T> &&allocator) noexcept;
 			PoolAllocator<T> &operator=(PoolAllocator<T> &&allocator) noexcept;
 
+			template <typename ...Args>
 			[[nodiscard]]
-			auto allocate(size_type n = 1) noexcept -> pointer;
+			auto allocate(size_type n = 1, Args &&...args) noexcept -> pointer;
 			auto deallocate(pointer ptr, size_type n = 1) noexcept -> void;
 
 			inline auto operator==(const PoolAllocator<T> &allocator) const noexcept {return m_instanceID == allocator.m_instanceID;}
