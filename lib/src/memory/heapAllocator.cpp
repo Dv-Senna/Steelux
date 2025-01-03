@@ -86,7 +86,7 @@ namespace sl::memory {
 
 		if (page == m_pages.end()) {
 			if (m_pageCount >= m_maxPageCount)
-				return nullptr;
+				return pointer(nullptr, 0);
 
 			page = m_pages.allocateIt();
 			*page = new value_type[m_pageSize];
@@ -99,12 +99,12 @@ namespace sl::memory {
 		value_type **pTableEntry {m_pTable.allocate(1, address)};
 		allocationPage->insert(allocationPosition, Allocation{pTableEntry, size});
 
-		return address;
+		return pointer(pTableEntry, 0);
 	}
 
 
 	auto HeapAllocator::deallocate(const pointer &ptr) noexcept -> void {
-
+		
 	}
 
 

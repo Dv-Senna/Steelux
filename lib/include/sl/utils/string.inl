@@ -215,9 +215,9 @@ namespace sl::utils {
 		size_type newCapacity {newSize + 1};
 		pointer buffer {this->m_allocate(newCapacity)};
 		if (this->m_isSSO())
-			(void)sl::utils::memcpy(buffer, m_sso.buffer, capacity);
+			(void)sl::utils::memcpy<CharT> (buffer, m_sso.buffer, capacity);
 		else {
-			(void)sl::utils::memmove(buffer, m_heap.start, newCapacity);
+			(void)sl::utils::memmove<CharT> (buffer, m_heap.start, newCapacity);
 			this->m_deallocate(m_heap.start, m_heap.capacity);
 		}
 
@@ -236,7 +236,7 @@ namespace sl::utils {
 
 			pointer buffer {m_heap.start};
 			size_type capacity {m_heap.capacity};
-			(void)std::memcpy(m_sso.buffer, m_heap.start, m_content.size + 1);
+			(void)sl::utils::memcpy<CharT> (m_sso.buffer, m_heap.start, m_content.size + 1);
 			this->m_deallocate(buffer, capacity);
 			m_content.size.template setFlag<0> (false);
 			return MAX_SSO_SIZE;
@@ -246,7 +246,7 @@ namespace sl::utils {
 			return m_content.size;
 
 		pointer buffer {this->m_allocate(m_content.size + 1)};
-		(void)std::memcpy(buffer, m_heap.start, m_content.size + 1);
+		(void)sl::utils::memcpy<CharT> (buffer, m_heap.start, m_content.size + 1);
 		this->m_deallocate(m_heap.start, m_heap.capacity);
 		m_heap.start = buffer;
 		m_heap.capacity = m_content.size + 1;
@@ -267,14 +267,14 @@ namespace sl::utils {
 		}
 
 		if (this->m_isSSO()) {
-			(void)sl::utils::memmove(m_sso.buffer + position + count, m_sso.buffer + position, m_content.size - position + 1);
+			(void)sl::utils::memmove<CharT> (m_sso.buffer + position + count, m_sso.buffer + position, m_content.size - position + 1);
 			for (size_type i {0}; i < count; ++i)
 				m_sso.buffer[position + i] = value;
 			m_content.size += count;
 			return this->begin() + position;
 		}
 
-		(void)sl::utils::memmove(m_heap.start + position + count, m_heap.start + position, m_content.size - position + 1);
+		(void)sl::utils::memmove<CharT> (m_heap.start + position + count, m_heap.start + position, m_content.size - position + 1);
 		for (size_type i {0}; i < count; ++i)
 			m_heap.start[position + i] = value;
 		m_content.size += count;
@@ -289,17 +289,17 @@ namespace sl::utils {
 		(void)this->reserve(m_content.size + str.m_content.size);
 
 		if (this->m_isSSO()) {
-			(void)sl::utils::memmove(m_sso.buffer + position + str.m_content.size, m_sso.buffer + position, m_content.size - position + 1);
-			(void)sl::utils::memmove(m_sso.buffer + position, str.m_sso.buffer, str.m_content.size);
+			(void)sl::utils::memmove<CharT> (m_sso.buffer + position + str.m_content.size, m_sso.buffer + position, m_content.size - position + 1);
+			(void)sl::utils::memmove<CharT> (m_sso.buffer + position, str.m_sso.buffer, str.m_content.size);
 			m_content.size += str.m_content.size;
 			return this->begin() + position;
 		}
 
-		(void)sl::utils::memmove(m_heap.start + position + str.m_content.size, m_heap.start + position, m_content.size - position + 1);
+		(void)sl::utils::memmove<CharT> (m_heap.start + position + str.m_content.size, m_heap.start + position, m_content.size - position + 1);
 		if (str.m_isSSO())
-			(void)sl::utils::memmove(m_heap.start + position, str.m_sso.buffer, str.m_content.size);
+			(void)sl::utils::memmove<CharT> (m_heap.start + position, str.m_sso.buffer, str.m_content.size);
 		else
-			(void)sl::utils::memmove(m_heap.start + position, str.m_heap.start, str.m_content.size);
+			(void)sl::utils::memmove<CharT> (m_heap.start + position, str.m_heap.start, str.m_content.size);
 
 		m_content.size += str.m_content.size;
 		return this->begin() + position;
@@ -315,7 +315,7 @@ namespace sl::utils {
 		(void)this->reserve(m_content.size + rangeSize);
 
 		if (this->m_isSSO()) {
-			(void)sl::utils::memmove(m_sso.buffer + position + rangeSize, m_sso.buffer + position, m_content.size - position + 1);
+			(void)sl::utils::memmove<CharT> (m_sso.buffer + position + rangeSize, m_sso.buffer + position, m_content.size - position + 1);
 			size_type i {0};
 			for (IT it {start}; it != end; ++it) {
 				(m_sso.buffer + position)[i] = static_cast<CharT> (*it);
@@ -325,7 +325,7 @@ namespace sl::utils {
 			return this->begin() + position;
 		}
 
-		(void)sl::utils::memmove(m_heap.start + position + rangeSize, m_heap.start + position, m_content.size - position + 1);
+		(void)sl::utils::memmove<CharT> (m_heap.start + position + rangeSize, m_heap.start + position, m_content.size - position + 1);
 		size_type i {0};
 		for (IT it {start}; it != end; ++it) {
 			(m_heap.start + position)[i] = static_cast<CharT> (*it);
@@ -343,9 +343,9 @@ namespace sl::utils {
 			count = m_content.size;
 
 		if (this->m_isSSO())
-			(void)sl::utils::memmove(m_sso.buffer + position, m_sso.buffer + position + count, m_content.size - position - count + 1);
+			(void)sl::utils::memmove<CharT> (m_sso.buffer + position, m_sso.buffer + position + count, m_content.size - position - count + 1);
 		else
-			(void)sl::utils::memmove(m_heap.start + position, m_heap.start + position + count, m_content.size - position - count + 1);
+			(void)sl::utils::memmove<CharT> (m_heap.start + position, m_heap.start + position + count, m_content.size - position - count + 1);
 
 		m_content.size -= count;
 		return this->begin() + position;
@@ -355,8 +355,6 @@ namespace sl::utils {
 	template <typename CharT, sl::memory::IsAllocator Alloc>
 	constexpr BasicString<CharT, Alloc>::iterator BasicString<CharT, Alloc>::at(difference_type index) noexcept {
 		index = this->m_normalizeIndex(index);
-		if (this->m_isSSO())
-			return this->begin() + index;
 		return this->begin() + index;
 	}
 
@@ -364,8 +362,6 @@ namespace sl::utils {
 	template <typename CharT, sl::memory::IsAllocator Alloc>
 	constexpr BasicString<CharT, Alloc>::const_iterator BasicString<CharT, Alloc>::at(difference_type index) const noexcept {
 		index = this->m_normalizeIndex(index);
-		if (this->m_isSSO())
-			return this->begin() + index;
 		return this->begin() + index;
 	}
 
