@@ -20,8 +20,10 @@ namespace sl::memory {
 
 	HeapAllocator::~HeapAllocator() {
 		size_type allocationCount {0};
-		for (const auto &_ : m_pTable)
+		for (const auto &pTableEntry : m_pTable) {
+			sl::mainLogger.info("Left allocation : {}", (void*)*pTableEntry);
 			++allocationCount;
+		}
 
 		sl::mainLogger.info("Heap Allocator allocation count : {}", allocationCount);
 
@@ -86,7 +88,7 @@ namespace sl::memory {
 
 		if (page == m_pages.end()) {
 			if (m_pageCount >= m_maxPageCount)
-				return pointer(nullptr, 0);
+				return nullptr;
 
 			page = m_pages.allocateIt();
 			*page = new value_type[m_pageSize];
@@ -99,12 +101,26 @@ namespace sl::memory {
 		value_type **pTableEntry {m_pTable.allocate(1, address)};
 		allocationPage->insert(allocationPosition, Allocation{pTableEntry, size});
 
-		return pointer(pTableEntry, 0);
+		return pointer(pTableEntry);
 	}
 
 
 	auto HeapAllocator::deallocate(const pointer &ptr) noexcept -> void {
-		
+		for (auto it {m_pTable.begin()}; it != m_pTable.end(); ++it) {
+			if (&*it != ptr.m_pTableEntry)
+				continue;
+			m_pTable.deallocate(&*it);
+			break;
+		}
+
+		for (auto &allocationPage : m_allocationPages) {
+			for (auto it {allocationPage.begin()}; it != allocationPage.end(); ++it) {
+				if (it->start != ptr.m_pTableEntry)
+					continue;
+				allocationPage.erase(it);
+				return;
+			}
+		}
 	}
 
 
