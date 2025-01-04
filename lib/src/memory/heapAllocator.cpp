@@ -14,18 +14,21 @@ namespace sl::memory {
 		m_allocationPages {m_maxPageCount}
 	{
 		*m_pages.allocate() = new value_type[m_pageSize];
-		m_allocationPages.allocate(1)->reserve(m_maxAllocationPageSize);
+		std::vector<Allocation> *allocationPage {m_allocationPages.allocate()};
+		new (allocationPage) std::vector<Allocation> ();
+		allocationPage->reserve(m_maxAllocationPageSize);
 	}
 
 
 	HeapAllocator::~HeapAllocator() {
 		size_type allocationCount {0};
-		for (const auto &pTableEntry : m_pTable) {
-			sl::mainLogger.info("Left allocation : {}", (void*)*pTableEntry);
+		for (const auto &_ : m_pTable)
 			++allocationCount;
-		}
 
 		sl::mainLogger.info("Heap Allocator allocation count : {}", allocationCount);
+
+		for (auto &allocationPage : m_allocationPages)
+			allocationPage.~vector<Allocation> ();
 
 		for (const auto &page : m_pages)
 			delete[] page;
@@ -98,7 +101,8 @@ namespace sl::memory {
 			address = s_alignToAlignment(*page, alignment);
 		}
 
-		value_type **pTableEntry {m_pTable.allocate(1, address)};
+		value_type **pTableEntry {m_pTable.allocate()};
+		*pTableEntry = address;
 		allocationPage->insert(allocationPosition, Allocation{pTableEntry, size});
 
 		return pointer(pTableEntry);

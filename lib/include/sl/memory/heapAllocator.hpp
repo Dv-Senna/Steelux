@@ -149,8 +149,8 @@ namespace sl::memory {
 			inline auto operator=(HeapAllocatorView<T> &&) noexcept -> HeapAllocatorView<T>& = default;
 
 			[[nodiscard]]
-			inline auto allocate(size_type n) noexcept -> pointer {return static_cast<pointer> (m_heapAllocator->allocate(sizeof(T) * n, alignof(T)));}
-			inline auto deallocate(const pointer &ptr, size_type) noexcept -> void {m_heapAllocator->deallocate(static_cast<HeapAllocator::pointer> (ptr));}
+			inline auto allocate(size_type n) const noexcept -> pointer {return static_cast<pointer> (m_heapAllocator->allocate(sizeof(T) * n, alignof(T)));}
+			inline auto deallocate(const pointer &ptr, size_type) const noexcept -> void {m_heapAllocator->deallocate(static_cast<HeapAllocator::pointer> (ptr));}
 
 			inline auto operator==(const HeapAllocatorView<T> &view) const noexcept -> bool {return m_heapAllocator == view.m_heapAllocator;}
 

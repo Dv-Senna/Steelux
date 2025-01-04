@@ -87,9 +87,6 @@ namespace sl::memory {
 		if (--s_instanceCounts[m_instanceID] != 0)
 			return;
 
-		for (auto &it : *this)
-			it.~T();
-
 		m_instanceID = 0;
 		std::free(m_poolState);
 		std::free(m_pool);
@@ -155,9 +152,8 @@ namespace sl::memory {
 
 
 	template <typename T>
-	template <typename ...Args>
 	[[nodiscard]]
-	auto PoolAllocator<T>::allocate(size_type n, Args &&...args) noexcept -> pointer {
+	auto PoolAllocator<T>::allocate(size_type n) noexcept -> pointer {
 		SL_TEXT_ASSERT(n == 1, "n of PoolAllocator->allocate must be 1");
 
 		for (size_type i {0}; i < m_poolSize; ++i) {
@@ -165,7 +161,6 @@ namespace sl::memory {
 				continue;
 
 			m_poolState[i] = true;
-			new(m_pool + i) T(std::forward<Args> (args)...);
 			return m_pool + i;
 		}
 
@@ -185,7 +180,6 @@ namespace sl::memory {
 			return;
 
 		m_poolState[index] = false;
-		m_pool[index].~T();
 	}
 
 
