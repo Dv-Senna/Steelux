@@ -24,6 +24,8 @@ namespace sl::memory {
 
 			constexpr auto operator==(const DebugAllocator<T> &) const noexcept -> bool {return true;}
 
+			inline auto clear() noexcept -> void;
+
 
 		private:
 			static std::size_t s_instanceCount;

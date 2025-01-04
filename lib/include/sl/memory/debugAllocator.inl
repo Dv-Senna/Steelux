@@ -65,6 +65,13 @@ namespace sl::memory {
 	}
 
 
+	template <typename T>
+	inline auto DebugAllocator<T>::clear() noexcept -> void {
+		s_allocationCount = 0;
+		s_averageMsBetweenAllocation = 0;
+	}
+
+
 	template <typename T> std::size_t DebugAllocator<T>::s_instanceCount {0};
 	template <typename T> std::size_t DebugAllocator<T>::s_allocationCount {0};
 	template <typename T> float DebugAllocator<T>::s_averageMsBetweenAllocation {0};
