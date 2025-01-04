@@ -11,6 +11,7 @@
 #include <sl/memory/heapAllocator.hpp>
 #include <sl/memory/stackAllocator.hpp>
 #include <sl/memory/doubleStackAllocator.hpp>
+#include <sl/memory/singleFrameAllocator.hpp>
 
 #include <memory>
 #include <print>

@@ -57,6 +57,7 @@ namespace sl::memory {
 			[[nodiscard]]
 			auto mark() const noexcept -> Marker;
 			auto deallocate(Marker marker) noexcept -> void;
+			auto clear() noexcept -> void;
 
 		private:
 			sl::utils::Bytes m_stackSize;
@@ -92,6 +93,7 @@ namespace sl::memory {
 			[[nodiscard]]
 			inline auto mark() const noexcept -> StackAllocator::Marker {return m_allocator->mark();}
 			inline auto deallocate(StackAllocator::Marker marker) noexcept -> void {m_allocator->deallocate(marker);}
+			inline auto clear() noexcept -> void {m_allocator->clear();}
 
 			constexpr auto operator==(const StackAllocatorView<T> &view) const noexcept -> bool {return m_allocator == view.m_allocator;}
 

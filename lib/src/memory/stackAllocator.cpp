@@ -70,4 +70,9 @@ namespace sl::memory {
 		m_stackTop = marker.m_marker;
 	}
 
+
+	auto StackAllocator::clear() noexcept -> void {
+		m_stackTop = m_stackBase;
+	}
+
 } // namespace sl::memory
