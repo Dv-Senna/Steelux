@@ -12,6 +12,7 @@
 #include <sl/memory/stackAllocator.hpp>
 #include <sl/memory/doubleStackAllocator.hpp>
 #include <sl/memory/singleFrameAllocator.hpp>
+#include <sl/memory/doubleBufferedAllocator.hpp>
 
 #include <memory>
 #include <print>
