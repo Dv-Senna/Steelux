@@ -39,7 +39,15 @@ build/*
 .cache/*
 .clangd
 
+tests/.vscode/*
+tests/.cache/*
+tests/.clandg
+
 # Scripts
 *.sh
 *.bat
 *.ps1
+
+!scripts/*.sh
+!scripts/*.bat
+!scripts/*.ps1

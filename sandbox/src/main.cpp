@@ -46,6 +46,9 @@ class SandboxApp final : public sl::Application {
 			std::println("str2 : {} ({}, {})", str2, str2.getSize(), str2.getCapacity());
 			std::println("str3 : {} ({}, {})", str3, str2.getSize(), str2.getCapacity());
 
+			std::println("str2 == str3 : {}", str2 == str3);
+			std::println("str1 == str2 : {}", str1 == str2);
+
 			str2[-1] = str3[3];
 			std::println("str2 : {} ({}, {})", str2, str2.getSize(), str2.getCapacity());
 

@@ -58,6 +58,12 @@ namespace sl::utils {
 			requires std::same_as<Alloc, typename ConcatStringView<Types...>::Allocator>
 			constexpr auto operator=(const ConcatStringView<Types...> &csv) noexcept -> BasicString<CharT, Alloc>&;
 
+			template <sl::memory::IsAllocator Alloc2>
+			constexpr auto operator==(const BasicString<CharT, Alloc2> &str) const noexcept -> bool;
+			constexpr auto operator==(const CharT *str) const noexcept -> bool;
+			template <typename ...Types>
+			constexpr auto operator==(const ConcatStringView<Types...> &csv) const noexcept -> bool;
+
 			constexpr auto reserve(size_type newSize) noexcept -> size_type;
 			constexpr auto shrinkToFit() noexcept -> size_type;
 

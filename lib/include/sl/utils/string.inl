@@ -207,6 +207,37 @@ namespace sl::utils {
 
 
 	template <typename CharT, sl::memory::IsAllocator Alloc>
+	template <sl::memory::IsAllocator Alloc2>
+	constexpr auto BasicString<CharT, Alloc>::operator==(const BasicString<CharT, Alloc2> &str) const noexcept -> bool {
+		if (m_content.size != str.getSize())
+			return false;
+
+		for (size_type i {0}; i < m_content.size; ++i) {
+			if ((*this)[i] != str[i])
+				return false;
+		}
+		return true;
+	}
+
+
+	template <typename CharT, sl::memory::IsAllocator Alloc>
+	constexpr auto BasicString<CharT, Alloc>::operator==(const CharT *str) const noexcept -> bool {
+		for (size_type i {0}; i < m_content.size; ++i) {
+			if ((*this)[i] != str[i])
+				return false;
+		}
+		return true;
+	}
+
+
+	template <typename CharT, sl::memory::IsAllocator Alloc>
+	template <typename ...Types>
+	constexpr auto BasicString<CharT, Alloc>::operator==(const ConcatStringView<Types...> &csv) const noexcept -> bool {
+		return *this == BasicString<CharT, typename ConcatStringView<Types...>::Allocator> (csv);
+	}
+
+
+	template <typename CharT, sl::memory::IsAllocator Alloc>
 	constexpr BasicString<CharT, Alloc>::size_type BasicString<CharT, Alloc>::reserve(size_type newSize) noexcept {
 		size_type capacity {this->getCapacity()};
 		if (newSize < capacity)
