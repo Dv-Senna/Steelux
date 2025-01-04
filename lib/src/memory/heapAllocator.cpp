@@ -103,7 +103,7 @@ namespace sl::memory {
 
 		value_type **pTableEntry {m_pTable.allocate()};
 		*pTableEntry = address;
-		allocationPage->insert(allocationPosition, Allocation{pTableEntry, size});
+		allocationPage->insert(allocationPosition, Allocation{pTableEntry, size, alignment});
 
 		return pointer(pTableEntry);
 	}
@@ -123,6 +123,35 @@ namespace sl::memory {
 					continue;
 				allocationPage.erase(it);
 				return;
+			}
+		}
+	}
+
+
+	auto HeapAllocator::defragment(size_type maxRelocationCount) noexcept -> void {
+		size_type relocationCount {0};
+
+		auto page {m_pages.begin()};
+		auto allocationPage {m_allocationPages.begin()};
+
+		for (; page != m_pages.end(); ++page, ++allocationPage) {
+			value_type *lastAllocationEnd {*page};
+
+			for (auto &allocation : *allocationPage) {
+				if (relocationCount >= maxRelocationCount)
+					return;
+
+				size_type offset {static_cast<size_type> (*allocation.start - lastAllocationEnd)};
+				if (offset < allocation.alignment) {
+					lastAllocationEnd = *allocation.start + allocation.size;
+					continue;
+				}
+
+				value_type *newAddress {s_alignToAlignment(lastAllocationEnd, allocation.alignment)};
+				(void)std::memmove(newAddress, *allocation.start, allocation.size);
+				*allocation.start = newAddress;
+				lastAllocationEnd = *allocation.start + allocation.size;
+				++relocationCount;
 			}
 		}
 	}

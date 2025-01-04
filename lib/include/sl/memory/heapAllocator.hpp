@@ -103,11 +103,14 @@ namespace sl::memory {
 			auto allocate(size_type size, size_type alignment = 1) noexcept -> pointer;
 			auto deallocate(const pointer &ptr) noexcept -> void;
 
+			auto defragment(size_type maxRelocationCount = 16) noexcept -> void;
+
 
 		private:
 			struct Allocation {
 				value_type **start;
 				size_type size;
+				size_type alignment;
 			};
 
 			static auto s_alignToAlignment(value_type *ptr, size_type alignment) noexcept -> value_type*;
