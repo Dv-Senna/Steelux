@@ -86,14 +86,14 @@ namespace sl::memory {
 			constexpr auto operator=(StackAllocatorView<T> &&) noexcept -> StackAllocatorView<T>& = default;
 
 			[[nodiscard]]
-			auto allocate(size_type n) const noexcept -> pointer {return reinterpret_cast<pointer> (m_allocator->allocate(sizeof(T) * n, alignof(T)));}
-			auto deallocate(pointer, size_type) const noexcept -> void {}
+			inline auto allocate(size_type n) const noexcept -> pointer {return reinterpret_cast<pointer> (m_allocator->allocate(sizeof(T) * n, alignof(T)));}
+			inline auto deallocate(pointer, size_type) const noexcept -> void {}
 
 			[[nodiscard]]
-			auto mark() const noexcept -> StackAllocator::Marker {return m_allocator->mark();}
-			auto deallocate(StackAllocator::Marker marker) noexcept -> void {m_allocator->deallocate(marker);}
+			inline auto mark() const noexcept -> StackAllocator::Marker {return m_allocator->mark();}
+			inline auto deallocate(StackAllocator::Marker marker) noexcept -> void {m_allocator->deallocate(marker);}
 
-			auto operator==(const StackAllocatorView<T> &view) const noexcept -> bool {return m_allocator == view.m_allocator;}
+			constexpr auto operator==(const StackAllocatorView<T> &view) const noexcept -> bool {return m_allocator == view.m_allocator;}
 
 		private:
 			StackAllocator *m_allocator;

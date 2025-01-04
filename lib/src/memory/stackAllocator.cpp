@@ -67,7 +67,7 @@ namespace sl::memory {
 
 
 	auto StackAllocator::deallocate(Marker marker) noexcept -> void {
-		m_stackTop = reinterpret_cast<pointer> (marker.m_marker);
+		m_stackTop = marker.m_marker;
 	}
 
 } // namespace sl::memory
