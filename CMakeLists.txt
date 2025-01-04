@@ -14,6 +14,6 @@ option(BUILD_TESTS "BUILD_TESTS" OFF)
 
 add_subdirectory(lib)
 add_subdirectory(sandbox)
-if (BUILD_TESTS)
+if (SL_BUILD_TESTS)
 	add_subdirectory(tests)
 endif()
