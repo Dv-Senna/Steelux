@@ -8,7 +8,7 @@ namespace sl::utils {
 	template <typename Cont, typename T>
 	class ContinousIterator {
 		public:
-			using iterator_category = std::random_access_iterator_tag;
+			using iterator_category = std::contiguous_iterator_tag;
 			using value_type = T;
 			using difference_type = std::ptrdiff_t;
 			using pointer = T*;
@@ -71,7 +71,7 @@ namespace sl::utils {
 	template <typename Cont, typename T>
 	class ReverseContinousIterator {
 		public:
-			using iterator_category = std::random_access_iterator_tag;
+			using iterator_category = std::contiguous_iterator_tag;
 			using value_type = T;
 			using difference_type = std::ptrdiff_t;
 			using pointer = T*;
@@ -131,8 +131,8 @@ namespace sl::utils {
 		return iterator + diff;
 	}
 
-	static_assert(std::random_access_iterator<ContinousIterator<void, char>>, "ContinousIterator must fullfill std::random_access_iterator");
-	static_assert(std::random_access_iterator<ReverseContinousIterator<void, char>>, "ReverseContinousIteartor must fullfill std::random_access_iterator");
+	static_assert(std::contiguous_iterator<ContinousIterator<void, char>>, "ContinousIterator must fullfill std::random_access_iterator");
+	static_assert(std::contiguous_iterator<ReverseContinousIterator<void, char>>, "ReverseContinousIteartor must fullfill std::random_access_iterator");
 
 
 
