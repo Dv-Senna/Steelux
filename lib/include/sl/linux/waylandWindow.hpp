@@ -17,7 +17,15 @@ namespace sl::linux_ {
 			auto destroy() noexcept -> void override;
 
 		private:
-			struct wl_display *m_display;
+			struct State {
+				struct wl_display *display {nullptr};
+				struct wl_registry *registry {nullptr};
+				struct wl_compositor *compositor {nullptr};
+				struct wl_surface *surface {nullptr};
+				struct wl_shm *shm {nullptr};
+			};
+
+			State m_state;
 	};
 
 } // sl::linux_
