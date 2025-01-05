@@ -24,6 +24,7 @@ endif()
 include_directories(
 	./include,
 	../lib/include
+	${DEPS_INCLUDE_DIRS}
 )
 
 file(GLOB_RECURSE SANDBOX_HEADER *.hpp)
@@ -41,7 +42,7 @@ endif()
 #target_link_directories(./lib)
 
 target_link_libraries(
-	${SANDBOX_NAME} PRIVATE ${PROJECT_NAME}
+	${SANDBOX_NAME} PRIVATE ${PROJECT_NAME} ${DEPS_LIBRARIES}
 )
 
 

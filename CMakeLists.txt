@@ -12,6 +12,17 @@ set(PROJECT_CPP_DIALECT 23)
 
 option(BUILD_TESTS "BUILD_TESTS" OFF)
 
+find_package(Vulkan REQUIRED)
+#message(${Vulkan_glslc_FOUND})
+#message(${Vulkan_GLSLC_EXECUTABLE})
+
+set(DEPS_INCLUDE_DIRS
+	Vulkan::Headers
+)
+set(DEPS_LIBRARIES
+	Vulkan::Vulkan
+)
+
 add_subdirectory(lib)
 add_subdirectory(sandbox)
 if (SL_BUILD_TESTS)

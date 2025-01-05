@@ -27,13 +27,14 @@ else()
 	)
 endif()
 
-include_directories(include)
+include_directories(include ${DEPS_INCLUDE_DIRS})
 
 file(GLOB_RECURSE LIBRARY_HEADER *.hpp)
 file(GLOB_RECURSE LIBRARY_INLINE *.inl)
 file(GLOB_RECURSE LIBRARY_SOURCE *.cpp)
 
 add_library(${LIBRARY_NAME} ${LIBRARY_TYPE} ${LIBRARY_HEADER} ${LIBRARY_INLINE} ${LIBRARY_SOURCE})
+target_link_libraries(${LIBRARY_NAME} ${DEPS_LIBRARIES})
 set_property(TARGET ${LIBRARY_NAME} PROPERTY CXX_STANDARD ${PROJECT_CPP_DIALECT})
 
 if (MSVC)

@@ -1,6 +1,8 @@
 #define SL_ENTRY_POINT
 #include <sl/Steelux.hpp>
 
+#include <vulkan/vulkan.h>
+
 #include <sl/utils/array.hpp>
 #include <sl/utils/enums.hpp>
 #include <sl/utils/endianness.hpp>
@@ -43,12 +45,33 @@ class SandboxApp final : public sl::Application {
 
 		auto onCreation() noexcept -> sl::Result override {
 			std::println("Creation");
+
+			VkApplicationInfo applicationInfos {};
+			applicationInfos.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+			applicationInfos.pEngineName = "Steelux";
+			applicationInfos.engineVersion = VK_MAKE_API_VERSION(0, 0, 0, 1);
+			applicationInfos.pApplicationName = "Steelux_sandbox";
+			applicationInfos.applicationVersion = VK_MAKE_API_VERSION(0, 0, 0, 1);
+			applicationInfos.apiVersion = VK_API_VERSION_1_3;
+
+			VkInstanceCreateInfo instanceCreateInfos {};
+			instanceCreateInfos.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+			instanceCreateInfos.enabledLayerCount = 0;
+			instanceCreateInfos.enabledExtensionCount = 0;
+			instanceCreateInfos.pApplicationInfo = &applicationInfos;
+
+			if (vkCreateInstance(&instanceCreateInfos, nullptr, &m_instance) != VK_SUCCESS)
+				return sl::Result::eFailure;
 			return sl::Result::eSuccess;
 		}
 
 		auto onDestruction() noexcept -> void override {
+			vkDestroyInstance(m_instance, nullptr);
 			std::println("Destruction");
 		}
+
+	private:
+		VkInstance m_instance;
 };
 
 

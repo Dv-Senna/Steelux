@@ -31,7 +31,8 @@ foreach(TEST_SOURCE ${TESTS_SOURCE})
 
 	include_directories(
 		./include,
-		../lib/include
+		../lib/include,
+		${DEPS_INCLUDE_DIRS}
 	)
 
 	add_executable(${TEST_NAME} ${TEST_SOURCE})
@@ -44,7 +45,7 @@ foreach(TEST_SOURCE ${TESTS_SOURCE})
 	endif()
 
 	target_link_libraries(
-		${TEST_NAME} PRIVATE ${PROJECT_NAME} Catch2::Catch2WithMain
+		${TEST_NAME} PRIVATE ${PROJECT_NAME} Catch2::Catch2WithMain ${DEPS_LIBRARIES}
 	)
 endforeach()
 
