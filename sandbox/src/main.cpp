@@ -17,6 +17,8 @@
 #include <sl/memory/singleFrameAllocator.hpp>
 #include <sl/memory/doubleBufferedAllocator.hpp>
 
+#include <sl/window.hpp>
+
 #include <memory>
 #include <print>
 
@@ -46,6 +48,12 @@ class SandboxApp final : public sl::Application {
 		auto onCreation() noexcept -> sl::Result override {
 			std::println("Creation");
 
+			sl::WindowCreateInfos createInfos {};
+			createInfos.title = "Steelux";
+			createInfos.size = {16*70, 9*70};
+			if (m_window.create(createInfos) != sl::Result::eSuccess)
+				return sl::Result::eFailure;
+
 			VkApplicationInfo applicationInfos {};
 			applicationInfos.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
 			applicationInfos.pEngineName = "Steelux";
@@ -71,6 +79,7 @@ class SandboxApp final : public sl::Application {
 		}
 
 	private:
+		sl::Window m_window;
 		VkInstance m_instance;
 };
 

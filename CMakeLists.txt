@@ -16,12 +16,22 @@ find_package(Vulkan REQUIRED)
 #message(${Vulkan_glslc_FOUND})
 #message(${Vulkan_GLSLC_EXECUTABLE})
 
+set(VENDORS_DIR ${CMAKE_SOURCE_DIR}/vendors)
+
 set(DEPS_INCLUDE_DIRS
 	Vulkan::Headers
+	${VENDORS_DIR}/turbolin/include
 )
 set(DEPS_LIBRARIES
 	Vulkan::Vulkan
 )
+
+if (UNIX)
+	if (NOT SL_NO_WAYLAND)
+		set(DEPS_LIBRARIES ${DEPS_LIBRARIES} wayland-client)
+	endif()
+endif()
+
 
 add_subdirectory(lib)
 add_subdirectory(sandbox)

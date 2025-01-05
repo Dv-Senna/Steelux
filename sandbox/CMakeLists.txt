@@ -46,7 +46,6 @@ target_link_libraries(
 )
 
 
-
 if (WIN32)
 	add_compile_definitions(${SANDBOX_NAME_UPPERCASE}_WINDOWS)
 	if (BUILD_STATIC)
