@@ -7,10 +7,6 @@
 
 
 TEST_CASE("sl::String : SSO", "[sl::String]") {
-#ifndef NDEBUG
-	sl::memory::DebugAllocator<char> allocator {};
-	allocator.clear();
-#endif
 	#define STR_LITERAL "Hello World !"
 	const char strLiteral[] {STR_LITERAL};
 	sl::String str {strLiteral};
@@ -104,10 +100,6 @@ TEST_CASE("sl::String : SSO", "[sl::String]") {
 
 
 TEST_CASE("sl::String : Heap", "[sl::String]") {
-#ifndef NDEBUG
-	sl::memory::DebugAllocator<char> allocator {};
-	allocator.clear();
-#endif
 	#define STR_LITERAL "Hello World from Steelux !"
 	const char strLiteral[] {STR_LITERAL};
 	sl::String str {strLiteral};

@@ -26,17 +26,15 @@ using namespace sl::utils::literals;
 class SandboxApp final : public sl::Application {
 	public:
 		SandboxApp() : sl::Application() {
-			std::println("------------ ARRAY -------------");
-			sl::utils::Array<int, 10> array {3};
-			sl::utils::Array<int, 10> array2 {array};
-			sl::utils::Array<int, 10> array3 {std::move(array)};
-			std::println("array : {}", array);
-			std::println("array2 : {}", array2);
-			std::println("array3 : {}", array3);
+			sl::memory::HeapAllocator heapAllocator {};
+			sl::memory::HeapMemoryResource heapMemoryResource {heapAllocator};
 
-			std::size_t i {0};
-			std::ranges::transform(array, array.begin(), [&i](int val) {return val + (i++);});
-			std::println("array : {}", array);
+			std::println("------------ PMR STRING -------------");
+			sl::utils::BasicString<char, std::pmr::polymorphic_allocator<char>> str {"Hello World from Steelux !", {&heapMemoryResource}};
+			std::println("str : {} ({}, {})", str, str.getSize(), str.getCapacity());
+
+			sl::utils::BasicString<char, sl::memory::HeapAllocatorView<char>> str2 {"Hello World for a 2nd string from Steelux !", {heapAllocator}};
+			std::println("str2 : {} ({}, {})", str2, str2.getSize(), str2.getCapacity());
 		}
 
 		~SandboxApp() override {

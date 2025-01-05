@@ -104,4 +104,25 @@ namespace sl::memory {
 
 	static_assert(sl::memory::IsAllocator<StackAllocatorView<char>>);
 
+	class StackMemoryResource final : public std::pmr::memory_resource {
+		public:
+			inline StackMemoryResource(StackAllocator &allocator) noexcept : m_allocator {&allocator} {}
+			inline StackMemoryResource(const StackMemoryResource &) noexcept = default;
+			inline auto operator=(const StackMemoryResource &) noexcept -> StackMemoryResource& = default;
+			inline StackMemoryResource(StackMemoryResource &&) noexcept = default;
+			inline auto operator=(StackMemoryResource &&) noexcept -> StackMemoryResource& = default;
+
+		private:
+			inline auto do_allocate(std::size_t bytes, std::size_t alignment) -> void* override {return m_allocator->allocate(bytes, alignment);}
+			inline auto do_deallocate(void*, std::size_t, std::size_t) -> void override {}
+			inline auto do_is_equal(const std::pmr::memory_resource &other) const noexcept -> bool override {
+				const StackMemoryResource *resource {dynamic_cast<const StackMemoryResource*> (&other)};
+				if (resource == nullptr)
+					return false;
+				return m_allocator == resource->m_allocator;
+			}
+
+			StackAllocator *m_allocator;
+	};
+
 } // namespace sl::memory

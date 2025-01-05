@@ -71,4 +71,25 @@ namespace sl::memory {
 
 	static_assert(sl::memory::IsAllocator<DoubleBufferedAllocatorView<char>>);
 
+	class DoubleBufferedMemoryResource final : public std::pmr::memory_resource {
+		public:
+			inline DoubleBufferedMemoryResource(DoubleBufferedAllocator &allocator) noexcept : m_allocator {&allocator} {}
+			inline DoubleBufferedMemoryResource(const DoubleBufferedMemoryResource &) noexcept = default;
+			inline auto operator=(const DoubleBufferedMemoryResource &) noexcept -> DoubleBufferedMemoryResource& = default;
+			inline DoubleBufferedMemoryResource(DoubleBufferedMemoryResource &&) noexcept = default;
+			inline auto operator=(DoubleBufferedMemoryResource &&) noexcept -> DoubleBufferedMemoryResource& = default;
+
+		private:
+			inline auto do_allocate(std::size_t bytes, std::size_t alignment) -> void* override {return m_allocator->allocate(bytes, alignment);}
+			inline auto do_deallocate(void*, std::size_t, std::size_t) -> void override {}
+			inline auto do_is_equal(const std::pmr::memory_resource &other) const noexcept -> bool override {
+				const DoubleBufferedMemoryResource *resource {dynamic_cast<const DoubleBufferedMemoryResource*> (&other)};
+				if (resource == nullptr)
+					return false;
+				return m_allocator == resource->m_allocator;
+			}
+
+			DoubleBufferedAllocator *m_allocator;
+	};
+
 } // namespace sl::memory

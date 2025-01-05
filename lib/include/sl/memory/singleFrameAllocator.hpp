@@ -64,4 +64,25 @@ namespace sl::memory {
 
 	static_assert(sl::memory::IsAllocator<SingleFrameAllocatorView<char>>);
 
+	class SingleFrameMemoryResource final : public std::pmr::memory_resource {
+		public:
+			inline SingleFrameMemoryResource(SingleFrameAllocator &allocator) noexcept : m_allocator {&allocator} {}
+			inline SingleFrameMemoryResource(const SingleFrameMemoryResource &) noexcept = default;
+			inline auto operator=(const SingleFrameMemoryResource &) noexcept -> SingleFrameMemoryResource& = default;
+			inline SingleFrameMemoryResource(SingleFrameMemoryResource &&) noexcept = default;
+			inline auto operator=(SingleFrameMemoryResource &&) noexcept -> SingleFrameMemoryResource& = default;
+
+		private:
+			inline auto do_allocate(std::size_t bytes, std::size_t alignment) -> void* override {return m_allocator->allocate(bytes, alignment);}
+			inline auto do_deallocate(void*, std::size_t, std::size_t) -> void override {}
+			inline auto do_is_equal(const std::pmr::memory_resource &other) const noexcept -> bool override {
+				const SingleFrameMemoryResource *resource {dynamic_cast<const SingleFrameMemoryResource*> (&other)};
+				if (resource == nullptr)
+					return false;
+				return m_allocator == resource->m_allocator;
+			}
+
+			SingleFrameAllocator *m_allocator;
+	};
+
 } // namespace sl::memory

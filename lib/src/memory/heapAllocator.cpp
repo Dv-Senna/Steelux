@@ -21,12 +21,6 @@ namespace sl::memory {
 
 
 	HeapAllocator::~HeapAllocator() {
-		size_type allocationCount {0};
-		for (const auto &_ : m_pTable)
-			++allocationCount;
-
-		sl::mainLogger.info("Heap Allocator allocation count : {}", allocationCount);
-
 		for (auto &allocationPage : m_allocationPages)
 			allocationPage.~vector<Allocation> ();
 
@@ -154,6 +148,17 @@ namespace sl::memory {
 				++relocationCount;
 			}
 		}
+	}
+
+
+	auto HeapAllocator::findInPTable(std::byte *ptr) noexcept -> pointer {
+		for (auto &pTableEntry : m_pTable) {
+			if (pTableEntry != ptr)
+				continue;
+			return pointer(&pTableEntry);
+		}
+
+		return nullptr;
 	}
 
 

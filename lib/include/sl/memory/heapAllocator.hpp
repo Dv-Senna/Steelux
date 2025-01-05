@@ -13,6 +13,7 @@ namespace sl::memory {
 	using namespace sl::utils::literals;
 
 	class HeapAllocator;
+	class HeapMemoryResource;
 
 	template <typename T>
 	class HeapAllocatorPointer final {
@@ -80,6 +81,8 @@ namespace sl::memory {
 
 
 	class SL_CORE HeapAllocator final {
+		friend class HeapMemoryResource;
+
 		public:
 			using value_type = std::byte;
 			using pointer = sl::memory::HeapAllocatorPointer<value_type>;
@@ -105,6 +108,8 @@ namespace sl::memory {
 
 			auto defragment(size_type maxRelocationCount = 16) noexcept -> void;
 
+		protected:
+			auto findInPTable(std::byte *ptr) noexcept -> pointer;
 
 		private:
 			struct Allocation {
@@ -162,5 +167,32 @@ namespace sl::memory {
 	};
 
 	static_assert(sl::memory::IsAllocator<HeapAllocatorView<char>>);
+
+
+	class HeapMemoryResource final : public std::pmr::memory_resource {
+		public:
+			inline HeapMemoryResource(HeapAllocator &heapAllocator) noexcept : m_heapAllocator {&heapAllocator} {}
+			inline HeapMemoryResource(const HeapMemoryResource &) noexcept = default;
+			inline auto operator=(const HeapMemoryResource &) noexcept -> HeapMemoryResource& = default;
+			inline HeapMemoryResource(HeapMemoryResource &&) noexcept = default;
+			inline auto operator=(HeapMemoryResource &&) noexcept -> HeapMemoryResource& = default;
+
+		private:
+			inline auto do_allocate(std::size_t bytes, std::size_t alignment) -> void* override {return &*m_heapAllocator->allocate(bytes, alignment);}
+			inline auto do_deallocate(void *ptr, std::size_t, std::size_t) -> void override {
+				HeapAllocator::pointer handle {m_heapAllocator->findInPTable(reinterpret_cast<std::byte*> (ptr))};
+				if (handle == nullptr)
+					return;
+				m_heapAllocator->deallocate(handle);
+			}
+			inline auto do_is_equal(const std::pmr::memory_resource &other) const noexcept -> bool override {
+				const HeapMemoryResource *resource {dynamic_cast<const HeapMemoryResource*> (&other)};
+				if (resource == nullptr)
+					return false;
+				return m_heapAllocator == resource->m_heapAllocator;
+			}
+
+			HeapAllocator *m_heapAllocator;
+	};
 
 } // namespace sl::memory

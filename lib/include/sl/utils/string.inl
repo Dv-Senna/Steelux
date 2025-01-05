@@ -16,8 +16,10 @@ namespace sl::utils {
 		m_content {s_createContent(alloc)},
 		m_sso {}
 	{
-		if constexpr (sl::memory::IsAllocatorStatefull_v<Alloc>)
-			m_content.allocator = alloc;
+		if constexpr (sl::memory::IsAllocatorStatefull_v<Alloc>) {
+			m_content.allocator.~Alloc();
+			new(&m_content.allocator) Alloc(alloc);
+		}
 		sl::utils::memset<CharT> (m_sso.buffer, static_cast<CharT> ('\0'), MAX_SSO_CAPACITY);
 	}
 

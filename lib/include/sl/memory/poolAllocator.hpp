@@ -100,6 +100,30 @@ namespace sl::memory {
 
 	static_assert(sl::memory::IsAllocator<PoolAllocator<char>>);
 
+	template <typename T>
+	class PoolMemoryResource final : public std::pmr::memory_resource {
+		public:
+			inline PoolMemoryResource(PoolAllocator<T> &allocator) noexcept : m_allocator {&allocator} {}
+			inline PoolMemoryResource(const PoolMemoryResource<T> &) noexcept = default;
+			inline auto operator=(const PoolMemoryResource<T> &) noexcept -> PoolMemoryResource<T>& = default;
+			inline PoolMemoryResource(PoolMemoryResource<T> &&) noexcept = default;
+			inline auto operator=(PoolMemoryResource<T> &&) noexcept -> PoolMemoryResource<T>& = default;
+
+		private:
+			inline auto do_allocate(std::size_t bytes, std::size_t) -> void* override {return m_allocator->allocate(bytes / sizeof(T));}
+			inline auto do_deallocate(void *ptr, std::size_t bytes, std::size_t) -> void override {
+				m_allocator->deallocate(reinterpret_cast<T*> (ptr), bytes / sizeof(T));
+			}
+			inline auto do_is_equal(const std::pmr::memory_resource &other) const noexcept -> bool override {
+				const PoolMemoryResource<T> *resource {dynamic_cast<const PoolMemoryResource<T>*> (&other)};
+				if (resource == nullptr)
+					return false;
+				return m_allocator == resource->m_allocator;
+			}
+
+			PoolAllocator<T> *m_allocator;
+	};
+
 } // namespace sl::memory
 
 #include "sl/memory/poolAllocator.inl"

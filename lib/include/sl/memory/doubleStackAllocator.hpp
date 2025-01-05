@@ -110,4 +110,25 @@ namespace sl::memory {
 
 	static_assert(sl::memory::IsAllocator<DoubleStackAllocatorView<char>>);
 
+	class DoubleStackMemoryResource final : public std::pmr::memory_resource {
+		public:
+			inline DoubleStackMemoryResource(DoubleStackAllocator &allocator) noexcept : m_allocator {&allocator} {}
+			inline DoubleStackMemoryResource(const DoubleStackMemoryResource &) noexcept = default;
+			inline auto operator=(const DoubleStackMemoryResource &) noexcept -> DoubleStackMemoryResource& = default;
+			inline DoubleStackMemoryResource(DoubleStackMemoryResource &&) noexcept = default;
+			inline auto operator=(DoubleStackMemoryResource &&) noexcept -> DoubleStackMemoryResource& = default;
+
+		private:
+			inline auto do_allocate(std::size_t bytes, std::size_t alignment) -> void* override {return m_allocator->allocate(bytes, alignment);}
+			inline auto do_deallocate(void*, std::size_t, std::size_t) -> void override {}
+			inline auto do_is_equal(const std::pmr::memory_resource &other) const noexcept -> bool override {
+				const DoubleStackMemoryResource *resource {dynamic_cast<const DoubleStackMemoryResource*> (&other)};
+				if (resource == nullptr)
+					return false;
+				return m_allocator == resource->m_allocator;
+			}
+
+			DoubleStackAllocator *m_allocator;
+	};
+
 } // namespace sl::memory
