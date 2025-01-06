@@ -11,10 +11,12 @@ string(TOUPPER ${PROJECT_ACRONYM} PROJECT_ACRONYM_UPPERCASE)
 set(PROJECT_CPP_DIALECT 23)
 
 option(BUILD_TESTS "BUILD_TESTS" OFF)
+option(SL_NO_SDL "NO_SDL" OFF)
 
 find_package(Vulkan REQUIRED)
 #message(${Vulkan_glslc_FOUND})
 #message(${Vulkan_GLSLC_EXECUTABLE})
+
 
 set(VENDORS_DIR ${CMAKE_SOURCE_DIR}/vendors)
 
@@ -26,15 +28,25 @@ set(DEPS_LIBRARIES
 	Vulkan::Vulkan
 )
 
+if (NOT SL_NO_SDL)
+	add_subdirectory(vendors/SDL)
+	set(DEPS_LIBRARIES ${DEPS_LIBRARIES} SDL3::SDL3)
+else()
+	add_compile_definition(SL_NO_SDL)
+endif()
+
 if (UNIX)
 	option(SL_NO_WAYLAND "NO WAYLAND" OFF)
 
 	if (NOT SL_NO_WAYLAND)
 		add_subdirectory(vendors/xdg-shell)
-
 		set(DEPS_INCLUDE_DIRS ${DEPS_INCLUDE_DIRS} xdg_shell::Headers)
 		set(DEPS_LIBRARIES ${DEPS_LIBRARIES} wayland-client xdg_shell::xdg_shell)
+	else()
+		add_compile_definition(SL_NO_WAYLAND)
 	endif()
+else()
+	add_compile_definition(SL_NO_WAYLAND)
 endif()
 
 

@@ -4,3 +4,6 @@
 [submodule "vendors/turbolin"]
 	path = vendors/turbolin
 	url = git@github.com:Dv-Senna/turbolin.git
+[submodule "vendors/SDL"]
+	path = vendors/SDL
+	url = git@github.com:libsdl-org/SDL.git

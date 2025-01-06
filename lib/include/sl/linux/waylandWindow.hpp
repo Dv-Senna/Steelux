@@ -1,6 +1,6 @@
 #pragma once
 
-#ifndef SL_NO_WAYLAND
+#if defined(SL_LINUX) && !defined(SL_NO_WAYLAND)
 
 #include <wayland-client.h>
 #include <xdg-shell/xdg-shell-client-protocol.h>

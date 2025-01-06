@@ -157,7 +157,7 @@ namespace sl::linux_ {
 
 		m_state.xdgTopLevel = xdg_surface_get_toplevel(m_state.xdgSurface);
 
-		xdg_toplevel_listener xdgTopLevelListener {
+		/*xdg_toplevel_listener xdgTopLevelListener {
 			.configure = [](void*, xdg_toplevel *toplevel, std::int32_t w, std::int32_t h, wl_array*) -> void {
 
 			},
@@ -173,7 +173,7 @@ namespace sl::linux_ {
 		};
 		(void)xdg_toplevel_add_listener(m_state.xdgTopLevel, &xdgTopLevelListener, nullptr);
 		(void)xdg_toplevel_set_title(m_state.xdgTopLevel, createInfos.title.getData());
-		wl_surface_commit(m_state.surface);
+		wl_surface_commit(m_state.surface);*/
 
 		while (wl_display_dispatch(m_state.display)) {
 
