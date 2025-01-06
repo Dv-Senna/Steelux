@@ -27,8 +27,13 @@ set(DEPS_LIBRARIES
 )
 
 if (UNIX)
+	option(SL_NO_WAYLAND "NO WAYLAND" OFF)
+
 	if (NOT SL_NO_WAYLAND)
-		set(DEPS_LIBRARIES ${DEPS_LIBRARIES} wayland-client)
+		add_subdirectory(vendors/xdg-shell)
+
+		set(DEPS_INCLUDE_DIRS ${DEPS_INCLUDE_DIRS} xdg_shell::Headers)
+		set(DEPS_LIBRARIES ${DEPS_LIBRARIES} wayland-client xdg_shell::xdg_shell)
 	endif()
 endif()
 
@@ -38,3 +43,4 @@ add_subdirectory(sandbox)
 if (SL_BUILD_TESTS)
 	add_subdirectory(tests)
 endif()
+

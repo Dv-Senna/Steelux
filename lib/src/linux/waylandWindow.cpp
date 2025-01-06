@@ -103,21 +103,38 @@ namespace sl::linux_ {
 		if (m_state.surface == nullptr)
 			return sl::Result::eFailure;
 
-		constexpr std::size_t STRIDE {4};
-		constexpr std::size_t BUFFER_COUNT {3};
-		const std::size_t shmPoolSize {createInfos.size.w * createInfos.size.h * STRIDE * BUFFER_COUNT};
+		constexpr std::size_t BYTES_PER_PIXEL {4};
+		const std::size_t stride {createInfos.size.w * BYTES_PER_PIXEL};
+		const std::size_t shmPoolSize {stride * createInfos.size.h * BUFFER_COUNT};
 
 		int fd {allocateShmFile(shmPoolSize)};
-		uint8_t *poolData {reinterpret_cast<uint8_t*> (mmap(nullptr, shmPoolSize, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0))};
-
+		m_state.poolData = reinterpret_cast<uint8_t*> (mmap(nullptr, shmPoolSize, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0));
 		struct wl_shm_pool *pool {wl_shm_create_pool(m_state.shm, fd, shmPoolSize)};
-		
+		close(fd);
+	
+		for (std::size_t index {0}; index < BUFFER_COUNT; ++index) {
+			const std::size_t offset {stride * createInfos.size.h * index};
+			m_state.buffers[index] = wl_shm_pool_create_buffer(pool, offset, createInfos.size.w, createInfos.size.h, stride, WL_SHM_FORMAT_XRGB8888);
+			(void)std::memset(m_state.poolData + offset, 0, stride * createInfos.size.h);
+		}
+
+		wl_shm_pool_destroy(pool);
+
+		wl_surface_attach(m_state.surface, m_state.buffers[m_state.activeBufferIndex], 0, 0);
+		wl_surface_damage(m_state.surface, 0, 0, UINT32_MAX, UINT32_MAX);
+		wl_surface_commit(m_state.surface);
 
 		return sl::Result::eSuccess;
 	}
 
 
 	auto WaylandWindow::destroy() noexcept -> void {
+		for (const auto &buffer : m_state.buffers) {
+			if (buffer != nullptr)
+				wl_buffer_destroy(buffer);
+		}
+		if (m_state.surface != nullptr)
+			wl_surface_destroy(m_state.surface);
 		if (m_state.display != nullptr)
 			wl_display_disconnect(m_state.display);
 	}
