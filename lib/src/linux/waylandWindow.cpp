@@ -14,7 +14,7 @@
 namespace sl::linux_ {
 	// code from https://wayland-book.com/surfaces/shared-memory.html
 	static auto randName(char *buffer, std::size_t size) {
-		struct timespec ts {};
+		timespec ts {};
 		clock_gettime(CLOCK_REALTIME, &ts);
 		long r {ts.tv_nsec};
 		for (int i = 0; i < static_cast<long> (size); ++i) {
@@ -77,13 +77,22 @@ namespace sl::linux_ {
 			return sl::Result::eFailure;
 
 
-		const struct wl_registry_listener registryListener {
+		const wl_registry_listener registryListener {
 			.global = [](void *data, struct wl_registry *registry, uint32_t name, const char *interface, uint32_t version) -> void {
 				State *state {reinterpret_cast<State*> (data)};
 				if (std::strcmp(interface, wl_compositor_interface.name) == 0)
-					state->compositor = reinterpret_cast<struct wl_compositor*> (wl_registry_bind(registry, name, &wl_compositor_interface, version));
+					state->compositor = reinterpret_cast<wl_compositor*> (wl_registry_bind(registry, name, &wl_compositor_interface, version));
 				else if (std::strcmp(interface, wl_shm_interface.name) == 0)
-					state->shm = reinterpret_cast<struct wl_shm*> (wl_registry_bind(registry, name, &wl_shm_interface, version));
+					state->shm = reinterpret_cast<wl_shm*> (wl_registry_bind(registry, name, &wl_shm_interface, version));
+				else if (std::strcmp(interface, xdg_wm_base_interface.name) == 0) {
+					state->xdgWmBase = reinterpret_cast<xdg_wm_base*> (wl_registry_bind(registry, name, &xdg_wm_base_interface, version));
+					xdg_wm_base_listener xdgBaseListener {
+						.ping = [](void*, xdg_wm_base *base, std::uint32_t serial) {
+							xdg_wm_base_pong(base, serial);
+						}
+					};
+					(void)xdg_wm_base_add_listener(state->xdgWmBase, &xdgBaseListener, nullptr);
+				}
 
 				sl::mainLogger.debug("Interface : '{}', version : {}, name : {}", interface, version, name);
 			},
@@ -109,30 +118,72 @@ namespace sl::linux_ {
 
 		int fd {allocateShmFile(shmPoolSize)};
 		m_state.poolData = reinterpret_cast<uint8_t*> (mmap(nullptr, shmPoolSize, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0));
-		struct wl_shm_pool *pool {wl_shm_create_pool(m_state.shm, fd, shmPoolSize)};
+		wl_shm_pool *pool {wl_shm_create_pool(m_state.shm, fd, shmPoolSize)};
 		close(fd);
 	
+		wl_buffer_listener bufferListener {
+			.release = [](void*, struct wl_buffer *buffer) -> void {
+				wl_buffer_destroy(buffer);
+			}
+		};
+
 		for (std::size_t index {0}; index < BUFFER_COUNT; ++index) {
 			const std::size_t offset {stride * createInfos.size.h * index};
 			m_state.buffers[index] = wl_shm_pool_create_buffer(pool, offset, createInfos.size.w, createInfos.size.h, stride, WL_SHM_FORMAT_XRGB8888);
+			if (m_state.buffers[index] == nullptr)
+				return sl::Result::eFailure;
+			(void)wl_buffer_add_listener(m_state.buffers[index], &bufferListener, nullptr);
 			(void)std::memset(m_state.poolData + offset, 0, stride * createInfos.size.h);
 		}
 
 		wl_shm_pool_destroy(pool);
 
-		wl_surface_attach(m_state.surface, m_state.buffers[m_state.activeBufferIndex], 0, 0);
-		wl_surface_damage(m_state.surface, 0, 0, UINT32_MAX, UINT32_MAX);
+
+		m_state.xdgSurface = xdg_wm_base_get_xdg_surface(m_state.xdgWmBase, m_state.surface);
+
+		xdg_surface_listener xdgSurfaceListener {
+			.configure = [](void *data, xdg_surface *surface, std::uint32_t serial) -> void {
+				State &state {*reinterpret_cast<State*> (data)};
+				xdg_surface_ack_configure(surface, serial);
+
+				sl::mainLogger.info("Configure XDG_surface");
+
+				wl_surface_attach(state.surface, state.buffers[state.activeBufferIndex], 0, 0);
+				wl_surface_damage(state.surface, 0, 0, UINT32_MAX, UINT32_MAX);
+				wl_surface_commit(state.surface);
+			}
+		};
+		(void)xdg_surface_add_listener(m_state.xdgSurface, &xdgSurfaceListener, &m_state);
+
+		m_state.xdgTopLevel = xdg_surface_get_toplevel(m_state.xdgSurface);
+
+		xdg_toplevel_listener xdgTopLevelListener {
+			.configure = [](void*, xdg_toplevel *toplevel, std::int32_t w, std::int32_t h, wl_array*) -> void {
+
+			},
+			.close = [](void*, xdg_toplevel *toplevel) -> void {
+
+			},
+			.configure_bounds = [](void*, xdg_toplevel *toplevel, std::int32_t, std::int32_t) -> void {
+
+			},
+			.wm_capabilities = [](void*, xdg_toplevel *toplevel, wl_array*) -> void {
+
+			}
+		};
+		(void)xdg_toplevel_add_listener(m_state.xdgTopLevel, &xdgTopLevelListener, nullptr);
+		(void)xdg_toplevel_set_title(m_state.xdgTopLevel, createInfos.title.getData());
 		wl_surface_commit(m_state.surface);
+
+		while (wl_display_dispatch(m_state.display)) {
+
+		}
 
 		return sl::Result::eSuccess;
 	}
 
 
 	auto WaylandWindow::destroy() noexcept -> void {
-		for (const auto &buffer : m_state.buffers) {
-			if (buffer != nullptr)
-				wl_buffer_destroy(buffer);
-		}
 		if (m_state.surface != nullptr)
 			wl_surface_destroy(m_state.surface);
 		if (m_state.display != nullptr)

@@ -21,14 +21,17 @@ namespace sl::linux_ {
 			static constexpr std::size_t BUFFER_COUNT {3};
 
 			struct State {
-				struct wl_display *display {nullptr};
-				struct wl_registry *registry {nullptr};
-				struct wl_compositor *compositor {nullptr};
-				struct wl_surface *surface {nullptr};
-				struct wl_shm *shm {nullptr};
+				wl_display *display {nullptr};
+				wl_registry *registry {nullptr};
+				wl_compositor *compositor {nullptr};
+				wl_surface *surface {nullptr};
+				wl_shm *shm {nullptr};
 				uint8_t *poolData {nullptr};
-				struct wl_buffer *buffers[BUFFER_COUNT] {nullptr, nullptr, nullptr};
+				wl_buffer *buffers[BUFFER_COUNT] {nullptr, nullptr, nullptr};
 				std::size_t activeBufferIndex {0};
+				xdg_wm_base *xdgWmBase {nullptr};
+				xdg_toplevel *xdgTopLevel {nullptr};
+				xdg_surface *xdgSurface {nullptr};
 			};
 
 			State m_state;
