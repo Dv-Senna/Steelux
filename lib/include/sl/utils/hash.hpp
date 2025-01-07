@@ -21,9 +21,11 @@ namespace sl::utils {
 			constexpr Hash(Hash<T> &&hash) noexcept = default;
 			constexpr auto operator=(Hash<T> &&hash) noexcept -> Hash<T>& = default;
 
-			constexpr auto operator==(const Hash<T> &hash) const noexcept {return m_value == hash.m_value;}
+			constexpr auto operator==(const Hash<T> &hash) const noexcept -> bool {return m_value == hash.m_value;}
+			constexpr auto operator<=>(const Hash<T> &hash) const noexcept {return m_value <=> hash.m_value;}
 
-			constexpr explicit operator T() const noexcept {return m_value;}
+			template <std::unsigned_integral U>
+			constexpr explicit operator U() const noexcept {return static_cast<U> (m_value);}
 
 
 		private:
