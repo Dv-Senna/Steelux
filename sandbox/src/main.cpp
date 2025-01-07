@@ -9,6 +9,7 @@
 #include <sl/utils/string.hpp>
 #include <sl/utils/logger.hpp>
 #include <sl/utils/units.hpp>
+#include <sl/utils/hash.hpp>
 
 #include <sl/memory/poolAllocator.hpp>
 #include <sl/memory/heapAllocator.hpp>
@@ -39,6 +40,18 @@ class SandboxApp final : public sl::Application {
 
 			sl::utils::BasicString<char, sl::memory::HeapAllocatorView<char>> str2 {"Hello World for a 2nd string from Steelux !", {heapAllocator}};
 			std::println("str2 : {} ({}, {})", str2, str2.getSize(), str2.getCapacity());
+
+			std::println("------------ HASH -------------");
+			std::println("'Hello World !'_hash8 : {}", "Hello World !"_hash8);
+			std::println("'Hello World !'_hash16 : {}", "Hello World !"_hash16);
+			std::println("'Hello World !'_hash32 : {}", "Hello World !"_hash32);
+			std::println("'Hello World !'_hash64 : {}", "Hello World !"_hash64);
+
+			sl::String str3 {"Hello World !"};
+			std::println("hash8(str) : {}", sl::utils::hash<sl::utils::Hash8> (str3));
+			std::println("hash16(str) : {}", sl::utils::hash<sl::utils::Hash16> (str3));
+			std::println("hash32(str) : {}", sl::utils::hash<sl::utils::Hash32> (str3));
+			std::println("hash64(str) : {}", sl::utils::hash<sl::utils::Hash64> (str3));
 		}
 
 		~SandboxApp() override {
