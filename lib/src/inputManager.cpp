@@ -19,33 +19,21 @@ namespace sl {
 
 		filter.categories = {"__sl_keydown"_ecat};
 		(void)sl::EventManager::addListener<sl::Key> (filter, [&](const std::set<sl::EventCategory> &, sl::UUID, const sl::Event<Key> &event) noexcept -> void {
-			auto it {s_keyStates.find(event.data)};
-			if (it != s_keyStates.end())
-				s_oldKeyStates[event.data] = it->second;
 			s_keyStates[event.data] = true;
 		});
 
 		filter.categories = {"__sl_keyup"_ecat};
 		(void)sl::EventManager::addListener<sl::Key> (filter, [&](const std::set<sl::EventCategory> &, sl::UUID, const sl::Event<Key> &event) noexcept -> void {
-			auto it {s_keyStates.find(event.data)};
-			if (it != s_keyStates.end())
-				s_oldKeyStates[event.data] = it->second;
 			s_keyStates[event.data] = false;
 		});
 
 		filter.categories = {"__sl_mousebuttondown"_ecat};
 		(void)sl::EventManager::addListener<sl::MouseButton> (filter, [&](const std::set<sl::EventCategory> &, sl::UUID, const sl::Event<MouseButton> &event) noexcept -> void {
-			auto it {s_mouseButtonStates.find(event.data)};
-			if (it != s_mouseButtonStates.end())
-				s_oldMouseButtonStates[event.data] = it->second;
 			s_mouseButtonStates[event.data] = true;
 		});
 
 		filter.categories = {"__sl_mousebuttonup"_ecat};
 		(void)sl::EventManager::addListener<sl::MouseButton> (filter, [&](const std::set<sl::EventCategory> &, sl::UUID, const sl::Event<MouseButton> &event) noexcept -> void {
-			auto it {s_mouseButtonStates.find(event.data)};
-			if (it != s_mouseButtonStates.end())
-				s_oldMouseButtonStates[event.data] = it->second;
 			s_mouseButtonStates[event.data] = false;
 		});
 
@@ -64,8 +52,50 @@ namespace sl {
 
 	auto InputManager::update() noexcept -> bool {
 		SL_TEXT_ASSERT(s_window != nullptr, "A window must be linked to the InputManager before trying to update it");
+
+		s_mouseMotion = {0.f, 0.f};
 		s_isWindowResized = false;
+		s_oldKeyStates = s_keyStates;
+		s_oldMouseButtonStates = s_mouseButtonStates;
+
 		s_running = s_window->update();
+
+		for (const auto &key : s_keyStates) {
+			if (!key.second) {
+				sl::EventManager::send<sl::Key> ({KEY_UP}, sl::UUID(), {key.first});
+				auto old {s_oldKeyStates.find(key.first)};
+				if (old == s_oldKeyStates.end() || old->second)
+					sl::EventManager::send<sl::Key> ({KEY_JUST_RELEASED}, sl::UUID(), {key.first});
+				continue;
+			}
+
+			sl::EventManager::send<sl::Key> ({KEY_DOWN}, sl::UUID(), {key.first});
+			auto old {s_oldKeyStates.find(key.first)};
+			if (old == s_oldKeyStates.end() || !old->second)
+				sl::EventManager::send<sl::Key> ({KEY_JUST_PRESSED}, sl::UUID(), {key.first});
+		}
+
+		for (const auto &button : s_mouseButtonStates) {
+			if (!button.second) {
+				sl::EventManager::send<sl::MouseButton> ({MOUSE_BUTTON_UP}, sl::UUID(), {button.first});
+				auto old {s_oldMouseButtonStates.find(button.first)};
+				if (old == s_oldMouseButtonStates.end() || old->second)
+					sl::EventManager::send<sl::MouseButton> ({MOUSE_BUTTON_JUST_RELEASED}, sl::UUID(), {button.first});
+				continue;
+			}
+
+			sl::EventManager::send<sl::MouseButton> ({MOUSE_BUTTON_DOWN}, sl::UUID(), {button.first});
+			auto old {s_oldMouseButtonStates.find(button.first)};
+			if (old == s_oldMouseButtonStates.end() || !old->second)
+				sl::EventManager::send<sl::MouseButton> ({MOUSE_BUTTON_JUST_PRESSED}, sl::UUID(), {button.first});
+		}
+
+		if (s_mouseMotion != turbolin::Vec2f(0.f, 0.f))
+			sl::EventManager::send<sl::MouseMotion> ({MOUSE_MOTION}, sl::UUID(), {{s_mousePosition, s_mouseMotion}});
+
+		if (s_isWindowResized)
+			sl::EventManager::send<turbolin::Vec2i> ({WINDOW_RESIZE}, sl::UUID(), {s_window->getSize()});
+
 		return s_running;
 	}
 
@@ -132,7 +162,7 @@ namespace sl {
 	}
 
 
-	auto InputManager::isMouseButtonJustDown(sl::MouseButton button) noexcept -> bool {
+	auto InputManager::isMouseButtonJustReleased(sl::MouseButton button) noexcept -> bool {
 		if (!InputManager::isMouseButtonUp(button))
 			return false;
 		auto it {s_oldMouseButtonStates.find(button)};

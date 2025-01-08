@@ -22,6 +22,7 @@
 #include <sl/eventManager.hpp>
 #include <sl/inputManager.hpp>
 
+#include <thread>
 #include <memory>
 #include <print>
 
@@ -87,28 +88,44 @@ class SandboxApp final : public sl::Application {
 			if (vkCreateInstance(&instanceCreateInfos, nullptr, &m_instance) != VK_SUCCESS)
 				return sl::Result::eFailure;
 
-			sl::UUID uuid1 {sl::UUID::generate()};
-			sl::UUID uuid2 {sl::UUID::generate()};
+			sl::EventFilter filter {
+				.categories = {sl::InputManager::KEY_JUST_PRESSED},
+				.excludeCategories = {},
+				.sources = {sl::UUID()},
+				.excludeSources = {}
+			};
+			auto listener {sl::EventManager::addListener<sl::Key> (filter, [](const std::set<sl::EventCategory>&, sl::UUID, const sl::Event<sl::Key> &event) {
+				sl::mainLogger.info("Key down : {}", event.data);
+			})};
 
 			using namespace sl::literals;
-			sl::EventFilter filter1 {
-				.categories = {"abc"_ecat},
-				.excludeCategories = {"def"_ecat},
-				.sources = {},
-				.excludeSources = {uuid1}
-			};
-			listener1 = sl::EventManager::addListener<sl::String> (filter1, [](const std::set<sl::EventCategory> &, sl::UUID, const sl::Event<sl::String> &event) -> void {
-				sl::mainLogger.info("From listener1 : {}", event.data);
-			});
+			sl::mainLogger.debug("__sl_keydown : {}, sl_keydown : {}", "__sl_keydown"_ecat, "sl_keydown"_ecat);
 
-			sl::EventManager::send<sl::String> ({"abc"_ecat}, sl::UUID(), {"Hello1"});
-			sl::EventManager::send<sl::String> ({}, sl::UUID(), {"Hello_no_arrive1"});
-			sl::EventManager::send<sl::String> ({"abc"_ecat}, uuid1, {"Hello_no_arrive2"});
-			sl::EventManager::send<sl::String> ({"abc"_ecat}, uuid2, {"Hello2"});
-			sl::EventManager::send<sl::String> ({"abc"_ecat, "def"_ecat}, sl::UUID(), {"Hello_no_arrive3"});
+			while (sl::InputManager::update()) {
+				if (sl::InputManager::isKeyDown(sl::Key::eEscape))
+					break;
 
+				if (sl::InputManager::isKeyDown(sl::Key::eA))
+					sl::mainLogger.info("A");
+				if (sl::InputManager::isKeyJustPressed(sl::Key::eS))
+					sl::mainLogger.info("S");
+				if (sl::InputManager::isKeyJustReleased(sl::Key::eD))
+					sl::mainLogger.info("D");
 
-			while (sl::InputManager::update());
+				if (sl::InputManager::isMouseButtonDown(sl::MouseButton::eLeft))
+					sl::mainLogger.info("left");
+				if (sl::InputManager::isMouseButtonJustPressed(sl::MouseButton::eRight))
+					sl::mainLogger.info("right");
+				if (sl::InputManager::isMouseButtonJustReleased(sl::MouseButton::eMiddle))
+					sl::mainLogger.info("middle");
+
+				if (sl::InputManager::hasMouseMoved())
+					sl::mainLogger.info("Mouse motion : {}, {}", sl::InputManager::getMousePosition(), sl::InputManager::getMouseMotion());
+
+				std::this_thread::sleep_for(std::chrono::milliseconds(16));
+			}
+
+			sl::EventManager::removeListener<sl::Key> (listener);
 
 			return sl::Result::eSuccess;
 		}

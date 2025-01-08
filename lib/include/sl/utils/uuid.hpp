@@ -3,10 +3,14 @@
 #include <cstddef>
 #include <concepts>
 
+#include "sl/core.hpp"
 #include "sl/utils/hash.hpp"
 
 
 namespace sl::utils {
+	SL_CORE auto generateUUID() noexcept -> std::uintmax_t;
+
+
 	template <std::unsigned_integral T, std::size_t HASH>
 	class BasicUUID {
 		public:
@@ -23,19 +27,14 @@ namespace sl::utils {
 			template <std::unsigned_integral U>
 			constexpr explicit operator U() const noexcept {return static_cast<U> (m_data);}
 
-			inline static auto generate() noexcept -> BasicUUID<T, HASH> {return BasicUUID(++s_lastUUID);}
-
+			inline static auto generate() noexcept -> BasicUUID<T, HASH> {return BasicUUID(static_cast<T> (generateUUID()));}
 
 		private:
 			constexpr BasicUUID(T data) noexcept : m_data {data} {}
 
-			static T s_lastUUID;
 			T m_data;
 	};
 	
-	template <std::unsigned_integral T, std::size_t HASH>
-	T BasicUUID<T, HASH>::s_lastUUID {0};
-
 } // namespace sl::utils
 
 

@@ -5,12 +5,14 @@
 #include <turbolin/turbolin.hpp>
 
 #include "sl/core.hpp"
+#include "sl/eventManager.hpp"
 #include "sl/utils/enums.hpp"
 #include "sl/window.hpp"
 
 
 namespace sl {
 	using namespace sl::utils::literals;
+	using namespace sl::literals;
 
 	enum class Key : sl::utils::PackedEnumString {
 		eA = "A"_pes, eB = "B"_pes, eC = "C"_pes, eD = "D"_pes, eE = "E"_pes, eF = "F"_pes,
@@ -55,10 +57,26 @@ namespace sl {
 		eUnknown = "unknown"_pes
 	};
 
+	struct MouseMotion {
+		turbolin::Vec2f position;
+		turbolin::Vec2f motion;
+	};
+
 
 	class SL_CORE InputManager {
 		public:
 			InputManager() = delete;
+
+			static constexpr sl::EventCategory KEY_DOWN {"sl_keydown"_ecat};
+			static constexpr sl::EventCategory KEY_UP {"sl_keyup"_ecat};
+			static constexpr sl::EventCategory KEY_JUST_PRESSED {"sl_keyjustpressed"_ecat};
+			static constexpr sl::EventCategory KEY_JUST_RELEASED {"sl_keyjustreleased"_ecat};
+			static constexpr sl::EventCategory MOUSE_BUTTON_DOWN {"sl_mousebuttondown"_ecat};
+			static constexpr sl::EventCategory MOUSE_BUTTON_UP {"sl_mousebuttonup"_ecat};
+			static constexpr sl::EventCategory MOUSE_BUTTON_JUST_PRESSED {"sl_mousebuttonjustpressed"_ecat};
+			static constexpr sl::EventCategory MOUSE_BUTTON_JUST_RELEASED {"sl_mousebuttonjustreleased"_ecat};
+			static constexpr sl::EventCategory MOUSE_MOTION {"sl_mousemotion"_ecat};
+			static constexpr sl::EventCategory WINDOW_RESIZE {"sl_windowresize"_ecat};
 
 			static auto linkWindow(sl::Window &window) noexcept -> void;
 			static auto update() noexcept -> bool;
@@ -73,8 +91,9 @@ namespace sl {
 			static auto isMouseButtonDown(sl::MouseButton button) noexcept -> bool;
 			static auto isMouseButtonUp(sl::MouseButton button) noexcept -> bool;
 			static auto isMouseButtonJustPressed(sl::MouseButton button) noexcept -> bool;
-			static auto isMouseButtonJustDown(sl::MouseButton button) noexcept -> bool;
+			static auto isMouseButtonJustReleased(sl::MouseButton button) noexcept -> bool;
 
+			inline static auto hasMouseMoved() noexcept -> bool {return s_mouseMotion != turbolin::Vec2f{0.f, 0.f};}
 			inline static auto getMousePosition() noexcept -> const turbolin::Vec2f& {return s_mousePosition;}
 			inline static auto getMouseMotion() noexcept -> const turbolin::Vec2f& {return s_mouseMotion;}
 
