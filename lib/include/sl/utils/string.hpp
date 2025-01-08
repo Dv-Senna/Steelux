@@ -352,4 +352,5 @@ struct std::formatter<sl::utils::BasicString<CharT, Alloc>> : public std::format
 
 namespace sl {
 	using String = sl::utils::BasicString<char>;
+	using PMRString = sl::utils::BasicString<char, std::pmr::polymorphic_allocator<char>>;
 } // namespace sl

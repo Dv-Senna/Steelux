@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cstdint>
-#include <compare>
 #include <concepts>
 #include <format>
 #include <ostream>
@@ -60,10 +59,10 @@ namespace sl::utils {
 	template <> struct RatioString<Nano> {static constexpr const char str[] {"n"};};
 	template <> struct RatioString<Micro> {static constexpr const char str[] {"µ"};};
 	template <> struct RatioString<Milli> {static constexpr const char str[] {"m"};};
-	template <> struct RatioString<Kilo> {static constexpr const char str[] {"K"};};
+	template <> struct RatioString<Kilo> {static constexpr const char str[] {"k"};};
 	template <> struct RatioString<Mega> {static constexpr const char str[] {"M"};};
 	template <> struct RatioString<Giga> {static constexpr const char str[] {"G"};};
-	template <> struct RatioString<Kibi> {static constexpr const char str[] {"Ki"};};
+	template <> struct RatioString<Kibi> {static constexpr const char str[] {"ki"};};
 	template <> struct RatioString<Mibi> {static constexpr const char str[] {"Mi"};};
 	template <> struct RatioString<Gibi> {static constexpr const char str[] {"Gi"};};
 
@@ -128,21 +127,170 @@ namespace sl::utils {
 	using Gibibytes = ByteCount<Gibi>;
 	using Bytes = ByteCount<>;
 
+
+	template <typename T, IsRatio R = Ratio<1, 1>>
+	class Duration final {
+		public:
+			constexpr Duration() noexcept = default;
+			template <typename U>
+			constexpr Duration(U value) noexcept : m_value {static_cast<T> (value)} {}
+
+			template <typename U, IsRatio R2>
+			constexpr Duration(const Duration<U, R2> &duration) noexcept : m_value {static_cast<T> (static_cast<U> (duration) * R::fRATIO * R2::fINVERSE_RATIO)} {}
+			template <typename U, IsRatio R2>
+			constexpr auto operator=(const Duration<U, R2> &duration) noexcept -> Duration<T, R>& {
+				m_value = static_cast<T> (static_cast<U> (duration) * R::fRATIO * R2::fINVERSE_RATIO);
+				return *this;
+			}
+
+			template <typename U, IsRatio R2>
+			constexpr auto operator==(const Duration<U, R2> &duration) const noexcept -> bool {return m_value == static_cast<T> (Duration<T, R> (duration));}
+			template <typename U, IsRatio R2>
+			constexpr auto operator<=>(const Duration<U, R2> &duration) const noexcept {return m_value <=> static_cast<T> (Duration<T, R> (duration));}
+
+			template <typename U, IsRatio R2>
+			constexpr auto operator+=(const Duration<U, R2> &duration) noexcept -> Duration<T, R>& {m_value += static_cast<T> (Duration<T, R> (duration)); return *this;}
+			template <typename U, IsRatio R2>
+			constexpr auto operator-=(const Duration<U, R2> &duration) noexcept -> Duration<T, R>& {m_value -= static_cast<T> (Duration<T, R> (duration)); return *this;}
+			template <typename U>
+			constexpr auto operator*=(U factor) noexcept -> Duration<T, R>& {m_value *= static_cast<T> (factor); return *this;}
+			template <typename U>
+			constexpr auto operator/=(U factor) noexcept -> Duration<T, R>& {m_value /= static_cast<T> (factor); return *this;}
+
+			template <typename U, IsRatio R2>
+			constexpr auto operator+(const Duration<U, R2> &duration) const noexcept -> Duration<T, R> {auto copy {*this}; return copy += duration;}
+			template <typename U, IsRatio R2>
+			constexpr auto operator-(const Duration<U, R2> &duration) const noexcept -> Duration<T, R> {auto copy {*this}; return copy -= duration;}
+			template <typename U, IsRatio R2>
+			constexpr auto operator/(const Duration<U, R2> &duration) const noexcept -> T {return m_value / static_cast<T> (Duration<T, R> (duration));}
+			template <typename U>
+			constexpr auto operator*(U factor) const noexcept -> Duration<T, R>& {auto copy {*this}; return copy *= factor;}
+			template <typename U>
+			constexpr auto operator/(U factor) const noexcept -> Duration<T, R>& {auto copy {*this}; return copy /= factor;}
+
+			template <typename U>
+			constexpr explicit operator U() const noexcept {return static_cast<U> (m_value);}
+
+
+		private:
+			T m_value;
+	};
+
+
+	template <typename T, typename U, IsRatio R>
+	constexpr auto operator*(T factor, const Duration<U, R> &duration) noexcept -> Duration<U, R> {
+		return duration * factor;
+	}
+
+
+	template <typename T, IsRatio R = Ratio<1, 1>>
+	class PerDuration final {
+		public:
+			constexpr PerDuration() noexcept = default;
+			template <typename U>
+			constexpr PerDuration(U value) noexcept : m_value {static_cast<T> (value)} {}
+
+			template <typename U, IsRatio R2>
+			constexpr PerDuration(const PerDuration<U, R2> &duration) noexcept : m_value {static_cast<T> (static_cast<U> (duration) * R::fINVERSE_RATIO * R2::fRATIO)} {}
+			template <typename U, IsRatio R2>
+			constexpr auto operator=(const PerDuration<U, R2> &duration) noexcept -> PerDuration<T, R>& {
+				m_value = static_cast<T> (static_cast<U> (duration) * R::fRATIO * R2::fINVERSE_RATIO);
+				return *this;
+			}
+
+			template <typename U, IsRatio R2>
+			constexpr auto operator==(const PerDuration<U, R2> &duration) const noexcept -> bool {return m_value == static_cast<T> (PerDuration<T, R> (duration));}
+			template <typename U, IsRatio R2>
+			constexpr auto operator<=>(const PerDuration<U, R2> &duration) const noexcept {return m_value <=> static_cast<T> (PerDuration<T, R> (duration));}
+
+			template <typename U, IsRatio R2>
+			constexpr auto operator+=(const PerDuration<U, R2> &duration) noexcept -> PerDuration<T, R>& {m_value += static_cast<T> (PerDuration<T, R> (duration)); return *this;}
+			template <typename U, IsRatio R2>
+			constexpr auto operator-=(const PerDuration<U, R2> &duration) noexcept -> PerDuration<T, R>& {m_value -= static_cast<T> (PerDuration<T, R> (duration)); return *this;}
+			template <typename U>
+			constexpr auto operator*=(U factor) noexcept -> PerDuration<T, R>& {m_value *= static_cast<T> (factor); return *this;}
+			template <typename U>
+			constexpr auto operator/=(U factor) noexcept -> PerDuration<T, R>& {m_value /= static_cast<T> (factor); return *this;}
+
+			template <typename U, IsRatio R2>
+			constexpr auto operator+(const PerDuration<U, R2> &duration) const noexcept -> PerDuration<T, R> {auto copy {*this}; return copy += duration;}
+			template <typename U, IsRatio R2>
+			constexpr auto operator-(const PerDuration<U, R2> &duration) const noexcept -> PerDuration<T, R> {auto copy {*this}; return copy -= duration;}
+			template <typename U, IsRatio R2>
+			constexpr auto operator/(const PerDuration<U, R2> &duration) const noexcept -> T {return m_value / static_cast<T> (PerDuration<T, R> (duration));}
+			template <typename U>
+			constexpr auto operator*(U factor) const noexcept -> PerDuration<T, R>& {auto copy {*this}; return copy *= factor;}
+			template <typename U>
+			constexpr auto operator/(U factor) const noexcept -> PerDuration<T, R>& {auto copy {*this}; return copy /= factor;}
+
+			template <typename U>
+			constexpr explicit operator U() const noexcept {return static_cast<U> (m_value);}
+
+
+		private:
+			T m_value;
+	};
+
+
+	template <typename T, typename U, IsRatio R>
+	constexpr auto operator*(T factor, const PerDuration<U, R> &perDuration) noexcept -> PerDuration<U, R> {
+		return perDuration * factor;
+	}
+	
+
+	template <typename T, typename U, IsRatio R>
+	constexpr auto operator/(T factor, const Duration<U, R> &duration) noexcept -> PerDuration<U, R> {
+		return PerDuration<U, R> (static_cast<U> (factor) / static_cast<U> (duration));
+	}
+
+	template <typename T, typename U, IsRatio R>
+	constexpr auto operator/(T factor, const PerDuration<U, R> &perDuration) noexcept -> Duration<U, R> {
+		return Duration<U, R> (static_cast<U> (factor) / static_cast<U> (perDuration));
+	}
+
+
+	using Second = Duration<float>;
+	using Millisecond = Duration<float, Milli>;
+	using Microsecond = Duration<float, Micro>;
+	using Nanosecond = Duration<float, Nano>;
+
+	using PerSecond = PerDuration<float>;
+	using PerMillisecond = PerDuration<float, Milli>;
+	using PerMicrosecond = PerDuration<float, Micro>;
+	using PerNanosecond = PerDuration<float, Nano>;
+
+	using Hertz = PerSecond;
+	using Kilohertz = PerMillisecond;
+	using Megahertz = PerMicrosecond;
+	using Gigahertz = PerNanosecond;
+
+
 	namespace literals {
 		constexpr Bytes operator ""_B(unsigned long long data) noexcept {return Bytes(static_cast<std::size_t> (data));}
 		constexpr Bytes operator ""_B(long double data) noexcept {return Bytes(data);}
-		constexpr Kilobytes operator ""_KB(unsigned long long data) noexcept {return Kilobytes(static_cast<std::size_t> (data));}
-		constexpr Kilobytes operator ""_KB(long double data) noexcept {return Kilobytes(data);}
+		constexpr Kilobytes operator ""_kB(unsigned long long data) noexcept {return Kilobytes(static_cast<std::size_t> (data));}
+		constexpr Kilobytes operator ""_kB(long double data) noexcept {return Kilobytes(data);}
 		constexpr Megabytes operator ""_MB(unsigned long long data) noexcept {return Megabytes(static_cast<std::size_t> (data));}
 		constexpr Megabytes operator ""_MB(long double data) noexcept {return Megabytes(data);}
 		constexpr Gigabytes operator ""_GB(unsigned long long data) noexcept {return Gigabytes(static_cast<std::size_t> (data));}
 		constexpr Gigabytes operator ""_GB(long double data) noexcept {return Gigabytes(data);}
-		constexpr Kibibytes operator ""_KiB(unsigned long long data) noexcept {return Kibibytes(static_cast<std::size_t> (data));}
-		constexpr Kibibytes operator ""_KiB(long double data) noexcept {return Kibibytes(data);}
+		constexpr Kibibytes operator ""_kiB(unsigned long long data) noexcept {return Kibibytes(static_cast<std::size_t> (data));}
+		constexpr Kibibytes operator ""_kiB(long double data) noexcept {return Kibibytes(data);}
 		constexpr Mibibytes operator ""_MiB(unsigned long long data) noexcept {return Mibibytes(static_cast<std::size_t> (data));}
 		constexpr Mibibytes operator ""_MiB(long double data) noexcept {return Mibibytes(data);}
 		constexpr Gibibytes operator ""_GiB(unsigned long long data) noexcept {return Gibibytes(static_cast<std::size_t> (data));}
 		constexpr Gibibytes operator ""_GiB(long double data) noexcept {return Gibibytes(data);}
+
+		constexpr Second operator ""_s(long double data) noexcept {return Second(data);}
+		constexpr Millisecond operator ""_ms(long double data) noexcept {return Millisecond(data);}
+		constexpr Microsecond operator ""_µs(long double data) noexcept {return Microsecond(data);}
+		constexpr Nanosecond operator ""_ns(long double data) noexcept {return Nanosecond(data);}
+
+		constexpr Hertz operator ""_hz(long double data) noexcept {return Hertz(data);}
+		constexpr Kilohertz operator ""_khz(long double data) noexcept {return Kilohertz(data);}
+		constexpr Megahertz operator ""_Mhz(long double data) noexcept {return Megahertz(data);}
+		constexpr Gigahertz operator ""_Ghz(long double data) noexcept {return Gigahertz(data);}
+
 	} // namespace literals
 
 	using namespace literals;

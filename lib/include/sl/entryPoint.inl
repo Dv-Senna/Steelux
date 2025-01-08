@@ -35,6 +35,14 @@ auto main(int, char**) -> int {
 		logError();
 		return EXIT_FAILURE;
 	}
+
+	sl::Result applicationUpdateResult {application->mainloop()};
+	if (applicationUpdateResult != sl::Result::eSuccess) {
+		(void)sl::utils::ErrorStack::push(applicationUpdateResult, "Fatal error during mainloop of the application");
+		logError();
+		return EXIT_FAILURE;
+	}
+
 	application->destroy();
 	return EXIT_SUCCESS;
 }

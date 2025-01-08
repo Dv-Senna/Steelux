@@ -22,7 +22,6 @@
 #include <sl/eventManager.hpp>
 #include <sl/inputManager.hpp>
 
-#include <thread>
 #include <memory>
 #include <print>
 
@@ -34,6 +33,10 @@ using namespace sl::utils::literals;
 class SandboxApp final : public sl::Application {
 	public:
 		SandboxApp() : sl::Application() {
+			m_infos.name = "Steelux_sandbox";
+			m_infos.title = "Steelux sandbox app";
+			m_infos.fps = 60.0_hz;
+
 			sl::memory::HeapAllocator heapAllocator {};
 			sl::memory::HeapMemoryResource heapMemoryResource {heapAllocator};
 
@@ -65,12 +68,6 @@ class SandboxApp final : public sl::Application {
 		auto onCreation() noexcept -> sl::Result override {
 			std::println("Creation");
 
-			sl::WindowCreateInfos createInfos {};
-			createInfos.title = "Steelux";
-			createInfos.size = {16*70, 9*70};
-			if (m_window.create(createInfos) != sl::Result::eSuccess)
-				return sl::Result::eFailure;
-
 			VkApplicationInfo applicationInfos {};
 			applicationInfos.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
 			applicationInfos.pEngineName = "Steelux";
@@ -88,57 +85,23 @@ class SandboxApp final : public sl::Application {
 			if (vkCreateInstance(&instanceCreateInfos, nullptr, &m_instance) != VK_SUCCESS)
 				return sl::Result::eFailure;
 
-			sl::EventFilter filter {
-				.categories = {sl::InputManager::KEY_JUST_PRESSED},
-				.excludeCategories = {},
-				.sources = {sl::UUID()},
-				.excludeSources = {}
-			};
-			auto listener {sl::EventManager::addListener<sl::Key> (filter, [](const std::set<sl::EventCategory>&, sl::UUID, const sl::Event<sl::Key> &event) {
-				sl::mainLogger.info("Key down : {}", event.data);
-			})};
-
-			using namespace sl::literals;
-			sl::mainLogger.debug("__sl_keydown : {}, sl_keydown : {}", "__sl_keydown"_ecat, "sl_keydown"_ecat);
-
-			while (sl::InputManager::update()) {
-				if (sl::InputManager::isKeyDown(sl::Key::eEscape))
-					break;
-
-				if (sl::InputManager::isKeyDown(sl::Key::eA))
-					sl::mainLogger.info("A");
-				if (sl::InputManager::isKeyJustPressed(sl::Key::eS))
-					sl::mainLogger.info("S");
-				if (sl::InputManager::isKeyJustReleased(sl::Key::eD))
-					sl::mainLogger.info("D");
-
-				if (sl::InputManager::isMouseButtonDown(sl::MouseButton::eLeft))
-					sl::mainLogger.info("left");
-				if (sl::InputManager::isMouseButtonJustPressed(sl::MouseButton::eRight))
-					sl::mainLogger.info("right");
-				if (sl::InputManager::isMouseButtonJustReleased(sl::MouseButton::eMiddle))
-					sl::mainLogger.info("middle");
-
-				if (sl::InputManager::hasMouseMoved())
-					sl::mainLogger.info("Mouse motion : {}, {}", sl::InputManager::getMousePosition(), sl::InputManager::getMouseMotion());
-
-				std::this_thread::sleep_for(std::chrono::milliseconds(16));
-			}
-
-			sl::EventManager::removeListener<sl::Key> (listener);
-
 			return sl::Result::eSuccess;
 		}
 
+
+		auto onUpdate(sl::utils::Millisecond /*dt*/) noexcept -> std::expected<bool, sl::Result> override {
+			if (sl::InputManager::isKeyDown(sl::Key::eEscape))
+				return false;
+			return true;
+		}
+
+
 		auto onDestruction() noexcept -> void override {
-			sl::EventManager::removeListener<sl::String> (listener1);
 			vkDestroyInstance(m_instance, nullptr);
 			std::println("Destruction");
 		}
 
 	private:
-		sl::ListenerUUID listener1;
-		sl::Window m_window;
 		VkInstance m_instance;
 };
 
