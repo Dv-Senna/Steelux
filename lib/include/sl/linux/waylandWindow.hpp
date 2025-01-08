@@ -17,6 +17,10 @@ namespace sl::linux_ {
 			auto create(const sl::WindowCreateInfos &createInfos) noexcept -> sl::Result override;
 			auto destroy() noexcept -> void override;
 
+			auto update() noexcept -> bool override;
+
+			inline auto getSize() const noexcept -> const turbolin::Vec2i& override {return m_size;}
+
 		private:
 			static constexpr std::size_t BUFFER_COUNT {3};
 
@@ -35,6 +39,7 @@ namespace sl::linux_ {
 			};
 
 			State m_state;
+			turbolin::Vec2i m_size;
 	};
 
 } // sl::linux_

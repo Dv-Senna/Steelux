@@ -20,6 +20,7 @@
 
 #include <sl/window.hpp>
 #include <sl/eventManager.hpp>
+#include <sl/inputManager.hpp>
 
 #include <memory>
 #include <print>
@@ -106,16 +107,20 @@ class SandboxApp final : public sl::Application {
 			sl::EventManager::send<sl::String> ({"abc"_ecat}, uuid2, {"Hello2"});
 			sl::EventManager::send<sl::String> ({"abc"_ecat, "def"_ecat}, sl::UUID(), {"Hello_no_arrive3"});
 
+
+			while (sl::InputManager::update());
+
 			return sl::Result::eSuccess;
 		}
 
 		auto onDestruction() noexcept -> void override {
+			sl::EventManager::removeListener<sl::String> (listener1);
 			vkDestroyInstance(m_instance, nullptr);
 			std::println("Destruction");
 		}
 
 	private:
-		sl::ListenerUUID listener1, listener2;
+		sl::ListenerUUID listener1;
 		sl::Window m_window;
 		VkInstance m_instance;
 };

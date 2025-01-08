@@ -17,8 +17,13 @@ namespace sl {
 			auto create(const sl::WindowCreateInfos &createInfos) noexcept -> sl::Result override;
 			auto destroy() noexcept -> void override;
 
+			auto update() noexcept -> bool override;
+
+			inline auto getSize() const noexcept -> const turbolin::Vec2i& override {return m_size;}
+
 		private:
 			SDL_Window *m_window;
+			turbolin::Vec2i m_size;
 	};
 
 } // namespace sl

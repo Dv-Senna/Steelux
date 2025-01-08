@@ -61,13 +61,16 @@ namespace sl::linux_ {
 
 
 	WaylandWindow::WaylandWindow() :
-		m_state {}
+		m_state {},
+		m_size {}
 	{
 
 	}
 
 
 	auto WaylandWindow::create(const sl::WindowCreateInfos &createInfos) noexcept -> sl::Result {
+		m_size = createInfos.size;
+
 		m_state.display = wl_display_connect(nullptr);
 		if (m_state.display == nullptr)
 			return sl::Result::eFailure;
@@ -188,6 +191,11 @@ namespace sl::linux_ {
 			wl_surface_destroy(m_state.surface);
 		if (m_state.display != nullptr)
 			wl_display_disconnect(m_state.display);
+	}
+
+
+	auto WaylandWindow::update() noexcept -> bool {
+		return true;
 	}
 
 } // namespace sl::linux_

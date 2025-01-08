@@ -38,6 +38,7 @@ namespace sl {
 			static auto send(std::set<EventCategory> categories, UUID source, const Event<T> &event) noexcept -> void;
 
 			template <typename T>
+			[[nodiscard]]
 			static auto addListener(const EventFilter &filter, const ListenerCallback<T> &callback) noexcept -> ListenerUUID;
 			template <typename T>
 			static auto removeListener(ListenerUUID listener) noexcept -> void;

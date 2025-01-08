@@ -23,6 +23,10 @@ namespace sl {
 
 			virtual auto create(const WindowCreateInfos &createInfos) noexcept -> sl::Result = 0;
 			virtual auto destroy() noexcept -> void = 0;
+
+			virtual auto update() noexcept -> bool = 0;
+
+			virtual auto getSize() const noexcept -> const turbolin::Vec2i& = 0;
 	};
 
 	class SL_CORE Window final {
@@ -32,6 +36,18 @@ namespace sl {
 
 			auto create(const WindowCreateInfos &createInfos) noexcept -> sl::Result;
 			auto destroy() noexcept -> void;
+
+			/* This function send values to the following event endpoint :
+			 *     - {"__sl_keydown"},         global, <sl::Key>
+			 *     - {"__sl_keyup"},           global, <sl::Key>
+			 *     - {"__sl_mousebuttondown"}, global, <sl::MouseButton>
+			 *     - {"__sl_mousebuttondown"}, global, <sl::MouseButton>
+			 *     - {"__sl_mousemotion"},     global, <turbolin::Vec2f>
+			 *     - {"__sl_windowresize"},    global, <turbolin::Vec2i>
+			 */
+			auto update() noexcept -> bool;
+
+			auto getSize() const noexcept -> turbolin::Vec2i;
 
 		private:
 			std::pmr::polymorphic_allocator<WindowImplementation> m_allocator;

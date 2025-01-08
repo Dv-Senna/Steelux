@@ -21,8 +21,8 @@
 	#define SL_TEXT_ASSERT(expr, msg)
 #else
 	#include <cstdio>
-	#define SL_ASSERT(expr)	if (!!expr) {} else {std::printf("ASSERT " __FILE__ ":%d failed : " #expr, __LINE__); SL_DEBUG_BREAKPOINT;}
-	#define SL_TEXT_ASSERT(expr, msg) if (!!expr) {} else {std::printf("ASSERT " __FILE__ ":%d failed : " msg, __LINE__); SL_DEBUG_BREAKPOINT;}
+	#define SL_ASSERT(expr)	if (!!(expr)) {} else {std::printf("ASSERT " __FILE__ ":%d failed : " #expr, __LINE__); SL_DEBUG_BREAKPOINT;}
+	#define SL_TEXT_ASSERT(expr, msg) if (!!(expr)) {} else {std::printf("ASSERT " __FILE__ ":%d failed : " msg, __LINE__); SL_DEBUG_BREAKPOINT;}
 #endif
 
 #ifdef SL_NO_SLOW_ASSERT
