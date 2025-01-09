@@ -16,12 +16,20 @@ namespace sl {
 		if (m_window.create(windowCreateInfos) != sl::Result::eSuccess)
 			return sl::utils::ErrorStack::push(sl::Result::eFailure, "Can't create application's window");
 
+		sl::render::RendererCreateInfos rendererCreateInfos {};
+		rendererCreateInfos.window = &m_window;
+		rendererCreateInfos.appName = m_infos.name;
+		rendererCreateInfos.appVersion = m_infos.version;
+		if (m_renderer.create(rendererCreateInfos) != sl::Result::eSuccess)
+			return sl::utils::ErrorStack::push(sl::Result::eFailure, "Can't create application's renderer");
+
 		return this->onCreation();
 	}
 
 
 	auto Application::destroy() noexcept -> void {
 		this->onDestruction();
+		m_renderer.destroy();
 		m_window.destroy();
 	}
 

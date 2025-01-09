@@ -3,9 +3,11 @@
 #include <expected>
 
 #include "sl/core.hpp"
+#include "sl/render/renderer.hpp"
 #include "sl/result.hpp"
 #include "sl/utils/string.hpp"
 #include "sl/utils/units.hpp"
+#include "sl/utils/utils.hpp"
 #include "sl/window.hpp"
 
 
@@ -15,6 +17,7 @@ namespace sl {
 		public:
 			struct Infos {
 				sl::String name;
+				sl::utils::Version version;
 				sl::String title;
 				sl::utils::PerSecond fps;
 			};
@@ -36,9 +39,10 @@ namespace sl {
 
 		protected:
 			sl::Application::Infos m_infos;
+			sl::Window m_window;
+			sl::render::Renderer m_renderer;
 
 		private:
-			sl::Window m_window;
 			sl::utils::Millisecond m_targetDt;
 	};
 
