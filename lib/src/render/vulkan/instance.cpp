@@ -182,13 +182,18 @@ namespace sl::render::vulkan {
 		}
 	#endif
 
-		(void)vkEnumeratePhysicalDevices(m_instance, nullptr, nullptr);
+		sl::render::vulkan::GPUCreateInfos gpuCreateInfos {};
+		gpuCreateInfos.instance = this;
+		if (m_gpu.create(gpuCreateInfos) != sl::Result::eSuccess)
+			return sl::utils::ErrorStack::push(sl::Result::eFailure, "Can't create GPU for instance");
 
 		return sl::Result::eSuccess;
 	}
 
 
 	auto Instance::destroy() noexcept -> void {
+		m_gpu.destroy();
+
 	#ifndef NDEBUG
 		if (m_getInstanceProcAddr != nullptr && m_debugUtilsMessenger != VK_NULL_HANDLE) {
 			auto destroyDebugUtilsMessengerEXT = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT> (m_getInstanceProcAddr(m_instance, "vkDestroyDebugUtilsMessengerEXT"));

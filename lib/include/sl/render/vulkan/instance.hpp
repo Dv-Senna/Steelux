@@ -8,6 +8,8 @@
 #include "sl/result.hpp"
 #include "sl/window.hpp"
 
+#include "sl/render/vulkan/GPU.hpp"
+
 
 namespace sl::render::vulkan {
 	struct InstanceCreateInfos {
@@ -25,6 +27,7 @@ namespace sl::render::vulkan {
 			auto destroy() noexcept -> void;
 
 			inline auto getInstance() noexcept -> VkInstance {return m_instance;}
+			inline auto getVkGetInstanceProcAddr() noexcept -> PFN_vkGetInstanceProcAddr {return m_getInstanceProcAddr;}
 
 
 		private:
@@ -34,6 +37,7 @@ namespace sl::render::vulkan {
 			VkDebugUtilsMessengerEXT m_debugUtilsMessenger;
 		#endif
 			sl::Window *m_window;
+			sl::render::vulkan::GPU m_gpu;
 	};
 
 } // namespace sl::render::vulkan
