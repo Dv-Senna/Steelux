@@ -111,17 +111,34 @@ namespace sl::render::vulkan {
 		if (m_physicalDevice == VK_NULL_HANDLE)
 			return sl::utils::ErrorStack::push(sl::Result::eFailure, "Can't find appropriate GPU");
 
+		extensions.insert(extensions.end(), requiredExtensions.begin(), requiredExtensions.end());
+		for (std::size_t i {0}; i < sizeof(features) / sizeof(VkBool32); ++i) {
+			if (reinterpret_cast<VkBool32*> (&requiredFeatures)[i])
+				reinterpret_cast<VkBool32*> (&features)[i] = VK_TRUE;
+		}
+
 		VkPhysicalDeviceProperties physicalDeviceProperties {};
 		vkGetPhysicalDeviceProperties(m_physicalDevice, &physicalDeviceProperties);
 
 		sl::mainLogger.info("Chosen GPU : '{}'", physicalDeviceProperties.deviceName);
+
+		VkDeviceCreateInfo deviceCreateInfos {};
+		deviceCreateInfos.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+		deviceCreateInfos.enabledLayerCount = 0;
+		deviceCreateInfos.ppEnabledLayerNames = nullptr;
+		deviceCreateInfos.enabledExtensionCount = extensions.size();
+		deviceCreateInfos.ppEnabledExtensionNames = extensions.data();
+		deviceCreateInfos.pEnabledFeatures = &features;
+		if (vkCreateDevice(m_physicalDevice, &deviceCreateInfos, nullptr, &m_device) != VK_SUCCESS)
+			return sl::utils::ErrorStack::push(sl::Result::eFailure, "Can't create logical device");
 
 		return sl::Result::eSuccess;
 	}
 
 
 	auto GPU::destroy() noexcept -> void {
-
+		if (m_device != VK_NULL_HANDLE)
+			vkDestroyDevice(m_device, nullptr);
 	}
 
 } // namespace sl::render::vulkan
