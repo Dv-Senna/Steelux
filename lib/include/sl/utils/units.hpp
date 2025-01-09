@@ -131,15 +131,17 @@ namespace sl::utils {
 	template <typename T, IsRatio R = Ratio<1, 1>>
 	class Duration final {
 		public:
+			using Ratio = R;
+
 			constexpr Duration() noexcept = default;
 			template <typename U>
 			constexpr Duration(U value) noexcept : m_value {static_cast<T> (value)} {}
 
 			template <typename U, IsRatio R2>
-			constexpr Duration(const Duration<U, R2> &duration) noexcept : m_value {static_cast<T> (static_cast<U> (duration) * R::fRATIO * R2::fINVERSE_RATIO)} {}
+			constexpr Duration(const Duration<U, R2> &duration) noexcept : m_value {static_cast<T> (static_cast<U> (duration) * R::fINVERSE_RATIO * R2::fRATIO)} {}
 			template <typename U, IsRatio R2>
 			constexpr auto operator=(const Duration<U, R2> &duration) noexcept -> Duration<T, R>& {
-				m_value = static_cast<T> (static_cast<U> (duration) * R::fRATIO * R2::fINVERSE_RATIO);
+				m_value = static_cast<T> (static_cast<U> (duration) * R::fINVERSE_RATIO * R2::fRATIO);
 				return *this;
 			}
 
@@ -182,6 +184,12 @@ namespace sl::utils {
 		return duration * factor;
 	}
 
+	template <typename T, IsRatio R>
+	inline std::ostream &operator<<(std::ostream &stream, const Duration<T, R> &duration) noexcept {
+		stream << static_cast<T> (duration) << "[" << RatioString<R>::str << "s]";
+		return stream;
+	}
+
 
 	template <typename T, IsRatio R = Ratio<1, 1>>
 	class PerDuration final {
@@ -191,7 +199,7 @@ namespace sl::utils {
 			constexpr PerDuration(U value) noexcept : m_value {static_cast<T> (value)} {}
 
 			template <typename U, IsRatio R2>
-			constexpr PerDuration(const PerDuration<U, R2> &duration) noexcept : m_value {static_cast<T> (static_cast<U> (duration) * R::fINVERSE_RATIO * R2::fRATIO)} {}
+			constexpr PerDuration(const PerDuration<U, R2> &duration) noexcept : m_value {static_cast<T> (static_cast<U> (duration) * R::fRATIO * R2::fINVERSE_RATIO)} {}
 			template <typename U, IsRatio R2>
 			constexpr auto operator=(const PerDuration<U, R2> &duration) noexcept -> PerDuration<T, R>& {
 				m_value = static_cast<T> (static_cast<U> (duration) * R::fRATIO * R2::fINVERSE_RATIO);
@@ -236,6 +244,12 @@ namespace sl::utils {
 	constexpr auto operator*(T factor, const PerDuration<U, R> &perDuration) noexcept -> PerDuration<U, R> {
 		return perDuration * factor;
 	}
+
+	template <typename T, IsRatio R>
+	inline std::ostream &operator<<(std::ostream &stream, const PerDuration<T, R> &perDuration) noexcept {
+		stream << static_cast<T> (perDuration) << "[" << RatioString<R>::str << "s^-1]";
+		return stream;
+	}
 	
 
 	template <typename T, typename U, IsRatio R>
@@ -247,6 +261,13 @@ namespace sl::utils {
 	constexpr auto operator/(T factor, const PerDuration<U, R> &perDuration) noexcept -> Duration<U, R> {
 		return Duration<U, R> (static_cast<U> (factor) / static_cast<U> (perDuration));
 	}
+
+
+	template <typename T>
+	concept IsDuration = IsRatio<typename T::Ratio> && requires(const T val, const Duration<float> duration) {
+		{val + duration};
+		{val - duration};
+	};
 
 
 	using Second = Duration<float>;
@@ -306,3 +327,20 @@ struct std::formatter<sl::utils::ByteCount<R>> : public std::formatter<std::stri
 	}
 };
 
+template <typename T, sl::utils::IsRatio R>
+struct std::formatter<sl::utils::Duration<T, R>> : public std::formatter<std::string> {
+	inline auto format(const sl::utils::Duration<T, R> &duration, std::format_context &ctx) const noexcept {
+		std::ostringstream stream {};
+		stream << duration;
+		return std::formatter<std::string>::format(stream.str(), ctx);
+	}
+};
+
+template <typename T, sl::utils::IsRatio R>
+struct std::formatter<sl::utils::PerDuration<T, R>> : public std::formatter<std::string> {
+	inline auto format(const sl::utils::PerDuration<T, R> &perDuration, std::format_context &ctx) const noexcept {
+		std::ostringstream stream {};
+		stream << perDuration;
+		return std::formatter<std::string>::format(stream.str(), ctx);
+	}
+};

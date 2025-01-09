@@ -90,6 +90,7 @@ class SandboxApp final : public sl::Application {
 
 
 		auto onUpdate(sl::utils::Millisecond /*dt*/) noexcept -> std::expected<bool, sl::Result> override {
+			//sl::mainLogger.info("DT : {}", dt);
 			if (sl::InputManager::isKeyDown(sl::Key::eEscape))
 				return false;
 			return true;

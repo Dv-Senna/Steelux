@@ -2,6 +2,7 @@
 
 #include "sl/inputManager.hpp"
 #include "sl/utils/errorStack.hpp"
+#include "sl/utils/time.hpp"
 
 
 
@@ -27,6 +28,7 @@ namespace sl {
 
 	auto Application::mainloop() noexcept -> sl::Result {
 		sl::utils::Millisecond dt {m_targetDt};
+		sl::utils::TimePoint frameStart {sl::utils::TimePoint::now()};
 
 		while (sl::InputManager::update()) {
 			auto shouldContinueProgram {this->onUpdate(dt)};
@@ -34,6 +36,14 @@ namespace sl {
 				return sl::Result::eFailure;
 			if (!*shouldContinueProgram)
 				return sl::Result::eSuccess;
+
+
+			dt = sl::utils::TimePoint::now() - frameStart;
+			if (dt < m_targetDt) {
+				sl::utils::sleepFor(m_targetDt - dt);
+				dt = m_targetDt;
+			}
+			frameStart = sl::utils::TimePoint::now();
 		}
 
 		return sl::Result::eSuccess;
