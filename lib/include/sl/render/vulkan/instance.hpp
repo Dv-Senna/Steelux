@@ -29,6 +29,10 @@ namespace sl::render::vulkan {
 
 		private:
 			VkInstance m_instance;
+			PFN_vkGetInstanceProcAddr m_getInstanceProcAddr;
+		#ifndef NDEBUG
+			VkDebugUtilsMessengerEXT m_debugUtilsMessenger;
+		#endif
 			sl::Window *m_window;
 	};
 
