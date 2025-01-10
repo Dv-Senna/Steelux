@@ -99,29 +99,86 @@ namespace sl::render::vulkan {
 	};
 
 
-	struct QueueFamilyIndices {
-		std::uint32_t graphics;
-		std::uint32_t compute;
-		std::uint32_t transfer;
-		std::uint32_t present;
-	};
-
 	auto selectQueueFamilies(
 		VkPhysicalDevice physicalDevice,
 		VkSurfaceKHR surface,
 		const std::vector<VkQueueFamilyProperties> &queueFamilyProperties
-	) noexcept -> QueueFamilyIndices {
-		QueueFamilyIndices indices {};
-
-		enum class QueueCapability {
-			eGraphics,
-			eCompute,
-			eTransfer,
-			ePresent
+	) noexcept -> std::map<GPU::QueueCapability, std::uint32_t> {
+		std::map<GPU::QueueCapability, std::uint32_t> indices {
+			{GPU::QueueCapability::eGraphics, std::numeric_limits<std::uint32_t>::max()},
+			{GPU::QueueCapability::eCompute, std::numeric_limits<std::uint32_t>::max()},
+			{GPU::QueueCapability::eTransfer, std::numeric_limits<std::uint32_t>::max()},
+			{GPU::QueueCapability::ePresent, std::numeric_limits<std::uint32_t>::max()}
 		};
+
+
+		std::vector<std::vector<GPU::QueueCapability>> queueCapabilities {};
+		queueCapabilities.reserve(queueFamilyProperties.size());
+
+		for (std::size_t familyIndex : std::views::iota(std::size_t(0), queueFamilyProperties.size())) {
+			std::vector<GPU::QueueCapability> capabilities {};
+			if (queueFamilyProperties[familyIndex].queueFlags & VK_QUEUE_GRAPHICS_BIT)
+				capabilities.push_back(GPU::QueueCapability::eGraphics);
+			if (queueFamilyProperties[familyIndex].queueFlags & VK_QUEUE_COMPUTE_BIT)
+				capabilities.push_back(GPU::QueueCapability::eCompute);
+			if (queueFamilyProperties[familyIndex].queueFlags & VK_QUEUE_TRANSFER_BIT)
+				capabilities.push_back(GPU::QueueCapability::eTransfer);
+
+			VkBool32 presentSupport {VK_FALSE};
+			if (vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, familyIndex, surface, &presentSupport) != VK_SUCCESS)
+				presentSupport = VK_FALSE;
+			if (presentSupport)
+				capabilities.push_back(GPU::QueueCapability::ePresent);
+
+			queueCapabilities.push_back(capabilities);
+
+			if (capabilities.size() == 1 && indices[capabilities[0]] == std::numeric_limits<std::uint32_t>::max()) {
+				indices[capabilities[0]] = familyIndex;
+				continue;
+			}
+		}
+
+		for (auto &index : indices) {
+			if (index.second != std::numeric_limits<std::uint32_t>::max())
+				continue;
+
+			for (std::size_t familyIndex : std::views::iota(std::size_t(0), queueCapabilities.size())) {
+				if (std::ranges::find(queueCapabilities[familyIndex], index.first) == queueCapabilities[familyIndex].end())
+					continue;
+				index.second = familyIndex;
+				break;
+			}
+		}
 
 		return indices;
 	}
+
+
+	auto getQueueCreateInfos(
+		const std::map<GPU::QueueCapability, std::uint32_t> &indices,
+		const std::vector<VkQueueFamilyProperties> &queueProperties
+	) noexcept -> std::vector<VkDeviceQueueCreateInfo> {
+		static float priority {1.f};
+
+		std::vector<VkDeviceQueueCreateInfo> queueCreateInfos {};
+		queueCreateInfos.reserve(sizeof(indices) / sizeof(std::uint32_t));
+
+		for (const auto index : indices) {
+			if (std::ranges::find_if(queueCreateInfos, [&index](const VkDeviceQueueCreateInfo &createInfos) -> bool {
+				return createInfos.queueFamilyIndex == index.second;
+			}) != queueCreateInfos.end())
+				continue;
+
+			VkDeviceQueueCreateInfo createInfos {};
+			createInfos.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+			createInfos.queueFamilyIndex = index.second;
+			createInfos.queueCount = queueProperties[index.second].queueCount;
+			createInfos.pQueuePriorities = &priority;
+			queueCreateInfos.push_back(createInfos);
+		}
+
+		return queueCreateInfos;
+	};
 
 
 	auto GPU::create(const GPUCreateInfos &createInfos) noexcept -> sl::Result {
@@ -153,18 +210,9 @@ namespace sl::render::vulkan {
 		queueFamilyProperties.resize(queueFamilyPropertiesCount);
 		vkGetPhysicalDeviceQueueFamilyProperties(m_physicalDevice, &queueFamilyPropertiesCount, queueFamilyProperties.data());
 
-		std::vector<VkDeviceQueueCreateInfo> deviceQueueCreateInfos {};
-		deviceQueueCreateInfos.reserve(queueFamilyPropertiesCount);
-		float priorities {1.f};
+		std::map<GPU::QueueCapability, std::uint32_t> queueIndices {selectQueueFamilies(m_physicalDevice, m_instance->getSurface(), queueFamilyProperties)};
 
-		for (std::size_t i : std::views::iota(std::size_t(0), queueFamilyProperties.size())) {
-			VkDeviceQueueCreateInfo queueCreateInfos {};
-			queueCreateInfos.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-			queueCreateInfos.queueFamilyIndex = static_cast<std::uint32_t> (i);
-			queueCreateInfos.queueCount = queueFamilyProperties[i].queueCount;
-			queueCreateInfos.pQueuePriorities = &priorities;
-			deviceQueueCreateInfos.push_back(queueCreateInfos);
-		}
+		std::vector<VkDeviceQueueCreateInfo> deviceQueueCreateInfos {getQueueCreateInfos(queueIndices, queueFamilyProperties)};
 
 		VkDeviceCreateInfo deviceCreateInfos {};
 		deviceCreateInfos.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
@@ -179,12 +227,33 @@ namespace sl::render::vulkan {
 			return sl::utils::ErrorStack::push(sl::Result::eFailure, "Can't create logical device");
 
 
-		VkDeviceQueueInfo2 queueInfos {};
-		queueInfos.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_INFO_2;
-		queueInfos.queueFamilyIndex = 0;
-		queueInfos.queueIndex = 0;
-		VkQueue queue {};
-		vkGetDeviceQueue2(m_device, &queueInfos, &queue);
+		std::map<std::uint32_t, std::vector<VkQueue>> queuesPerFamilies {};
+		for (const auto &queueCreateInfos : deviceQueueCreateInfos) {
+			std::vector<VkQueue> queues {};
+			queues.reserve(queueCreateInfos.queueCount);
+			VkDeviceQueueInfo2 queueInfos {};
+			queueInfos.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_INFO_2;
+			queueInfos.queueFamilyIndex = queueCreateInfos.queueFamilyIndex;
+
+			for (std::uint32_t i : std::views::iota(std::uint32_t(0), queueCreateInfos.queueCount)) {
+				queueInfos.queueIndex = i;
+				VkQueue queue {};
+				vkGetDeviceQueue2(m_device, &queueInfos, &queue);
+				queues.push_back(queue);
+			}
+
+			queuesPerFamilies[queueCreateInfos.queueFamilyIndex] = queues;
+		}
+
+
+		for (const auto &index : queueIndices) {
+			m_queues[index.first].familyIndex = index.second;
+			m_queues[index.first].queues = queuesPerFamilies[index.second];
+		}
+
+		sl::mainLogger.info("The following queue families were created with the logical device :");
+		for (const auto &index : m_queues)
+			sl::mainLogger.info("\t- {} : family={}, count={}", index.first, index.second.familyIndex, index.second.queues.size());
 
 		return sl::Result::eSuccess;
 	}
