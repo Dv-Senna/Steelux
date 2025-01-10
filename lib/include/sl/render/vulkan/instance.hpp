@@ -26,8 +26,9 @@ namespace sl::render::vulkan {
 			auto create(const InstanceCreateInfos &createInfos) noexcept -> sl::Result;
 			auto destroy() noexcept -> void;
 
-			inline auto getInstance() noexcept -> VkInstance {return m_instance;}
-			inline auto getVkGetInstanceProcAddr() noexcept -> PFN_vkGetInstanceProcAddr {return m_getInstanceProcAddr;}
+			inline auto getInstance() const noexcept -> VkInstance {return m_instance;}
+			inline auto getVkGetInstanceProcAddr() const noexcept -> PFN_vkGetInstanceProcAddr {return m_getInstanceProcAddr;}
+			inline auto getSurface() const noexcept -> VkSurfaceKHR {return m_surface;}
 
 
 		private:
@@ -37,6 +38,7 @@ namespace sl::render::vulkan {
 			VkDebugUtilsMessengerEXT m_debugUtilsMessenger;
 		#endif
 			sl::Window *m_window;
+			VkSurfaceKHR m_surface;
 			sl::render::vulkan::GPU m_gpu;
 	};
 

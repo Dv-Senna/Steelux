@@ -1,6 +1,9 @@
 #pragma once
 
+#include <optional>
+
 #include <turbolin/turbolin.hpp>
+#include <vulkan/vulkan.h>
 
 #include "sl/core.hpp"
 #include "sl/result.hpp"
@@ -23,6 +26,8 @@ namespace sl {
 
 			virtual auto create(const WindowCreateInfos &createInfos) noexcept -> sl::Result = 0;
 			virtual auto destroy() noexcept -> void = 0;
+			virtual auto createVkSurface(VkInstance instance) noexcept -> std::optional<VkSurfaceKHR> = 0;
+			virtual auto destroyVkSurface(VkInstance instance, VkSurfaceKHR surface) noexcept -> void = 0;
 
 			virtual auto update() noexcept -> bool = 0;
 
@@ -36,6 +41,8 @@ namespace sl {
 
 			auto create(const WindowCreateInfos &createInfos) noexcept -> sl::Result;
 			auto destroy() noexcept -> void;
+			auto createVkSurface(VkInstance instance) noexcept -> std::optional<VkSurfaceKHR>;
+			auto destroyVkSurface(VkInstance instance, VkSurfaceKHR surface) noexcept -> void;
 
 			/* This function send values to the following event endpoint :
 			 *     - {"__sl_keydown"},         global, <sl::Key>

@@ -99,6 +99,31 @@ namespace sl::render::vulkan {
 	};
 
 
+	struct QueueFamilyIndices {
+		std::uint32_t graphics;
+		std::uint32_t compute;
+		std::uint32_t transfer;
+		std::uint32_t present;
+	};
+
+	auto selectQueueFamilies(
+		VkPhysicalDevice physicalDevice,
+		VkSurfaceKHR surface,
+		const std::vector<VkQueueFamilyProperties> &queueFamilyProperties
+	) noexcept -> QueueFamilyIndices {
+		QueueFamilyIndices indices {};
+
+		enum class QueueCapability {
+			eGraphics,
+			eCompute,
+			eTransfer,
+			ePresent
+		};
+
+		return indices;
+	}
+
+
 	auto GPU::create(const GPUCreateInfos &createInfos) noexcept -> sl::Result {
 		m_instance = createInfos.instance;
 
@@ -122,6 +147,25 @@ namespace sl::render::vulkan {
 
 		sl::mainLogger.info("Chosen GPU : '{}'", physicalDeviceProperties.deviceName);
 
+		std::uint32_t queueFamilyPropertiesCount {};
+		std::vector<VkQueueFamilyProperties> queueFamilyProperties {};
+		vkGetPhysicalDeviceQueueFamilyProperties(m_physicalDevice, &queueFamilyPropertiesCount, nullptr);
+		queueFamilyProperties.resize(queueFamilyPropertiesCount);
+		vkGetPhysicalDeviceQueueFamilyProperties(m_physicalDevice, &queueFamilyPropertiesCount, queueFamilyProperties.data());
+
+		std::vector<VkDeviceQueueCreateInfo> deviceQueueCreateInfos {};
+		deviceQueueCreateInfos.reserve(queueFamilyPropertiesCount);
+		float priorities {1.f};
+
+		for (std::size_t i : std::views::iota(std::size_t(0), queueFamilyProperties.size())) {
+			VkDeviceQueueCreateInfo queueCreateInfos {};
+			queueCreateInfos.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+			queueCreateInfos.queueFamilyIndex = static_cast<std::uint32_t> (i);
+			queueCreateInfos.queueCount = queueFamilyProperties[i].queueCount;
+			queueCreateInfos.pQueuePriorities = &priorities;
+			deviceQueueCreateInfos.push_back(queueCreateInfos);
+		}
+
 		VkDeviceCreateInfo deviceCreateInfos {};
 		deviceCreateInfos.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 		deviceCreateInfos.enabledLayerCount = 0;
@@ -129,8 +173,18 @@ namespace sl::render::vulkan {
 		deviceCreateInfos.enabledExtensionCount = extensions.size();
 		deviceCreateInfos.ppEnabledExtensionNames = extensions.data();
 		deviceCreateInfos.pEnabledFeatures = &features;
+		deviceCreateInfos.queueCreateInfoCount = deviceQueueCreateInfos.size();
+		deviceCreateInfos.pQueueCreateInfos = deviceQueueCreateInfos.data();
 		if (vkCreateDevice(m_physicalDevice, &deviceCreateInfos, nullptr, &m_device) != VK_SUCCESS)
 			return sl::utils::ErrorStack::push(sl::Result::eFailure, "Can't create logical device");
+
+
+		VkDeviceQueueInfo2 queueInfos {};
+		queueInfos.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_INFO_2;
+		queueInfos.queueFamilyIndex = 0;
+		queueInfos.queueIndex = 0;
+		VkQueue queue {};
+		vkGetDeviceQueue2(m_device, &queueInfos, &queue);
 
 		return sl::Result::eSuccess;
 	}

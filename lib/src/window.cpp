@@ -37,6 +37,20 @@ namespace sl {
 	}
 
 
+	auto Window::createVkSurface(VkInstance instance) noexcept -> std::optional<VkSurfaceKHR> {
+		if (m_implementation == nullptr)
+			return std::nullopt;
+		return m_implementation->createVkSurface(instance);
+	}
+
+
+	auto Window::destroyVkSurface(VkInstance instance, VkSurfaceKHR surface) noexcept -> void {
+		if (m_implementation == nullptr)
+			return;
+		m_implementation->destroyVkSurface(instance, surface);
+	}
+
+
 	auto Window::update() noexcept -> bool {
 		if (m_implementation == nullptr)
 			return false;

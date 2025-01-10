@@ -44,6 +44,63 @@ namespace sl::render::vulkan {
 		return checkValidationLayerValidity(layerName);
 	}
 
+
+	VKAPI_ATTR auto VKAPI_CALL debugCallback(
+		VkDebugUtilsMessageSeverityFlagBitsEXT severity,
+		VkDebugUtilsMessageTypeFlagsEXT,
+		const VkDebugUtilsMessengerCallbackDataEXT *callbackData,
+		void*
+	) -> VkBool32 {
+		sl::utils::LogSeverity logSeverity {};
+
+		switch (severity) {
+			case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT: logSeverity = sl::utils::LogSeverity::eDebug; break;
+			case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:    logSeverity = sl::utils::LogSeverity::eInfo;  break;
+			case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT: logSeverity = sl::utils::LogSeverity::eWarn;  break;
+			case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:   logSeverity = sl::utils::LogSeverity::eError; break;
+			default: logSeverity = sl::utils::LogSeverity::eDebug; break;
+		}
+
+		sl::mainLogger.log(logSeverity, "Vulkan validation layer : {}", callbackData->pMessage);
+		return VK_FALSE;
+	}
+
+
+	auto createDebugUtilsMessenger(
+		VkInstance instance,
+		const std::vector<const char*> &extensions,
+		PFN_vkGetInstanceProcAddr getInstanceProcAddr
+	) noexcept -> std::optional<VkDebugUtilsMessengerEXT> {
+		if (std::ranges::find_if(extensions, [](const char *extensionName) {return strcmp(extensionName, VK_EXT_DEBUG_UTILS_EXTENSION_NAME) == 0;}) == extensions.end())
+			return std::nullopt;
+
+		auto createDebugUtilsMessengerEXT = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT> (getInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT"));
+		if (createDebugUtilsMessengerEXT == nullptr) {
+			sl::mainLogger.warn("Can't load vkCreateDebugUtilsMessengerEXT");
+			return std::nullopt;
+		}
+
+		VkDebugUtilsMessengerCreateInfoEXT debugUtilsMessengerCreateInfos {};
+		debugUtilsMessengerCreateInfos.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+		debugUtilsMessengerCreateInfos.pUserData = nullptr;
+		debugUtilsMessengerCreateInfos.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT
+			| VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT
+			| VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+		debugUtilsMessengerCreateInfos.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT
+			| VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT
+			| VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT
+			| VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+		debugUtilsMessengerCreateInfos.pfnUserCallback = debugCallback;
+
+		VkDebugUtilsMessengerEXT debugUtilsMessenger {};
+		if (createDebugUtilsMessengerEXT(instance, &debugUtilsMessengerCreateInfos, nullptr, &debugUtilsMessenger) != VK_SUCCESS) {
+			sl::mainLogger.warn("Can't create debug vulkan utils messenger");
+			return std::nullopt;
+		}
+
+		return debugUtilsMessenger;
+	}
+
 #endif
 
 
@@ -80,25 +137,6 @@ namespace sl::render::vulkan {
 	}
 
 
-	VKAPI_ATTR auto VKAPI_CALL debugCallback(
-		VkDebugUtilsMessageSeverityFlagBitsEXT severity,
-		VkDebugUtilsMessageTypeFlagsEXT,
-		const VkDebugUtilsMessengerCallbackDataEXT *callbackData,
-		void*
-	) -> VkBool32 {
-		sl::utils::LogSeverity logSeverity {};
-
-		switch (severity) {
-			case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT: logSeverity = sl::utils::LogSeverity::eDebug; break;
-			case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:    logSeverity = sl::utils::LogSeverity::eInfo;  break;
-			case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT: logSeverity = sl::utils::LogSeverity::eWarn;  break;
-			case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:   logSeverity = sl::utils::LogSeverity::eError; break;
-			default: logSeverity = sl::utils::LogSeverity::eDebug; break;
-		}
-
-		sl::mainLogger.log(logSeverity, "Vulkan validation layer : {}", callbackData->pMessage);
-		return VK_FALSE;
-	}
 
 
 	auto Instance::create(const InstanceCreateInfos &createInfos) noexcept -> sl::Result {
@@ -156,31 +194,13 @@ namespace sl::render::vulkan {
 			return sl::utils::ErrorStack::push(sl::Result::eFailure, "Can't load vkGetInstanceProcAddr");
 
 	#ifndef NDEBUG
-		if (std::ranges::find_if(extensions, [](const char *extensionName) {return strcmp(extensionName, VK_EXT_DEBUG_UTILS_EXTENSION_NAME) == 0;}) == extensions.end())
-			return sl::Result::eSuccess;
-
-		auto createDebugUtilsMessengerEXT = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT> (m_getInstanceProcAddr(m_instance, "vkCreateDebugUtilsMessengerEXT"));
-		if (createDebugUtilsMessengerEXT == nullptr) {
-			sl::mainLogger.warn("Can't load vkCreateDebugUtilsMessengerEXT");
-			return sl::Result::eSuccess;
-		}
-
-		VkDebugUtilsMessengerCreateInfoEXT debugUtilsMessengerCreateInfos {};
-		debugUtilsMessengerCreateInfos.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-		debugUtilsMessengerCreateInfos.pUserData = nullptr;
-		debugUtilsMessengerCreateInfos.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT
-			| VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT
-			| VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-		debugUtilsMessengerCreateInfos.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT
-			| VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT
-			| VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT
-			| VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-		debugUtilsMessengerCreateInfos.pfnUserCallback = debugCallback;
-		if (createDebugUtilsMessengerEXT(m_instance, &debugUtilsMessengerCreateInfos, nullptr, &m_debugUtilsMessenger) != VK_SUCCESS) {
-			sl::mainLogger.warn("Can't create debug vulkan utils messenger");
-			return sl::Result::eSuccess;
-		}
+		m_debugUtilsMessenger = createDebugUtilsMessenger(m_instance, extensions, m_getInstanceProcAddr).value_or(VK_NULL_HANDLE);
 	#endif
+
+		std::optional<VkSurfaceKHR> surface {m_window->createVkSurface(m_instance)};
+		if (!surface)
+			return sl::utils::ErrorStack::push(sl::Result::eFailure, "Can't create surface for instance");
+		m_surface = *surface;
 
 		sl::render::vulkan::GPUCreateInfos gpuCreateInfos {};
 		gpuCreateInfos.instance = this;
@@ -193,6 +213,8 @@ namespace sl::render::vulkan {
 
 	auto Instance::destroy() noexcept -> void {
 		m_gpu.destroy();
+		if (m_surface != VK_NULL_HANDLE)
+			m_window->destroyVkSurface(m_instance, m_surface);
 
 	#ifndef NDEBUG
 		if (m_getInstanceProcAddr != nullptr && m_debugUtilsMessenger != VK_NULL_HANDLE) {

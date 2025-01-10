@@ -4,6 +4,8 @@
 
 #include <map>
 
+#include <SDL3/SDL_vulkan.h>
+
 #include "sl/eventManager.hpp"
 #include "sl/inputManager.hpp"
 #include "sl/utils/errorStack.hpp"
@@ -29,6 +31,19 @@ namespace sl {
 		m_size = {0, 0};
 		if (m_window != nullptr)
 			SDL_DestroyWindow(m_window);
+	}
+
+
+	auto SDLWindow::createVkSurface(VkInstance instance) noexcept -> std::optional<VkSurfaceKHR> {
+		VkSurfaceKHR surface {VK_NULL_HANDLE};
+		if (!SDL_Vulkan_CreateSurface(m_window, instance, nullptr, &surface))
+			return sl::utils::ErrorStack::push(std::nullopt, "Can't create vulkan surface from SDL3 window : "_s + SDL_GetError());
+		return surface;
+	}
+
+
+	auto SDLWindow::destroyVkSurface(VkInstance instance, VkSurfaceKHR surface) noexcept -> void {
+		SDL_Vulkan_DestroySurface(instance, surface, nullptr);
 	}
 
 

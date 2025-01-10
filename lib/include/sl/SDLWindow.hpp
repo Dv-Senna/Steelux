@@ -16,6 +16,8 @@ namespace sl {
 
 			auto create(const sl::WindowCreateInfos &createInfos) noexcept -> sl::Result override;
 			auto destroy() noexcept -> void override;
+			auto createVkSurface(VkInstance instance) noexcept -> std::optional<VkSurfaceKHR> override;
+			auto destroyVkSurface(VkInstance instance, VkSurfaceKHR surface) noexcept -> void override;
 
 			auto update() noexcept -> bool override;
 
