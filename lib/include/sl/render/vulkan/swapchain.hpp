@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 #include <vulkan/vulkan.h>
 
 #include "sl/core.hpp"
@@ -26,6 +28,9 @@ namespace sl::render::vulkan {
 			sl::render::vulkan::Instance *m_instance;
 			sl::render::vulkan::GPU *m_gpu;
 			VkSwapchainKHR m_swapchain;
+			VkSwapchainCreateInfoKHR m_swapchainCreateInfos;
+			std::vector<VkImage> m_images;
+			std::vector<VkImageView> m_imageViews;
 	};
 
 } // namespace sl::render::vulkan
