@@ -38,6 +38,7 @@ namespace sl::render::vulkan {
 			auto create(const GPUCreateInfos &createInfos) noexcept -> sl::Result;
 			auto destroy() noexcept -> void;
 
+			inline auto getPhysicalDevice() const noexcept -> VkPhysicalDevice {return m_physicalDevice;}
 			inline auto getDevice() const noexcept -> VkDevice {return m_device;}
 			inline auto getGraphicsQueue() const noexcept -> const Queue& {return m_queues.find(QueueCapability::eGraphics)->second;}
 			inline auto getComputeQueue() const noexcept -> const Queue& {return m_queues.find(QueueCapability::eCompute)->second;}

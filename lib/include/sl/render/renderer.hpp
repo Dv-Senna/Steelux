@@ -3,11 +3,13 @@
 #include <vulkan/vulkan.h>
 
 #include "sl/core.hpp"
-#include "sl/render/vulkan/instance.hpp"
 #include "sl/result.hpp"
 #include "sl/utils/string.hpp"
 #include "sl/utils/utils.hpp"
 #include "sl/window.hpp"
+
+#include "sl/render/vulkan/instance.hpp"
+#include "sl/render/vulkan/swapchain.hpp"
 
 
 namespace sl::render {
@@ -27,6 +29,7 @@ namespace sl::render {
 
 		private:
 			sl::render::vulkan::Instance m_instance;
+			sl::render::vulkan::Swapchain m_swapchain;
 	};
 
 } // namespace sl::render

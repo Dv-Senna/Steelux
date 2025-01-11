@@ -185,7 +185,9 @@ namespace sl::render::vulkan {
 		m_instance = createInfos.instance;
 
 		std::vector<const char*> extensions {};
-		std::vector<const char*> requiredExtensions {};
+		std::vector<const char*> requiredExtensions {
+			VK_KHR_SWAPCHAIN_EXTENSION_NAME
+		};
 		VkPhysicalDeviceFeatures features {};
 		VkPhysicalDeviceFeatures requiredFeatures {};
 

@@ -107,3 +107,8 @@ namespace sl::utils {
 	auto ErrorStackRange::end() const noexcept -> iterator {return ErrorStack::end();}
 
 } // namespace sl::utils
+
+
+namespace sl {
+	using ErrorStack = sl::utils::ErrorStack;
+} // namespace sl

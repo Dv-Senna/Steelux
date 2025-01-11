@@ -29,6 +29,7 @@ namespace sl::render::vulkan {
 			inline auto getInstance() const noexcept -> VkInstance {return m_instance;}
 			inline auto getVkGetInstanceProcAddr() const noexcept -> PFN_vkGetInstanceProcAddr {return m_getInstanceProcAddr;}
 			inline auto getSurface() const noexcept -> VkSurfaceKHR {return m_surface;}
+			inline auto getGpu() noexcept -> sl::render::vulkan::GPU* {return &m_gpu;}
 
 
 		private:
