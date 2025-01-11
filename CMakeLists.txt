@@ -52,6 +52,7 @@ endif()
 
 add_subdirectory(lib)
 add_subdirectory(sandbox)
+add_subdirectory(shaders)
 if (SL_BUILD_TESTS)
 	add_subdirectory(tests)
 endif()

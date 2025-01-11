@@ -27,6 +27,9 @@ namespace sl::render {
 			auto create(const RendererCreateInfos &createInfos) noexcept -> sl::Result;
 			auto destroy() noexcept -> void;
 
+			inline auto getInstance() noexcept -> sl::render::vulkan::Instance& {return m_instance;}
+
+
 		private:
 			sl::render::vulkan::Instance m_instance;
 			sl::render::vulkan::Swapchain m_swapchain;

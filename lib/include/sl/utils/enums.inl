@@ -41,6 +41,9 @@ namespace sl::utils {
 			constexpr std::size_t MAX_STRING_SIZE {10};
 			constexpr std::size_t CHARACTER_SIZE {6};
 
+			if (length > MAX_STRING_SIZE)
+				__FAILURE("You can't have more character than MAX_STRING_SIZE");
+
 			sl::utils::PackedEnumString result {0};
 
 			for (std::size_t i {0}; i < std::min(length, MAX_STRING_SIZE); ++i) {

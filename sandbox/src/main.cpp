@@ -10,6 +10,7 @@
 #include <sl/utils/logger.hpp>
 #include <sl/utils/units.hpp>
 #include <sl/utils/hash.hpp>
+#include <sl/utils/file.hpp>
 
 #include <sl/memory/poolAllocator.hpp>
 #include <sl/memory/heapAllocator.hpp>
@@ -21,6 +22,8 @@
 #include <sl/window.hpp>
 #include <sl/eventManager.hpp>
 #include <sl/inputManager.hpp>
+
+#include <sl/render/vulkan/shader.hpp>
 
 #include <memory>
 #include <print>
@@ -69,6 +72,33 @@ class SandboxApp final : public sl::Application {
 		auto onCreation() noexcept -> sl::Result override {
 			std::println("Creation");
 
+			std::ifstream vertexFile {"shaders/test.vert.spv", std::ios::binary};
+			if (!vertexFile)
+				return sl::ErrorStack::push(sl::Result::eFailure, "Can't open 'shaders/test.vert.spv'");
+			std::vector<std::byte> vertexSpirv {sl::utils::readBinaryFile(vertexFile)};
+			vertexFile.close();
+
+			std::ifstream fragmentFile {"shaders/test.frag.spv", std::ios::binary};
+			if (!fragmentFile)
+				return sl::ErrorStack::push(sl::Result::eFailure, "Can't open 'shaders/test.frag.spv'");
+			std::vector<std::byte> fragmentSpirv {sl::utils::readBinaryFile(fragmentFile)};
+			fragmentFile.close();
+
+
+			sl::render::vulkan::ShaderCreateInfos vertexShaderCreateInfos {};
+			vertexShaderCreateInfos.instance = &m_renderer.getInstance();
+			vertexShaderCreateInfos.type = sl::render::vulkan::ShaderType::eVertex;
+			vertexShaderCreateInfos.spirv = std::move(vertexSpirv);
+			if (m_vertexShader.create(vertexShaderCreateInfos) != sl::Result::eSuccess)
+				return sl::ErrorStack::push(sl::Result::eFailure, "Can't create vertex shader");
+
+			sl::render::vulkan::ShaderCreateInfos fragmentShaderCreateInfos {};
+			fragmentShaderCreateInfos.instance = &m_renderer.getInstance();
+			fragmentShaderCreateInfos.type = sl::render::vulkan::ShaderType::eVertex;
+			fragmentShaderCreateInfos.spirv = std::move(fragmentSpirv);
+			if (m_fragmentShader.create(fragmentShaderCreateInfos) != sl::Result::eSuccess)
+				return sl::ErrorStack::push(sl::Result::eFailure, "Can't create fragment shader");
+
 			return sl::Result::eSuccess;
 		}
 
@@ -83,9 +113,13 @@ class SandboxApp final : public sl::Application {
 
 		auto onDestruction() noexcept -> void override {
 			std::println("Destruction");
+			m_fragmentShader.destroy();
+			m_vertexShader.destroy();
 		}
 
 	private:
+		sl::render::vulkan::Shader m_vertexShader;
+		sl::render::vulkan::Shader m_fragmentShader;
 };
 
 
