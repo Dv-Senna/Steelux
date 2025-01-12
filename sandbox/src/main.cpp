@@ -25,6 +25,7 @@
 
 #include <sl/render/vulkan/pipeline.hpp>
 #include <sl/render/vulkan/shader.hpp>
+#include <sl/render/vulkan/vertexBuffer.hpp>
 
 #include <memory>
 #include <print>
@@ -72,6 +73,18 @@ class SandboxApp final : public sl::Application {
 
 		auto onCreation() noexcept -> sl::Result override {
 			std::println("Creation");
+
+			sl::render::vulkan::VertexBufferCreateInfos vertexBufferCreateInfos {};
+			vertexBufferCreateInfos.instance = &m_renderer.getInstance();
+			vertexBufferCreateInfos.vertices = {
+				-0.5f, -0.5f,    1.f, 0.f, 0.f,
+				0.f, 0.5f,       0.f, 1.f, 0.f,
+				0.5f, -0.5f,     0.f, 0.f, 1.f
+			};
+			vertexBufferCreateInfos.vertexComponentCount = 5;
+			if (m_vertexBuffer.create(vertexBufferCreateInfos) != sl::Result::eSuccess)
+				return sl::ErrorStack::push(sl::Result::eFailure, "Can't crete vertex buffer");
+
 
 			std::ifstream vertexFile {"shaders/test.vert.spv", std::ios::binary};
 			if (!vertexFile)
@@ -156,6 +169,7 @@ class SandboxApp final : public sl::Application {
 			m_pipeline.destroy();
 			m_fragmentShader.destroy();
 			m_vertexShader.destroy();
+			m_vertexBuffer.destroy();
 		}
 
 	private:
@@ -163,6 +177,7 @@ class SandboxApp final : public sl::Application {
 		sl::render::vulkan::Shader m_vertexShader;
 		sl::render::vulkan::Shader m_fragmentShader;
 		sl::render::vulkan::Pipeline m_pipeline;
+		sl::render::vulkan::VertexBuffer m_vertexBuffer;
 };
 
 
