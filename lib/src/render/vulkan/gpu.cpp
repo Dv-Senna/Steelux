@@ -156,12 +156,17 @@ namespace sl::render::vulkan {
 
 	auto getQueueCreateInfos(
 		const std::map<GPU::QueueCapability, std::uint32_t> &indices,
-		const std::vector<VkQueueFamilyProperties> &queueProperties
+		const std::vector<VkQueueFamilyProperties> &queueProperties,
+		std::vector<float> &priorities
 	) noexcept -> std::vector<VkDeviceQueueCreateInfo> {
-		static float priority {1.f};
 
 		std::vector<VkDeviceQueueCreateInfo> queueCreateInfos {};
 		queueCreateInfos.reserve(sizeof(indices) / sizeof(std::uint32_t));
+
+		std::size_t maxQueueCount {};
+		for (const auto properties : queueProperties)
+			maxQueueCount = std::max(maxQueueCount, static_cast<std::size_t> (properties.queueCount));
+		priorities = std::vector<float> (maxQueueCount, 1.f);
 
 		for (const auto index : indices) {
 			if (std::ranges::find_if(queueCreateInfos, [&index](const VkDeviceQueueCreateInfo &createInfos) -> bool {
@@ -173,7 +178,7 @@ namespace sl::render::vulkan {
 			createInfos.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
 			createInfos.queueFamilyIndex = index.second;
 			createInfos.queueCount = queueProperties[index.second].queueCount;
-			createInfos.pQueuePriorities = &priority;
+			createInfos.pQueuePriorities = priorities.data();
 			queueCreateInfos.push_back(createInfos);
 		}
 
@@ -214,7 +219,12 @@ namespace sl::render::vulkan {
 
 		std::map<GPU::QueueCapability, std::uint32_t> queueIndices {selectQueueFamilies(m_physicalDevice, m_instance->getSurface(), queueFamilyProperties)};
 
-		std::vector<VkDeviceQueueCreateInfo> deviceQueueCreateInfos {getQueueCreateInfos(queueIndices, queueFamilyProperties)};
+		std::vector<float> queuePriorities {};
+		std::vector<VkDeviceQueueCreateInfo> deviceQueueCreateInfos {getQueueCreateInfos(queueIndices, queueFamilyProperties, queuePriorities)};
+
+		for (std::size_t i : std::views::iota(std::size_t{0}, deviceQueueCreateInfos.size())) {
+			sl::mainLogger.debug("DEVICE QUEUE CREATE INFOS[{}].pQueuePriorities : {} -> {}", i, (void*)deviceQueueCreateInfos[i].pQueuePriorities, *deviceQueueCreateInfos[i].pQueuePriorities);
+		}
 
 		VkDeviceCreateInfo deviceCreateInfos {};
 		deviceCreateInfos.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
