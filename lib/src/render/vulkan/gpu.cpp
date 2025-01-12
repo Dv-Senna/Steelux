@@ -222,10 +222,6 @@ namespace sl::render::vulkan {
 		std::vector<float> queuePriorities {};
 		std::vector<VkDeviceQueueCreateInfo> deviceQueueCreateInfos {getQueueCreateInfos(queueIndices, queueFamilyProperties, queuePriorities)};
 
-		for (std::size_t i : std::views::iota(std::size_t{0}, deviceQueueCreateInfos.size())) {
-			sl::mainLogger.debug("DEVICE QUEUE CREATE INFOS[{}].pQueuePriorities : {} -> {}", i, (void*)deviceQueueCreateInfos[i].pQueuePriorities, *deviceQueueCreateInfos[i].pQueuePriorities);
-		}
-
 		VkDeviceCreateInfo deviceCreateInfos {};
 		deviceCreateInfos.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 		deviceCreateInfos.enabledLayerCount = 0;
