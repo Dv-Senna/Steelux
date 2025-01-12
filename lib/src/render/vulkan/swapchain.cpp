@@ -88,6 +88,7 @@ namespace sl::render::vulkan {
 		if (!swapchainCreateInfos)
 			return sl::ErrorStack::push(sl::Result::eFailure, "Can't generate swapchain create infos");
 		m_swapchainCreateInfos = *swapchainCreateInfos;
+		m_imageExtent = m_swapchainCreateInfos.imageExtent;
 
 		if (vkCreateSwapchainKHR(m_gpu->getDevice(), &m_swapchainCreateInfos, nullptr, &m_swapchain) != VK_SUCCESS)
 			return sl::ErrorStack::push(sl::Result::eFailure, "Can't create swapchain");

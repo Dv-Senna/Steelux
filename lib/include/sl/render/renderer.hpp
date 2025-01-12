@@ -28,6 +28,7 @@ namespace sl::render {
 			auto destroy() noexcept -> void;
 
 			inline auto getInstance() noexcept -> sl::render::vulkan::Instance& {return m_instance;}
+			inline auto getSwapchain() noexcept -> sl::render::vulkan::Swapchain& {return m_swapchain;}
 
 
 		private:

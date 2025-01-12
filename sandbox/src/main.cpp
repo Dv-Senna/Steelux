@@ -123,8 +123,27 @@ class SandboxApp final : public sl::Application {
 			VkCommandPoolCreateInfo commandPoolCreateInfos {};
 			commandPoolCreateInfos.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 			commandPoolCreateInfos.queueFamilyIndex = m_renderer.getInstance().getGpu()->getGraphicsQueue().familyIndex;
+			commandPoolCreateInfos.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 			if (vkCreateCommandPool(m_renderer.getInstance().getGpu()->getDevice(), &commandPoolCreateInfos, nullptr, &m_commandPool) != VK_SUCCESS)
 				return sl::ErrorStack::push(sl::Result::eFailure, "Can't create command pool");
+
+			VkCommandBufferAllocateInfo commandBufferAllocateInfos {};
+			commandBufferAllocateInfos.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+			commandBufferAllocateInfos.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+			commandBufferAllocateInfos.commandPool = m_commandPool;
+			commandBufferAllocateInfos.commandBufferCount = 1;
+			if (vkAllocateCommandBuffers(m_renderer.getInstance().getGpu()->getDevice(), &commandBufferAllocateInfos, &m_commandBuffer) != VK_SUCCESS)
+				return sl::ErrorStack::push(sl::Result::eFailure, "Can't allocate command buffers");
+
+			VkSemaphoreCreateInfo semaphoreCreateInfos {};
+			semaphoreCreateInfos.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+			(void)vkCreateSemaphore(m_renderer.getInstance().getGpu()->getDevice(), &semaphoreCreateInfos, nullptr, &m_imageAvailableSemaphore);
+			(void)vkCreateSemaphore(m_renderer.getInstance().getGpu()->getDevice(), &semaphoreCreateInfos, nullptr, &m_renderFinishedSemaphore);
+
+			VkFenceCreateInfo fenceCreateInfos {};
+			fenceCreateInfos.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+			fenceCreateInfos.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+			(void)vkCreateFence(m_renderer.getInstance().getGpu()->getDevice(), &fenceCreateInfos, nullptr, &m_waitForFrameFence);
 
 			return sl::Result::eSuccess;
 		}
@@ -135,35 +154,153 @@ class SandboxApp final : public sl::Application {
 			if (sl::InputManager::isKeyDown(sl::Key::eEscape))
 				return false;
 
-			VkCommandBuffer commandBuffer {};
-			VkCommandBufferAllocateInfo commandBufferAllocateInfos {};
-			commandBufferAllocateInfos.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-			commandBufferAllocateInfos.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-			commandBufferAllocateInfos.commandPool = m_commandPool;
-			commandBufferAllocateInfos.commandBufferCount = 1;
-			if (vkAllocateCommandBuffers(m_renderer.getInstance().getGpu()->getDevice(), &commandBufferAllocateInfos, &commandBuffer) != VK_SUCCESS)
-				return sl::ErrorStack::push(std::unexpected(sl::Result::eFailure), "Can't allocate command buffers");
-			sl::utils::Janitor<> commandBufferJanitor {[commandBuffer, this]() {
-				vkFreeCommandBuffers(this->m_renderer.getInstance().getGpu()->getDevice(), this->m_commandPool, 1, &commandBuffer);
-			}};
+			(void)vkWaitForFences(m_renderer.getInstance().getGpu()->getDevice(), 1, &m_waitForFrameFence, VK_TRUE, std::numeric_limits<std::uint64_t>::max());
+			(void)vkResetFences(m_renderer.getInstance().getGpu()->getDevice(), 1, &m_waitForFrameFence);
+
+			std::uint32_t imageIndex {};
+			(void)vkAcquireNextImageKHR(
+				m_renderer.getInstance().getGpu()->getDevice(),
+				m_renderer.getSwapchain().getSwapchain(),
+				std::numeric_limits<std::uint64_t>::max(),
+				m_imageAvailableSemaphore,
+				VK_NULL_HANDLE,
+				&imageIndex
+			);
+
+
+			(void)vkResetCommandBuffer(m_commandBuffer, 0);
 
 			VkCommandBufferBeginInfo beginInfos {};
 			beginInfos.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 			beginInfos.pInheritanceInfo = nullptr;
-			if (vkBeginCommandBuffer(commandBuffer, &beginInfos) != VK_SUCCESS)
+			if (vkBeginCommandBuffer(m_commandBuffer, &beginInfos) != VK_SUCCESS)
 				return sl::ErrorStack::push(std::unexpected(sl::Result::eFailure), "Can't begin command buffer");
 
 
+			VkImageMemoryBarrier imageMemoryBarrier {};
+			imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			imageMemoryBarrier.image = m_renderer.getSwapchain().getImages()[imageIndex];
+			imageMemoryBarrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+			imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+			imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+			imageMemoryBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			imageMemoryBarrier.subresourceRange.levelCount = 1;
+			imageMemoryBarrier.subresourceRange.baseMipLevel = 0;
+			imageMemoryBarrier.subresourceRange.layerCount = 1;
+			imageMemoryBarrier.subresourceRange.baseArrayLayer = 0;
+			imageMemoryBarrier.dstQueueFamilyIndex = m_renderer.getInstance().getGpu()->getGraphicsQueue().familyIndex;
 
-			if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS)
+			vkCmdPipelineBarrier(
+				m_commandBuffer,
+				VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+				VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+				0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier
+			);
+
+			VkRenderingAttachmentInfo renderingAttachmentInfos {};
+			renderingAttachmentInfos.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+			renderingAttachmentInfos.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+			renderingAttachmentInfos.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+			renderingAttachmentInfos.clearValue.color.float32[0] = 0.f;
+			renderingAttachmentInfos.clearValue.color.float32[1] = 0.f;
+			renderingAttachmentInfos.clearValue.color.float32[2] = 0.f;
+			renderingAttachmentInfos.clearValue.color.float32[3] = 0.f;
+			renderingAttachmentInfos.clearValue.depthStencil.stencil = 0.f;
+			renderingAttachmentInfos.clearValue.depthStencil.depth = 0.f;
+			renderingAttachmentInfos.imageView = m_renderer.getSwapchain().getImageViews()[imageIndex];
+			renderingAttachmentInfos.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+			renderingAttachmentInfos.resolveMode = VK_RESOLVE_MODE_NONE;
+
+			VkRenderingInfo renderingInfos {};
+			renderingInfos.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
+			renderingInfos.colorAttachmentCount = 1;
+			renderingInfos.pColorAttachments = &renderingAttachmentInfos;
+			renderingInfos.layerCount = 1;
+			renderingInfos.renderArea = {{0, 0}, m_renderer.getSwapchain().getImageExtent()};
+			vkCmdBeginRendering(m_commandBuffer, &renderingInfos);
+
+			VkViewport viewport {};
+			viewport.width = m_renderer.getSwapchain().getImageExtent().width;
+			viewport.height = m_renderer.getSwapchain().getImageExtent().height;
+			vkCmdSetViewport(m_commandBuffer, 0, 1, &viewport);
+
+			VkRect2D scissors {};
+			scissors.extent = m_renderer.getSwapchain().getImageExtent();
+			vkCmdSetScissor(m_commandBuffer, 0, 1, &scissors);
+
+			vkCmdBindPipeline(m_commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline.getPipeline());
+
+			VkBuffer buffers[] {m_vertexBuffer.getBuffer()};
+			VkDeviceSize offsets[] {0};
+			vkCmdBindVertexBuffers(m_commandBuffer, 0, 1, buffers, offsets);
+
+			vkCmdDraw(m_commandBuffer, 3, 1, 0, 0);
+
+			vkCmdEndRendering(m_commandBuffer);
+
+			VkImageMemoryBarrier imageMemoryBarrier2 {};
+			imageMemoryBarrier2.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			imageMemoryBarrier2.image = m_renderer.getSwapchain().getImages()[imageIndex];
+			imageMemoryBarrier2.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+			imageMemoryBarrier2.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+			imageMemoryBarrier2.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+			imageMemoryBarrier2.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			imageMemoryBarrier2.subresourceRange.levelCount = 1;
+			imageMemoryBarrier2.subresourceRange.baseMipLevel = 0;
+			imageMemoryBarrier2.subresourceRange.layerCount = 1;
+			imageMemoryBarrier2.subresourceRange.baseArrayLayer = 0;
+
+			vkCmdPipelineBarrier(
+				m_commandBuffer,
+				VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+				VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+				0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier2
+			);
+
+			if (vkEndCommandBuffer(m_commandBuffer) != VK_SUCCESS)
 				return sl::ErrorStack::push(std::unexpected(sl::Result::eFailure), "Can't end command buffer");
 
-			return true;
+
+			VkPipelineStageFlags pipelineStageFlags {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+
+			VkSubmitInfo submitInfos {};
+			submitInfos.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+			submitInfos.commandBufferCount = 1;
+			submitInfos.pCommandBuffers = &m_commandBuffer;
+			submitInfos.waitSemaphoreCount = 1;
+			submitInfos.pWaitSemaphores = &m_imageAvailableSemaphore;
+			submitInfos.pWaitDstStageMask = &pipelineStageFlags;
+			submitInfos.signalSemaphoreCount = 1;
+			submitInfos.pSignalSemaphores = &m_renderFinishedSemaphore;
+			if (vkQueueSubmit(m_renderer.getInstance().getGpu()->getGraphicsQueue().queues[0], 1, &submitInfos, m_waitForFrameFence) != VK_SUCCESS)
+				return sl::ErrorStack::push(std::unexpected(sl::Result::eFailure), "Can't submit queue");
+
+			VkSwapchainKHR swapchains[] {m_renderer.getSwapchain().getSwapchain()};
+			VkPresentInfoKHR presentInfos {};
+			presentInfos.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+			presentInfos.waitSemaphoreCount = 1;
+			presentInfos.pWaitSemaphores = &m_renderFinishedSemaphore;
+			presentInfos.swapchainCount = 1;
+			presentInfos.pSwapchains = swapchains;
+			presentInfos.pImageIndices = &imageIndex;
+			if (vkQueuePresentKHR(m_renderer.getInstance().getGpu()->getPresentQueue().queues[0], &presentInfos) != VK_SUCCESS)
+				return sl::ErrorStack::push(std::unexpected(sl::Result::eFailure), "Can't present queue");
+
+			return false;
+//			return true;
 		}
 
 
 		auto onDestruction() noexcept -> void override {
 			std::println("Destruction");
+			if (m_waitForFrameFence != VK_NULL_HANDLE)
+				vkDestroyFence(m_renderer.getInstance().getGpu()->getDevice(), m_waitForFrameFence, nullptr);
+			if (m_renderFinishedSemaphore != VK_NULL_HANDLE)
+				vkDestroySemaphore(m_renderer.getInstance().getGpu()->getDevice(), m_renderFinishedSemaphore, nullptr);
+			if (m_imageAvailableSemaphore != VK_NULL_HANDLE)
+				vkDestroySemaphore(m_renderer.getInstance().getGpu()->getDevice(), m_imageAvailableSemaphore, nullptr);
+			if (m_commandBuffer != VK_NULL_HANDLE)
+				vkFreeCommandBuffers(this->m_renderer.getInstance().getGpu()->getDevice(), this->m_commandPool, 1, &m_commandBuffer);
 			if (m_commandPool != VK_NULL_HANDLE)
 				vkDestroyCommandPool(m_renderer.getInstance().getGpu()->getDevice(), m_commandPool, nullptr);
 			m_pipeline.destroy();
@@ -174,10 +311,14 @@ class SandboxApp final : public sl::Application {
 
 	private:
 		VkCommandPool m_commandPool;
+		VkCommandBuffer m_commandBuffer;
 		sl::render::vulkan::Shader m_vertexShader;
 		sl::render::vulkan::Shader m_fragmentShader;
 		sl::render::vulkan::Pipeline m_pipeline;
 		sl::render::vulkan::VertexBuffer m_vertexBuffer;
+		VkSemaphore m_imageAvailableSemaphore;
+		VkSemaphore m_renderFinishedSemaphore;
+		VkFence m_waitForFrameFence;
 };
 
 

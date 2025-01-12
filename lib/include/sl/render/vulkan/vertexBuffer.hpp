@@ -26,6 +26,8 @@ namespace sl::render::vulkan {
 			auto create(const VertexBufferCreateInfos &createInfos) noexcept -> sl::Result;
 			auto destroy() noexcept -> void;
 
+			inline auto getBuffer() const noexcept -> VkBuffer {return m_buffer;}
+
 
 		private:
 			sl::render::vulkan::Instance *m_instance;
