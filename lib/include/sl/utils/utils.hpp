@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <functional>
 #include <tuple>
 
 #include "sl/utils/string.hpp"
@@ -39,6 +40,17 @@ namespace sl::utils {
 		std::uint32_t major {};
 		std::uint32_t minor {};
 		std::uint32_t patch {};
+	};
+
+
+	template <typename Func = std::function<void()>>
+	class Janitor {
+		public:
+			inline Janitor(Func func) noexcept : m_func {func} {}
+			inline ~Janitor() {(void)m_func();}
+
+		private:
+			Func m_func;
 	};
 
 

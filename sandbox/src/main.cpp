@@ -107,6 +107,12 @@ class SandboxApp final : public sl::Application {
 			if (m_pipeline.create(pipelineCreateInfos) != sl::Result::eSuccess)
 				return sl::ErrorStack::push(sl::Result::eFailure, "Can't create pipeline");
 
+			VkCommandPoolCreateInfo commandPoolCreateInfos {};
+			commandPoolCreateInfos.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+			commandPoolCreateInfos.queueFamilyIndex = m_renderer.getInstance().getGpu()->getGraphicsQueue().familyIndex;
+			if (vkCreateCommandPool(m_renderer.getInstance().getGpu()->getDevice(), &commandPoolCreateInfos, nullptr, &m_commandPool) != VK_SUCCESS)
+				return sl::ErrorStack::push(sl::Result::eFailure, "Can't create command pool");
+
 			return sl::Result::eSuccess;
 		}
 
@@ -115,18 +121,45 @@ class SandboxApp final : public sl::Application {
 			//sl::mainLogger.info("DT : {}", dt);
 			if (sl::InputManager::isKeyDown(sl::Key::eEscape))
 				return false;
+
+			VkCommandBuffer commandBuffer {};
+			VkCommandBufferAllocateInfo commandBufferAllocateInfos {};
+			commandBufferAllocateInfos.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+			commandBufferAllocateInfos.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+			commandBufferAllocateInfos.commandPool = m_commandPool;
+			commandBufferAllocateInfos.commandBufferCount = 1;
+			if (vkAllocateCommandBuffers(m_renderer.getInstance().getGpu()->getDevice(), &commandBufferAllocateInfos, &commandBuffer) != VK_SUCCESS)
+				return sl::ErrorStack::push(std::unexpected(sl::Result::eFailure), "Can't allocate command buffers");
+			sl::utils::Janitor<> commandBufferJanitor {[commandBuffer, this]() {
+				vkFreeCommandBuffers(this->m_renderer.getInstance().getGpu()->getDevice(), this->m_commandPool, 1, &commandBuffer);
+			}};
+
+			VkCommandBufferBeginInfo beginInfos {};
+			beginInfos.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+			beginInfos.pInheritanceInfo = nullptr;
+			if (vkBeginCommandBuffer(commandBuffer, &beginInfos) != VK_SUCCESS)
+				return sl::ErrorStack::push(std::unexpected(sl::Result::eFailure), "Can't begin command buffer");
+
+
+
+			if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS)
+				return sl::ErrorStack::push(std::unexpected(sl::Result::eFailure), "Can't end command buffer");
+
 			return true;
 		}
 
 
 		auto onDestruction() noexcept -> void override {
 			std::println("Destruction");
+			if (m_commandPool != VK_NULL_HANDLE)
+				vkDestroyCommandPool(m_renderer.getInstance().getGpu()->getDevice(), m_commandPool, nullptr);
 			m_pipeline.destroy();
 			m_fragmentShader.destroy();
 			m_vertexShader.destroy();
 		}
 
 	private:
+		VkCommandPool m_commandPool;
 		sl::render::vulkan::Shader m_vertexShader;
 		sl::render::vulkan::Shader m_fragmentShader;
 		sl::render::vulkan::Pipeline m_pipeline;
