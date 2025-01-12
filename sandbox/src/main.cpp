@@ -23,6 +23,7 @@
 #include <sl/eventManager.hpp>
 #include <sl/inputManager.hpp>
 
+#include <sl/render/vulkan/pipeline.hpp>
 #include <sl/render/vulkan/shader.hpp>
 
 #include <memory>
@@ -94,10 +95,17 @@ class SandboxApp final : public sl::Application {
 
 			sl::render::vulkan::ShaderCreateInfos fragmentShaderCreateInfos {};
 			fragmentShaderCreateInfos.instance = &m_renderer.getInstance();
-			fragmentShaderCreateInfos.type = sl::render::vulkan::ShaderType::eVertex;
+			fragmentShaderCreateInfos.type = sl::render::vulkan::ShaderType::eFragment;
 			fragmentShaderCreateInfos.spirv = std::move(fragmentSpirv);
 			if (m_fragmentShader.create(fragmentShaderCreateInfos) != sl::Result::eSuccess)
 				return sl::ErrorStack::push(sl::Result::eFailure, "Can't create fragment shader");
+
+			sl::render::vulkan::PipelineCreateInfos pipelineCreateInfos {};
+			pipelineCreateInfos.instance = &m_renderer.getInstance();
+			pipelineCreateInfos.type = sl::render::vulkan::PipelineType::eGraphics;
+			pipelineCreateInfos.shaders = {&m_vertexShader, &m_fragmentShader};
+			if (m_pipeline.create(pipelineCreateInfos) != sl::Result::eSuccess)
+				return sl::ErrorStack::push(sl::Result::eFailure, "Can't create pipeline");
 
 			return sl::Result::eSuccess;
 		}
@@ -113,6 +121,7 @@ class SandboxApp final : public sl::Application {
 
 		auto onDestruction() noexcept -> void override {
 			std::println("Destruction");
+			m_pipeline.destroy();
 			m_fragmentShader.destroy();
 			m_vertexShader.destroy();
 		}
@@ -120,6 +129,7 @@ class SandboxApp final : public sl::Application {
 	private:
 		sl::render::vulkan::Shader m_vertexShader;
 		sl::render::vulkan::Shader m_fragmentShader;
+		sl::render::vulkan::Pipeline m_pipeline;
 };
 
 

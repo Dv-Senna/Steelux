@@ -222,8 +222,13 @@ namespace sl::render::vulkan {
 		std::vector<float> queuePriorities {};
 		std::vector<VkDeviceQueueCreateInfo> deviceQueueCreateInfos {getQueueCreateInfos(queueIndices, queueFamilyProperties, queuePriorities)};
 
+		VkPhysicalDeviceDynamicRenderingFeatures physicalDeviceDynamicRenderingFeatures {};
+		physicalDeviceDynamicRenderingFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES;
+		physicalDeviceDynamicRenderingFeatures.dynamicRendering = VK_TRUE;
+
 		VkDeviceCreateInfo deviceCreateInfos {};
 		deviceCreateInfos.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+		deviceCreateInfos.pNext = &physicalDeviceDynamicRenderingFeatures;
 		deviceCreateInfos.enabledLayerCount = 0;
 		deviceCreateInfos.ppEnabledLayerNames = nullptr;
 		deviceCreateInfos.enabledExtensionCount = extensions.size();

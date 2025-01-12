@@ -35,6 +35,9 @@ namespace sl::render::vulkan {
 			auto create(const ShaderCreateInfos &createInfos) noexcept -> sl::Result;
 			auto destroy() noexcept -> void;
 
+			inline auto getType() const noexcept -> ShaderType {return m_type;}
+			inline auto getShaderModule() const noexcept -> VkShaderModule {return m_shaderModule;}
+
 		private:
 			sl::render::vulkan::Instance *m_instance;
 			sl::render::vulkan::GPU *m_gpu;
