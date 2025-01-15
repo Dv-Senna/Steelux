@@ -202,7 +202,7 @@ class SandboxApp final : public sl::Application {
 			renderingAttachmentInfos.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 			renderingAttachmentInfos.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 			renderingAttachmentInfos.clearValue.color.float32[0] = 0.f;
-			renderingAttachmentInfos.clearValue.color.float32[1] = 1.f;
+			renderingAttachmentInfos.clearValue.color.float32[1] = 0.f;
 			renderingAttachmentInfos.clearValue.color.float32[2] = 0.f;
 			renderingAttachmentInfos.clearValue.color.float32[3] = 0.f;
 			renderingAttachmentInfos.clearValue.depthStencil.stencil = 0.f;
@@ -219,6 +219,23 @@ class SandboxApp final : public sl::Application {
 			renderingInfos.renderArea.extent = m_renderer.getSwapchain().getImageExtent();
 			vkCmdBeginRendering(m_commandBuffer, &renderingInfos);
 
+			VkRect2D screenRect {};
+			screenRect.extent = m_renderer.getSwapchain().getImageExtent();
+			
+			VkClearRect clearRect {};
+			clearRect.layerCount = 1;
+			clearRect.baseArrayLayer = 0;
+			clearRect.rect = screenRect;
+
+			VkClearAttachment clearAttachmentInfos {};
+			clearAttachmentInfos.colorAttachment = 0;
+			clearAttachmentInfos.clearValue.color.float32[0] = 0.5f;
+			clearAttachmentInfos.clearValue.color.float32[1] = 0.1f;
+			clearAttachmentInfos.clearValue.color.float32[2] = 0.f;
+			clearAttachmentInfos.clearValue.color.float32[3] = 0.f;
+			clearAttachmentInfos.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			vkCmdClearAttachments(m_commandBuffer, 1, &clearAttachmentInfos, 1, &clearRect);
+
 			VkViewport viewport {};
 			viewport.x = 0;
 			viewport.y = 0;
@@ -228,8 +245,7 @@ class SandboxApp final : public sl::Application {
 			viewport.height = m_renderer.getSwapchain().getImageExtent().height;
 			vkCmdSetViewport(m_commandBuffer, 0, 1, &viewport);
 
-			VkRect2D scissors {};
-			scissors.extent = m_renderer.getSwapchain().getImageExtent();
+			VkRect2D scissors {screenRect};
 			vkCmdSetScissor(m_commandBuffer, 0, 1, &scissors);
 
 			vkCmdBindPipeline(m_commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline.getPipeline());
