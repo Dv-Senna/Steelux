@@ -6,6 +6,8 @@
 #include "sl/render/vulkan/instance.hpp"
 #include "sl/utils/errorStack.hpp"
 
+#include "sl/utils/logger.hpp"
+
 
 namespace sl::render::vulkan {
 	auto findCompatibleMemoryType(std::uint32_t memoryFilter, VkMemoryPropertyFlags properties, auto memoryTypes) -> std::optional<std::uint32_t> {
@@ -26,13 +28,17 @@ namespace sl::render::vulkan {
 		m_vertexComponentCount = createInfos.vertexComponentCount;
 		m_verticesCount = createInfos.vertices.size() / m_vertexComponentCount;
 
+		sl::mainLogger.debug("VERTEX COMPONENT COUNT : {}, VERTICES COUNT : {}, TOTOAL BUFFER SIZE : {}", m_vertexComponentCount, m_verticesCount, sizeof(float)*createInfos.vertices.size());
+
+		std::uint32_t queueFamilyIndex {m_gpu->getGraphicsQueue().familyIndex};
+
 		VkBufferCreateInfo bufferCreateInfos {};
 		bufferCreateInfos.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 		bufferCreateInfos.size = sizeof(float) * createInfos.vertices.size();
 		bufferCreateInfos.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
 		bufferCreateInfos.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 		bufferCreateInfos.queueFamilyIndexCount = 1;
-		bufferCreateInfos.pQueueFamilyIndices = &m_gpu->getGraphicsQueue().familyIndex;
+		bufferCreateInfos.pQueueFamilyIndices = &queueFamilyIndex;
 		if (vkCreateBuffer(m_gpu->getDevice(), &bufferCreateInfos, nullptr, &m_buffer) != VK_SUCCESS)
 			return sl::ErrorStack::push(sl::Result::eFailure, "Can't create vertex buffer's buffer");
 

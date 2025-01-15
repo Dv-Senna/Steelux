@@ -40,13 +40,13 @@ namespace sl::render::vulkan {
 			VkVertexInputAttributeDescription{
 				.location = 0,
 				.binding = 0,
-				.format = VK_FORMAT_R8G8_SNORM,
+				.format = VK_FORMAT_R32G32_SFLOAT,
 				.offset = 0
 			},
 			VkVertexInputAttributeDescription{
 				.location = 1,
 				.binding = 0,
-				.format = VK_FORMAT_R8G8B8_UNORM,
+				.format = VK_FORMAT_R32G32B32_SFLOAT,
 				.offset = sizeof(float) * 2
 			}
 		};
@@ -109,7 +109,7 @@ namespace sl::render::vulkan {
 
 		VkPipelineRasterizationStateCreateInfo pipelineRasterizationStateCreateInfos {};
 		pipelineRasterizationStateCreateInfos.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-		pipelineRasterizationStateCreateInfos.cullMode = VK_CULL_MODE_NONE;
+		pipelineRasterizationStateCreateInfos.cullMode = VK_CULL_MODE_BACK_BIT;
 		pipelineRasterizationStateCreateInfos.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 		pipelineRasterizationStateCreateInfos.lineWidth = 1.f;
 		pipelineRasterizationStateCreateInfos.polygonMode = VK_POLYGON_MODE_FILL;

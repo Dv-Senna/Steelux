@@ -77,9 +77,9 @@ class SandboxApp final : public sl::Application {
 			sl::render::vulkan::VertexBufferCreateInfos vertexBufferCreateInfos {};
 			vertexBufferCreateInfos.instance = &m_renderer.getInstance();
 			vertexBufferCreateInfos.vertices = {
-				-0.5f, -0.5f,    1.f, 0.f, 0.f,
-				0.f, 0.5f,       0.f, 1.f, 0.f,
-				0.5f, -0.5f,     0.f, 0.f, 1.f
+				0.f, -0.5f,       0.f, 1.f, 0.f,
+				-0.5f, 0.5f,    1.f, 0.f, 0.f,
+				0.5f, 0.5f,     0.f, 0.f, 1.f
 			};
 			vertexBufferCreateInfos.vertexComponentCount = 5;
 			if (m_vertexBuffer.create(vertexBufferCreateInfos) != sl::Result::eSuccess)
@@ -229,8 +229,8 @@ class SandboxApp final : public sl::Application {
 
 			VkClearAttachment clearAttachmentInfos {};
 			clearAttachmentInfos.colorAttachment = 0;
-			clearAttachmentInfos.clearValue.color.float32[0] = 0.5f;
-			clearAttachmentInfos.clearValue.color.float32[1] = 0.1f;
+			clearAttachmentInfos.clearValue.color.float32[0] = 0.f;
+			clearAttachmentInfos.clearValue.color.float32[1] = 0.f;
 			clearAttachmentInfos.clearValue.color.float32[2] = 0.f;
 			clearAttachmentInfos.clearValue.color.float32[3] = 0.f;
 			clearAttachmentInfos.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
