@@ -192,8 +192,8 @@ class SandboxApp final : public sl::Application {
 
 			vkCmdPipelineBarrier(
 				m_commandBuffer,
+				VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
 				VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-				VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
 				0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier
 			);
 
@@ -202,7 +202,7 @@ class SandboxApp final : public sl::Application {
 			renderingAttachmentInfos.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 			renderingAttachmentInfos.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 			renderingAttachmentInfos.clearValue.color.float32[0] = 0.f;
-			renderingAttachmentInfos.clearValue.color.float32[1] = 0.f;
+			renderingAttachmentInfos.clearValue.color.float32[1] = 1.f;
 			renderingAttachmentInfos.clearValue.color.float32[2] = 0.f;
 			renderingAttachmentInfos.clearValue.color.float32[3] = 0.f;
 			renderingAttachmentInfos.clearValue.depthStencil.stencil = 0.f;
@@ -216,10 +216,14 @@ class SandboxApp final : public sl::Application {
 			renderingInfos.colorAttachmentCount = 1;
 			renderingInfos.pColorAttachments = &renderingAttachmentInfos;
 			renderingInfos.layerCount = 1;
-			renderingInfos.renderArea = {{0, 0}, m_renderer.getSwapchain().getImageExtent()};
+			renderingInfos.renderArea.extent = m_renderer.getSwapchain().getImageExtent();
 			vkCmdBeginRendering(m_commandBuffer, &renderingInfos);
 
 			VkViewport viewport {};
+			viewport.x = 0;
+			viewport.y = 0;
+			viewport.minDepth = 0.f;
+			viewport.maxDepth = 1.f;
 			viewport.width = m_renderer.getSwapchain().getImageExtent().width;
 			viewport.height = m_renderer.getSwapchain().getImageExtent().height;
 			vkCmdSetViewport(m_commandBuffer, 0, 1, &viewport);
@@ -286,12 +290,13 @@ class SandboxApp final : public sl::Application {
 			if (vkQueuePresentKHR(m_renderer.getInstance().getGpu()->getPresentQueue().queues[0], &presentInfos) != VK_SUCCESS)
 				return sl::ErrorStack::push(std::unexpected(sl::Result::eFailure), "Can't present queue");
 
-			return false;
-//			return true;
+			return true;
 		}
 
 
 		auto onDestruction() noexcept -> void override {
+			(void)vkDeviceWaitIdle(m_renderer.getInstance().getGpu()->getDevice());
+
 			std::println("Destruction");
 			if (m_waitForFrameFence != VK_NULL_HANDLE)
 				vkDestroyFence(m_renderer.getInstance().getGpu()->getDevice(), m_waitForFrameFence, nullptr);

@@ -40,13 +40,13 @@ namespace sl::render::vulkan {
 			VkVertexInputAttributeDescription{
 				.location = 0,
 				.binding = 0,
-				.format = VK_FORMAT_R8G8B8_SNORM,
+				.format = VK_FORMAT_R8G8_SNORM,
 				.offset = 0
 			},
 			VkVertexInputAttributeDescription{
 				.location = 1,
 				.binding = 0,
-				.format = VK_FORMAT_R8G8B8_SNORM,
+				.format = VK_FORMAT_R8G8B8_UNORM,
 				.offset = sizeof(float) * 2
 			}
 		};
@@ -67,6 +67,9 @@ namespace sl::render::vulkan {
 
 		VkPipelineColorBlendAttachmentState pipelineColorBlendAttachmentState {};
 		pipelineColorBlendAttachmentState.blendEnable = VK_FALSE;
+		pipelineColorBlendAttachmentState.srcColorBlendFactor = VK_BLEND_FACTOR_ZERO;
+		pipelineColorBlendAttachmentState.dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
+		pipelineColorBlendAttachmentState.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT;
 
 		VkPipelineColorBlendStateCreateInfo pipelineColorBlendStateCreateInfos {};
 		pipelineColorBlendStateCreateInfos.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
@@ -106,7 +109,7 @@ namespace sl::render::vulkan {
 
 		VkPipelineRasterizationStateCreateInfo pipelineRasterizationStateCreateInfos {};
 		pipelineRasterizationStateCreateInfos.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-		pipelineRasterizationStateCreateInfos.cullMode = VK_CULL_MODE_BACK_BIT;
+		pipelineRasterizationStateCreateInfos.cullMode = VK_CULL_MODE_NONE;
 		pipelineRasterizationStateCreateInfos.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 		pipelineRasterizationStateCreateInfos.lineWidth = 1.f;
 		pipelineRasterizationStateCreateInfos.polygonMode = VK_POLYGON_MODE_FILL;
