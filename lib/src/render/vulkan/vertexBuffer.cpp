@@ -28,8 +28,6 @@ namespace sl::render::vulkan {
 		m_vertexComponentCount = createInfos.vertexComponentCount;
 		m_verticesCount = createInfos.vertices.size() / m_vertexComponentCount;
 
-		sl::mainLogger.debug("VERTEX COMPONENT COUNT : {}, VERTICES COUNT : {}, TOTOAL BUFFER SIZE : {}", m_vertexComponentCount, m_verticesCount, sizeof(float)*createInfos.vertices.size());
-
 		std::uint32_t queueFamilyIndex {m_gpu->getGraphicsQueue().familyIndex};
 
 		VkBufferCreateInfo bufferCreateInfos {};

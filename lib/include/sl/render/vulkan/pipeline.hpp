@@ -32,6 +32,8 @@ namespace sl::render::vulkan {
 			auto create(const PipelineCreateInfos &createInfos) noexcept -> sl::Result;
 			auto destroy() noexcept -> void;
 
+			auto use() noexcept -> void;
+
 			inline auto getPipeline() const noexcept -> VkPipeline {return m_pipeline;}
 
 
