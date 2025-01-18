@@ -19,13 +19,15 @@
 #include <sl/memory/singleFrameAllocator.hpp>
 #include <sl/memory/doubleBufferedAllocator.hpp>
 
+#include <sl/memory/gpu/heapAllocator.hpp>
+
 #include <sl/window.hpp>
 #include <sl/eventManager.hpp>
 #include <sl/inputManager.hpp>
 
 #include <sl/render/vulkan/pipeline.hpp>
 #include <sl/render/vulkan/shader.hpp>
-#include <sl/render/vulkan/vertexBuffer.hpp>
+#include <sl/render/vulkan/resource.hpp>
 
 #include <memory>
 #include <print>
@@ -74,16 +76,79 @@ class SandboxApp final : public sl::Application {
 		auto onCreation() noexcept -> sl::Result override {
 			std::println("Creation");
 
-			sl::render::vulkan::VertexBufferCreateInfos vertexBufferCreateInfos {};
-			vertexBufferCreateInfos.instance = &m_renderer.getInstance();
-			vertexBufferCreateInfos.vertices = {
-				0.f, -0.5f,       0.f, 1.f, 0.f,
+			sl::memory::gpu::HeapAllocatorCreateInfos heapAllocatorCreateInfos {};
+			heapAllocatorCreateInfos.instance = &m_renderer.getInstance();
+			heapAllocatorCreateInfos.cpuVisible = false;
+			if (m_gpuHeapAllocator.create(heapAllocatorCreateInfos) != sl::Result::eSuccess)
+				return sl::ErrorStack::push(sl::Result::eFailure, "Can't create gpu heap allocator");
+
+			heapAllocatorCreateInfos.cpuVisible = true;
+			if (m_stagingHeapAllocator.create(heapAllocatorCreateInfos) != sl::Result::eSuccess)
+				return sl::ErrorStack::push(sl::Result::eFailure, "Can't create staging heap allocator");
+
+			std::vector<float> vertices {
+				0.f, -0.5f,     0.f, 1.f, 0.f,
 				-0.5f, 0.5f,    1.f, 0.f, 0.f,
 				0.5f, 0.5f,     0.f, 0.f, 1.f
 			};
-			vertexBufferCreateInfos.vertexComponentCount = 5;
-			if (m_vertexBuffer.create(vertexBufferCreateInfos) != sl::Result::eSuccess)
-				return sl::ErrorStack::push(sl::Result::eFailure, "Can't crete vertex buffer");
+
+			sl::render::vulkan::ResourceCreateInfos<sl::memory::gpu::HeapAllocatorView> resourceCreateInfos {};
+			resourceCreateInfos.instance = &m_renderer.getInstance();
+			resourceCreateInfos.allocator = {m_gpuHeapAllocator};
+			resourceCreateInfos.graphicsUsable = true;
+			resourceCreateInfos.type = sl::render::vulkan::ResourceType::eVertexBuffer;
+			resourceCreateInfos.size = sizeof(float) * vertices.size();
+			if (m_vertexBuffer.create(resourceCreateInfos) != sl::Result::eSuccess)
+				return sl::ErrorStack::push(sl::Result::eFailure, "Can't create vertex buffer");
+
+			resourceCreateInfos.allocator = {m_stagingHeapAllocator};
+			resourceCreateInfos.graphicsUsable = false;
+			resourceCreateInfos.type = sl::render::vulkan::ResourceType::eStagingBuffer;
+			if (m_stagingBuffer.create(resourceCreateInfos) != sl::Result::eSuccess)
+				return sl::ErrorStack::push(sl::Result::eFailure, "Can't create staging buffer");
+
+
+
+			VkCommandPoolCreateInfo transferCommandPoolCreateInfos {};
+			transferCommandPoolCreateInfos.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+			transferCommandPoolCreateInfos.queueFamilyIndex = m_renderer.getInstance().getGpu()->getTransferQueue().familyIndex;
+			VkCommandPool transferCommandPool {};
+			(void)vkCreateCommandPool(m_renderer.getInstance().getGpu()->getDevice(), &transferCommandPoolCreateInfos, nullptr, &transferCommandPool);
+
+			VkCommandBufferAllocateInfo transferCommandBufferAllocateInfos {};
+			transferCommandBufferAllocateInfos.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+			transferCommandBufferAllocateInfos.commandBufferCount = 1;
+			transferCommandBufferAllocateInfos.commandPool = transferCommandPool;
+			transferCommandBufferAllocateInfos.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+			VkCommandBuffer transferCommandBuffer {};
+			(void)vkAllocateCommandBuffers(m_renderer.getInstance().getGpu()->getDevice(), &transferCommandBufferAllocateInfos, &transferCommandBuffer);
+			sl::utils::Janitor transferJanitor {[this, transferCommandPool, transferCommandBuffer](){
+				VkSubmitInfo submitInfos {};
+				submitInfos.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+				submitInfos.commandBufferCount = 1;
+				submitInfos.pCommandBuffers = &transferCommandBuffer;
+				vkQueueSubmit(m_renderer.getInstance().getGpu()->getTransferQueue().queues[0], 1, &submitInfos, VK_NULL_HANDLE);
+
+				vkDeviceWaitIdle(m_renderer.getInstance().getGpu()->getDevice());
+
+				vkFreeCommandBuffers(m_renderer.getInstance().getGpu()->getDevice(), transferCommandPool, 1, &transferCommandBuffer);
+				vkDestroyCommandPool(m_renderer.getInstance().getGpu()->getDevice(), transferCommandPool, nullptr);
+			}};
+
+
+			if (m_stagingBuffer.set(vertices) != sl::Result::eSuccess)
+				return sl::ErrorStack::push(sl::Result::eFailure, "Can't set staging buffer value to vertices");
+
+			VkCommandBufferBeginInfo transferBeginInfos {};
+			transferBeginInfos.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+			transferBeginInfos.pInheritanceInfo = nullptr;
+			(void)vkBeginCommandBuffer(transferCommandBuffer, &transferBeginInfos);
+
+			VkBufferCopy transferCopyRegion {};
+			transferCopyRegion.size = sizeof(float) * vertices.size();
+			vkCmdCopyBuffer(transferCommandBuffer, *m_stagingBuffer.getBuffer(), *m_vertexBuffer.getBuffer(), 1, &transferCopyRegion);
+
+			(void)vkEndCommandBuffer(transferCommandBuffer);
 
 
 			std::ifstream vertexFile {"shaders/test.vert.spv", std::ios::binary};
@@ -156,6 +221,7 @@ class SandboxApp final : public sl::Application {
 
 			(void)vkWaitForFences(m_renderer.getInstance().getGpu()->getDevice(), 1, &m_waitForFrameFence, VK_TRUE, std::numeric_limits<std::uint64_t>::max());
 			(void)vkResetFences(m_renderer.getInstance().getGpu()->getDevice(), 1, &m_waitForFrameFence);
+
 
 			std::uint32_t imageIndex {};
 			(void)vkAcquireNextImageKHR(
@@ -250,7 +316,7 @@ class SandboxApp final : public sl::Application {
 
 			vkCmdBindPipeline(m_commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline.getPipeline());
 
-			VkBuffer buffers[] {m_vertexBuffer.getBuffer()};
+			VkBuffer buffers[] {*m_vertexBuffer.getBuffer()};
 			VkDeviceSize offsets[] {0};
 			vkCmdBindVertexBuffers(m_commandBuffer, 0, 1, buffers, offsets);
 
@@ -327,16 +393,23 @@ class SandboxApp final : public sl::Application {
 			m_pipeline.destroy();
 			m_fragmentShader.destroy();
 			m_vertexShader.destroy();
+			m_stagingBuffer.destroy();
 			m_vertexBuffer.destroy();
+			m_stagingHeapAllocator.destroy();
+			m_gpuHeapAllocator.destroy();
 		}
 
 	private:
+		sl::memory::gpu::HeapAllocator m_gpuHeapAllocator;
+		sl::memory::gpu::HeapAllocator m_stagingHeapAllocator;
 		VkCommandPool m_commandPool;
 		VkCommandBuffer m_commandBuffer;
 		sl::render::vulkan::Shader m_vertexShader;
 		sl::render::vulkan::Shader m_fragmentShader;
 		sl::render::vulkan::Pipeline m_pipeline;
-		sl::render::vulkan::VertexBuffer m_vertexBuffer;
+		sl::render::vulkan::Resource<sl::memory::gpu::HeapAllocatorView> m_vertexBuffer;
+		sl::render::vulkan::Resource<sl::memory::gpu::HeapAllocatorView> m_stagingBuffer;
+	//	sl::render::vulkan::VertexBuffer m_vertexBuffer;
 		VkSemaphore m_imageAvailableSemaphore;
 		VkSemaphore m_renderFinishedSemaphore;
 		VkFence m_waitForFrameFence;
